@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.quick-settings-audio-panel" path="/org/gnome/shell/extensions/quick-settings-audio-panel/">
+    <!-- See also: https://docs.gtk.org/glib/gvariant-format-strings.html -->
+    <key name="move-master-volume" type="b">
+      <default>true</default>
+    </key>
+    <key name="media-control" type="s">
+      <choices>
+        <choice value="none" />
+        <choice value="move" />
+        <choice value="duplicate" />
+      </choices>
+      <default>"move"</default>
+    </key>
+    <key name="create-mixer-sliders" type="b">
+      <default>true</default>
+    </key>
+
+    <key name="ordering" type="as">
+      <default>["volume", "media", "mixer"]</default>
+    </key>
+  </schema>
+</schemalist>

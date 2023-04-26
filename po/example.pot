@@ -1,0 +1,73 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-26 19:36+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: prefs.js:25
+msgid "Move master volume sliders"
+msgstr ""
+
+#: prefs.js:26
+msgid "Thoses are the speaker / headphone and microphone volume sliders"
+msgstr ""
+
+#: prefs.js:32 prefs.js:54
+msgid "Media controls"
+msgstr ""
+
+#: prefs.js:33
+msgid "What should we do with media controls ?"
+msgstr ""
+
+#: prefs.js:35
+msgid "Leave as is"
+msgstr ""
+
+#: prefs.js:36
+msgid "Move into new panel"
+msgstr ""
+
+#: prefs.js:37
+msgid "Duplicate into new panel"
+msgstr ""
+
+#: prefs.js:44
+msgid "Create applications mixer"
+msgstr ""
+
+#: prefs.js:45
+msgid ""
+"Thoses sliders are the same you can find in pavucontrol or in the sound "
+"settings"
+msgstr ""
+
+#: prefs.js:50
+msgid "Elements order"
+msgstr ""
+
+#: prefs.js:51
+msgid ""
+"Reorder elements in the new panel, disabled elments will just be ignored"
+msgstr ""
+
+#: prefs.js:53
+msgid "Master volumes"
+msgstr ""
+
+#: prefs.js:55
+msgid "Applications mixer"
+msgstr ""

@@ -119,12 +119,13 @@ class Extension {
     }
 
     disable() {
+        this.settings = null;
         if(this._applications_mixer) {
             this._applications_mixer.destroy();
             this._applications_mixer = null;
         }
         if(this._media_section) {
-            this._panel.remove_child(this._media_section);
+            this._media_section.destroy();
             this._media_section = null;
         }
         if(this._dmmc_backup_class) {

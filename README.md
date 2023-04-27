@@ -22,11 +22,11 @@ Compatibility
 
 As it's heavily inspired by it, this plugin is mostly incompatible with Quick Settings Tweaks. However, as long as you don't enable features that try to do the same thing, it should work.
 
-The only unavoidable issue is that disabling Quick Settings Tweaks will cause it to crash, and you'll have to restart gnome shell if you want to re-enable it.
+~~The only unavoidable issue is that disabling Quick Settings Tweaks will cause it to crash, and you'll have to restart gnome shell if you want to re-enable it.~~ (not caused by this extension)
 
 Known incompatibilities are:
   - Both volume mixers can be activated at the same time, even if it doesn't make sense
   - Both media controls can be activated at the same time, even if it doesn't make sense
-  - Everything in the `Input/Output` tab of Quick Settings Tweaks won't work if you enable `Move master volume sliders`
-  - Enabling notifications in their own panel works, but will look strange because the main panel is made smaller than the sounds panel
+  - Everything in the `Input/Output` tab of Quick Settings Tweaks won't work if you enable `Move master volume sliders`. However, no crash should be observed
+  - ~~Enabling notifications in their own panel works, but will look strange because the main panel is made smaller than the sounds panel~~ (I made a pull request to fix this)
   - `Remove Media Control on Date Menu` (but not `Remove Notifications On Date Menu`) will remove the media controls from the sound panel if you **move** the media controls using this extension. If you **duplicate** the media controls with the extension, they will not be affected

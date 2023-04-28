@@ -120,14 +120,8 @@ class Extension {
 
     disable() {
         this.settings = null;
-        if(this._applications_mixer) {
-            this._applications_mixer.destroy();
-            this._applications_mixer = null;
-        }
-        if(this._media_section) {
-            this._media_section.destroy();
-            this._media_section = null;
-        }
+        this._applications_mixer = null;
+        this._media_section = null;
         if(this._dmmc_backup_class) {
             this._panel.remove_child(DateMenuMediaControl);
             DateMenuMediaControlHolder.insert_child_at_index(DateMenuMediaControl, 0);

@@ -60,10 +60,7 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
     }
 
     destroy() {
-        for(const [id, slider] of Object.entries(this._sliders)) {
-            slider.destroy();
-            delete this._sliders[id];
-        }
+        this._sliders = null;
 
         this._mixer_control.disconnect(this._sa_event_id);
         this._mixer_control.disconnect(this._sr_event_id);

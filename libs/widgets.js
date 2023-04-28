@@ -4,9 +4,7 @@ const { MixerSinkInput } = imports.gi.Gvc;
 const PopupMenu = imports.ui.popupMenu; // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/popupMenu.js
 const Volume = imports.ui.status.volume; // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/status/volume.js
 
-// According to Qwreey, this was necessary in gnome 43, is it still in gnome 44 ? 
-while(!Volume.StreamSlider) {};
-const StreamSlider = Volume.StreamSlider;
+const StreamSlider = imports.ui.main.panel.statusArea.quickSettings._volume._output.constructor;
 
 var QuickSettingsPanel = GObject.registerClass(
     class QuickSettingsPanel extends St.BoxLayout {
@@ -74,23 +72,24 @@ var ApplicationVolumeSlider = GObject.registerClass(
         constructor(control, stream) {
             super(control);
 
-            // This need to be BEFORE this.stream assignement, note that icons can't be found anyway
+            // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
+            // Note that icons can't be found anyway
             this._icons = [stream.get_icon_name()];
             this.stream = stream;
 
-            this._vbox = new St.BoxLayout({ vertical: true });
+            const vbox = new St.BoxLayout({ vertical: true });
 
             const hbox = this.first_child; // this is the only child
             const slider = hbox.get_children()[1];
             hbox.remove_child(slider);
-            hbox.insert_child_at_index(this._vbox, 1);
+            hbox.insert_child_at_index(vbox, 1);
 
-            this._label = new St.Label({ x_expand: true });
-            this._label.style_class = "QSV-application-volume-slider-label";
-            this._label.text = `${stream.get_name()} - ${stream.get_description()}`;
+            const label = new St.Label({ x_expand: true });
+            label.style_class = "QSAP-application-volume-slider-label";
+            label.text = `${stream.get_name()} - ${stream.get_description()}`;
 
-            this._vbox.add(this._label);
-            this._vbox.add(slider);
+            vbox.add(label);
+            vbox.add(slider);
         }
     }
 )

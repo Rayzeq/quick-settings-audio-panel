@@ -19,6 +19,9 @@
     <key name="create-mixer-sliders" type="b">
       <default>true</default>
     </key>
+    <key name="merge-panel" type="b">
+      <default>false</default>
+    </key>
 
     <key name="ordering" type="as">
       <default>["volume-output", "volume-input", "media", "mixer"]</default>

@@ -9,9 +9,12 @@ const StreamSlider = imports.ui.main.panel.statusArea.quickSettings._volume._out
 var QuickSettingsPanel = GObject.registerClass(
     class QuickSettingsPanel extends St.BoxLayout {
         constructor(options) {
+            const separated = options.separated;
+            delete options.separated;
+
             super({
                 vertical: true,
-                style_class: "popup-menu-content quick-settings QSAP-panel",
+                style_class: separated ? " popup-menu-content quick-settings QSAP-panel-separated" : " QSAP-panel-merged",
                 ...options
             });
         }

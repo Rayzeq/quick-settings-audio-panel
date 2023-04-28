@@ -55,6 +55,13 @@ function fillPreferencesWindow(window) {
             subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
         }
     ));
+    main_group.add(create_switch(
+        settings, "merge-panel",
+        {
+            title: _("Merge the new panel into the main one"),
+            subtitle: _("The new panel will not be separated from the main one")
+        }
+    ));
 
     const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
         title: _("Elements order"),

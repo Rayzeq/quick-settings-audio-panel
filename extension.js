@@ -62,18 +62,21 @@ class Extension {
         const always_show_input = this.settings.get_boolean("always-show-input-slider");
         const media_control_action = this.settings.get_string("media-control");
         const create_mixer_sliders = this.settings.get_boolean("create-mixer-sliders");
+        const merge_panel = this.settings.get_boolean("merge-panel");
         const widgets_ordering = this.settings.get_strv("ordering");
 
-        // By default, QuickSettingsBox is the visual box you see, and QuickSettingsGrid is an invisible layout widget.
-        // This extension make so that QuickSettingsBox is invisible and QuickSettingsGrid is the visual box,
-        // in that way we can add siblings to QuickSettingsGrid to make new panels
-        this._qsb_backup_class = QuickSettingsBox.style_class;
-        QuickSettingsBox.style_class = "";
-        this._qsg_backup_class = QuickSettingsGrid.style_class;
-        QuickSettingsGrid.style_class += " popup-menu-content quick-settings QSAP-panel";
+        if(!merge_panel) {
+            // By default, QuickSettingsBox is the visual box you see, and QuickSettingsGrid is an invisible layout widget.
+            // This extension make so that QuickSettingsBox is invisible and QuickSettingsGrid is the visual box,
+            // in that way we can add siblings to QuickSettingsGrid to make new panels
+            this._qsb_backup_class = QuickSettingsBox.style_class;
+            QuickSettingsBox.style_class = "";
+            this._qsg_backup_class = QuickSettingsGrid.style_class;
+            QuickSettingsGrid.style_class += " popup-menu-content quick-settings QSAP-panel-separated";
+        }
 
         if(move_master_volume || media_control_action !== "none" || create_mixer_sliders) {
-            this._panel = new QuickSettingsPanel();
+            this._panel = new QuickSettingsPanel({ separated: !merge_panel });
 
             for(const widget of widgets_ordering) {
                 if(widget === "volume-output" && move_master_volume) {

@@ -1,6 +1,17 @@
-.QSAP-panel {
+.QSAP-panel-separated {
 	/* Add spacing between panels */
 	margin-bottom: 5px;
+	/* There is too much blank space in the top and bottom of the new panel, we reduce it */
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.QSAP-panel-merged {
+	/* It's too close to the quick toggles if we don't add a margin */
+	margin-top: 10px;
+	/* There is too much blank space in the bottom of the new panel, we remove it.
+	 * Unfortunatly, negative margins are not supported so we can't */
+	margin-bottom: -10px;
 }
 
 .QSAP-media-section {

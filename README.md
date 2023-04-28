@@ -8,9 +8,10 @@ Features
 | Feature | Render |
 |:--------|:------:|
 | Move master volume sliders (speaker / headphone and microphone) to the new panel | ![](images/master.png) |
+| Always show the microphone volume slider, but the icon in the top don't change behavior ! | ![](images/input1.png) ![](images/input2.png) |
 | Move (or duplicate) media controls into this panel | ![](images/master+media.png) |
 | Create an application mixer | ![](images/master+media+mixer.png) |
-| You can also reorder everything the way you like | ![](images/reorder.png) |
+| You can also reorder everything the way you like | ![](images/reorder1.png) ![](images/reorder2.png) |
 
 Notice
 ------

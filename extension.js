@@ -155,7 +155,7 @@ class Extension {
             // and not directly `this._applications_mixer`
             this._applications_mixer.destroy();
             this._applications_mixer = null;
-        };
+        }
         this._media_section = null;
         if(this._dmmc_backup_class && this._panel) {
             this._panel.remove_child(DateMenuMediaControl);

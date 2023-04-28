@@ -37,6 +37,10 @@ const DateMenuNotifications = DateMenuHolder.get_children().find(item => item.co
 const DateMenuMediaControlHolder = DateMenuNotifications.last_child.first_child.last_child;
 const DateMenuMediaControl = DateMenuMediaControlHolder.first_child;
 
+const OutputVolumeSlider = imports.ui.main.panel.statusArea.quickSettings._volume._output;
+const InputVolumeSlider = imports.ui.main.panel.statusArea.quickSettings._volume._input;
+const InputVolumeIndicator = imports.ui.main.panel.statusArea.quickSettings._volume._inputIndicator;
+
 const { QuickSettingsPanel, ApplicationsMixer } = Self.imports.libs.widgets;
 
 class Extension {
@@ -48,11 +52,14 @@ class Extension {
         this._dmmc_backup_class = null;
         this._media_section = null;
         this._applications_mixer = null;
+        this._ivssa_callback = null;
+        this._ivssr_callback = null;
     }
 
     enable() {
         this.settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.quick-settings-audio-panel');
         const move_master_volume = this.settings.get_boolean("move-master-volume");
+        const always_show_input = this.settings.get_boolean("always-show-input-slider");
         const media_control_action = this.settings.get_string("media-control");
         const create_mixer_sliders = this.settings.get_boolean("create-mixer-sliders");
         const widgets_ordering = this.settings.get_strv("ordering");
@@ -69,8 +76,10 @@ class Extension {
             this._panel = new QuickSettingsPanel();
 
             for(const widget of widgets_ordering) {
-                if(widget === "volume" && move_master_volume) {
-                    this._move_master_volume();
+                if(widget === "volume-output" && move_master_volume) {
+                    this._move_slider(OutputVolumeSlider);
+                } else if(widget === "volume-input" && move_master_volume) {
+                    this._move_slider(InputVolumeSlider);
                 } else if(widget === "media" && media_control_action === "move") {
                     this._move_media_controls();
                 } else if(widget === "media" && media_control_action === "duplicate") {
@@ -82,17 +91,29 @@ class Extension {
 
             QuickSettingsBox.add_child(this._panel);
         }
+
+        if(always_show_input) {
+            this._ivssa_callback = InputVolumeSlider._control.connect("stream-added", () => {
+                InputVolumeSlider.visible = true;
+                InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+            });
+            this._ivssr_callback = InputVolumeSlider._control.connect("stream-removed", () => {
+                InputVolumeSlider.visible = true;
+                InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+            });
+            InputVolumeSlider.visible = true;
+            InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+        }
     }
 
-    _move_master_volume() {
-        this._master_volumes = [];
-        for(const [index, quick_setting] of QuickSettingsGrid.get_children().entries()) {
-            if(quick_setting.hasOwnProperty("_notifyVolumeChangeId")) {
-                QuickSettingsGrid.remove_child(quick_setting);
-                this._panel.add_child(quick_setting);
-                this._master_volumes.push([quick_setting, index]);
-            }
-        }
+    _move_slider(slider) {
+        const parent = slider.get_parent();
+        const index = parent.get_children().indexOf(slider);
+
+        parent.remove_child(slider);
+        this._panel.add_child(slider);
+
+        this._master_volumes.push([slider, index, parent]);
     }
 
     _move_media_controls() {
@@ -119,20 +140,35 @@ class Extension {
     }
 
     disable() {
-        this.settings = null;
-        this._applications_mixer = null;
+        if(this._ivssr_callback) {
+            InputVolumeSlider.disconnect(this._ivssr_callback);
+            this._ivssr_callback = null;
+        }
+        if(this._ivssa_callback) {
+            InputVolumeSlider.disconnect(this._ivssa_callback);
+            this._ivssa_callback = null;
+        }
+        InputVolumeSlider.visible = InputVolumeSlider._shouldBeVisible();
+        InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+        if(this._applications_mixer) {
+            // Needs explicit destroy because it's `this._applications_mixer.actor` which is added to `self._panel`
+            // and not directly `this._applications_mixer`
+            this._applications_mixer.destroy();
+            this._applications_mixer = null;
+        };
         this._media_section = null;
-        if(this._dmmc_backup_class) {
+        if(this._dmmc_backup_class && this._panel) {
             this._panel.remove_child(DateMenuMediaControl);
             DateMenuMediaControlHolder.insert_child_at_index(DateMenuMediaControl, 0);
 
             DateMenuMediaControl.style_class = this._dmmc_backup_class;
             this._dmmc_backup_class = null;
         }
-        for(const [slider, index] of this._master_volumes) {
+        for(const [slider, index, parent] of this._master_volumes) {
             this._panel.remove_child(slider);
-            QuickSettingsGrid.insert_child_at_index(slider, index);
+            parent.insert_child_at_index(slider, index);
         }
+        this._master_volumes = [];
         if(this._panel) {
             this._panel.destroy();
             this._panel = null;
@@ -145,6 +181,7 @@ class Extension {
             QuickSettingsGrid.style_class = this._qsg_backup_class;
             this._qsg_backup_class = null;
         }
+        this.settings = null;
     }
 }
 

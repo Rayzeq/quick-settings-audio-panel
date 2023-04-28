@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-26 19:36+0200\n"
+"POT-Creation-Date: 2023-04-29 00:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,49 +25,61 @@ msgstr ""
 msgid "Thoses are the speaker / headphone and microphone volume sliders"
 msgstr ""
 
-#: prefs.js:32 prefs.js:54
-msgid "Media controls"
+#: prefs.js:32
+msgid "Always show microphone volume slider"
 msgstr ""
 
 #: prefs.js:33
+msgid "Show even when there is no application recording audio"
+msgstr ""
+
+#: prefs.js:39 prefs.js:65
+msgid "Media controls"
+msgstr ""
+
+#: prefs.js:40
 msgid "What should we do with media controls ?"
 msgstr ""
 
-#: prefs.js:35
+#: prefs.js:42
 msgid "Leave as is"
 msgstr ""
 
-#: prefs.js:36
+#: prefs.js:43
 msgid "Move into new panel"
 msgstr ""
 
-#: prefs.js:37
+#: prefs.js:44
 msgid "Duplicate into new panel"
 msgstr ""
 
-#: prefs.js:44
+#: prefs.js:54
 msgid "Create applications mixer"
 msgstr ""
 
-#: prefs.js:45
+#: prefs.js:55
 msgid ""
 "Thoses sliders are the same you can find in pavucontrol or in the sound "
 "settings"
 msgstr ""
 
-#: prefs.js:50
+#: prefs.js:60
 msgid "Elements order"
 msgstr ""
 
-#: prefs.js:51
+#: prefs.js:61
 msgid ""
 "Reorder elements in the new panel, disabled elments will just be ignored"
 msgstr ""
 
-#: prefs.js:53
-msgid "Master volumes"
+#: prefs.js:63
+msgid "Speaker / Headphone volume slider"
 msgstr ""
 
-#: prefs.js:55
+#: prefs.js:64
+msgid "Microphone volume slider"
+msgstr ""
+
+#: prefs.js:66
 msgid "Applications mixer"
 msgstr ""

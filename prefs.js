@@ -26,6 +26,13 @@ function fillPreferencesWindow(window) {
             subtitle: _("Thoses are the speaker / headphone and microphone volume sliders")
         }
     ));
+    main_group.add(create_switch(
+        settings, "always-show-input-slider",
+        {
+            title: _("Always show microphone volume slider"),
+            subtitle: _("Show even when there is no application recording audio")
+        }
+    ));
     main_group.add(create_dropdown(
         settings, "media-control",
         {
@@ -38,6 +45,9 @@ function fillPreferencesWindow(window) {
             ]
         }
     ));
+    if(settings.get_strv("ordering").length != 4) {
+        settings.set_strv("ordering", ["volume-output", "volume-input", "media", "mixer"]);
+    }
     main_group.add(create_switch(
         settings, "create-mixer-sliders",
         {
@@ -50,7 +60,8 @@ function fillPreferencesWindow(window) {
         title: _("Elements order"),
         description: _("Reorder elements in the new panel, disabled elments will just be ignored")
     });
-    widgets_order_group.add(new DraggableRow("volume", { title: _("Master volumes") }));
+    widgets_order_group.add(new DraggableRow("volume-output", { title: _("Speaker / Headphone volume slider") }));
+    widgets_order_group.add(new DraggableRow("volume-input", { title: _("Microphone volume slider") }));
     widgets_order_group.add(new DraggableRow("media", { title: _("Media controls") }));
     widgets_order_group.add(new DraggableRow("mixer", { title: _("Applications mixer") }));
 

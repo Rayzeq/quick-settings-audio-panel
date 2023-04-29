@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-29 01:44+0200\n"
+"POT-Creation-Date: 2023-04-29 14:05+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "Show even when there is no application recording audio"
 msgstr ""
 
-#: prefs.js:39 prefs.js:72
+#: prefs.js:39 prefs.js:85
 msgid "Media controls"
 msgstr ""
 
@@ -71,23 +71,47 @@ msgstr ""
 msgid "The new panel will not be separated from the main one"
 msgstr ""
 
-#: prefs.js:67
+#: prefs.js:68
+msgid "Panel position"
+msgstr ""
+
+#: prefs.js:69
+msgid "Where the new panel should be located relative to the main panel"
+msgstr ""
+
+#: prefs.js:71
+msgid "Left"
+msgstr ""
+
+#: prefs.js:72
+msgid "Right"
+msgstr ""
+
+#: prefs.js:73
+msgid "Top"
+msgstr ""
+
+#: prefs.js:74
+msgid "Bottom"
+msgstr ""
+
+#: prefs.js:80
 msgid "Elements order"
 msgstr ""
 
-#: prefs.js:68
+#: prefs.js:81
 msgid ""
 "Reorder elements in the new panel, disabled elments will just be ignored"
 msgstr ""
 
-#: prefs.js:70
+#: prefs.js:83
 msgid "Speaker / Headphone volume slider"
 msgstr ""
 
-#: prefs.js:71
+#: prefs.js:84
 msgid "Microphone volume slider"
 msgstr ""
 
-#: prefs.js:73
+#: prefs.js:86
 msgid "Applications mixer"
 msgstr ""

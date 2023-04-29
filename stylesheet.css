@@ -1,6 +1,7 @@
 .QSAP-panel-separated {
 	/* Add spacing between panels */
 	margin-bottom: 5px;
+	margin-left: 5px;
 	/* There is too much blank space in the top and bottom of the new panel, we reduce it */
 	padding-top: 10px;
 	padding-bottom: 10px;

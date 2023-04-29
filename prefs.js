@@ -62,6 +62,19 @@ function fillPreferencesWindow(window) {
             subtitle: _("The new panel will not be separated from the main one")
         }
     ));
+    main_group.add(create_dropdown(
+        settings, "panel-position",
+        {
+            title: _("Panel position"),
+            subtitle: _("Where the new panel should be located relative to the main panel"),
+            fields: [
+                ["left", _("Left")],
+                ["right", _("Right")],
+                ["top", _("Top")],
+                ["bottom", _("Bottom")]
+            ]
+        }
+    ));
 
     const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
         title: _("Elements order"),

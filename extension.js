@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+const { GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Gettext = imports.gettext;
 
@@ -52,6 +53,9 @@ class Extension {
         this._dmmc_backup_class = null;
         this._media_section = null;
         this._applications_mixer = null;
+        this._qsglm_backup_ncolumns = null;
+        this._qsglm_backup_header_colspan = null;
+        this._qsb_backup_vertical = null;
         this._ivssa_callback = null;
         this._ivssr_callback = null;
     }
@@ -63,6 +67,7 @@ class Extension {
         const media_control_action = this.settings.get_string("media-control");
         const create_mixer_sliders = this.settings.get_boolean("create-mixer-sliders");
         const merge_panel = this.settings.get_boolean("merge-panel");
+        const panel_position = this.settings.get_string("panel-position");
         const widgets_ordering = this.settings.get_strv("ordering");
 
         if(!merge_panel) {
@@ -78,6 +83,38 @@ class Extension {
         if(move_master_volume || media_control_action !== "none" || create_mixer_sliders) {
             this._panel = new QuickSettingsPanel({ separated: !merge_panel });
 
+            if(merge_panel) {
+                if(panel_position === "left" || panel_position === "right") {
+                    this._qsglm_backup_ncolumns = QuickSettingsGrid.layout_manager.n_columns;
+                    QuickSettingsGrid.layout_manager.n_columns = 4;
+
+                    // Why getting a property is so complicated ??
+                    const value = new GObject.Value();
+                    QuickSettingsGrid.layout_manager.child_get_property(QuickSettingsGrid, QuickSettingsGrid.get_children()[1], 'column-span', value);
+                    this._qsglm_backup_header_colspan = value.get_int();
+                    value.unset();
+                    // Make the 'header' take all the width
+                    QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, QuickSettingsGrid.get_children()[1], 'column-span', 4);
+                }
+                if(panel_position === "left" || panel_position === "top") {
+                    QuickSettingsGrid.insert_child_at_index(this._panel, 2);
+                } else {
+                    QuickSettingsGrid.add_child(this._panel);
+                }
+                QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, this._panel, 'column-span', 2);
+            } else {
+                if(panel_position === "left" || panel_position === "right") {
+                    this._qsb_backup_vertical = QuickSettingsBox.vertical;
+                    QuickSettingsBox.vertical = false;
+                    this._panel.width = QuickSettingsBox.get_children()[0].width;
+                }
+                if(panel_position === "left" || panel_position === "top") {
+                    QuickSettingsBox.insert_child_at_index(this._panel, 0);
+                } else {
+                    QuickSettingsBox.add_child(this._panel);
+                }
+            }
+
             for(const widget of widgets_ordering) {
                 if(widget === "volume-output" && move_master_volume) {
                     this._move_slider(OutputVolumeSlider);
@@ -90,13 +127,6 @@ class Extension {
                 } else if(widget === "mixer" && create_mixer_sliders) {
                     this._create_app_mixer();
                 }
-            }
-
-            if(merge_panel) {
-                QuickSettingsGrid.add_child(this._panel);
-                QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, this._panel, 'column-span', 2)
-            } else {
-                QuickSettingsBox.add_child(this._panel);
             }
         }
 
@@ -158,12 +188,27 @@ class Extension {
         }
         InputVolumeSlider.visible = InputVolumeSlider._shouldBeVisible();
         InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+
+        if(this._qsb_backup_vertical) {
+            QuickSettingsBox.vertical = this._qsb_backup_vertical;
+            this._qsb_backup_vertical = null;
+        }
+        if(this._qsglm_backup_header_colspan) {
+            QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, QuickSettingsGrid.get_children()[1], 'column-span', this._qsglm_backup_header_colspan);
+            this._qsglm_backup_header_colspan = null;
+        }
+        if(this._qsglm_backup_ncolumns) {
+            QuickSettingsGrid.layout_manager.n_columns = this._qsglm_backup_ncolumns;
+            this._qsglm_backup_ncolumns = null;
+        }
+
         if(this._applications_mixer) {
             // Needs explicit destroy because it's `this._applications_mixer.actor` which is added to `self._panel`
             // and not directly `this._applications_mixer`
             this._applications_mixer.destroy();
             this._applications_mixer = null;
         }
+
         this._media_section = null;
         if(this._dmmc_backup_class && this._panel) {
             this._panel.remove_child(DateMenuMediaControl);
@@ -172,11 +217,14 @@ class Extension {
             DateMenuMediaControl.style_class = this._dmmc_backup_class;
             this._dmmc_backup_class = null;
         }
+
+        this._master_volumes.reverse();
         for(const [slider, index, parent] of this._master_volumes) {
             this._panel.remove_child(slider);
             parent.insert_child_at_index(slider, index);
         }
         this._master_volumes = [];
+
         if(this._panel) {
             this._panel.destroy();
             this._panel = null;

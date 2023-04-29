@@ -10,7 +10,7 @@ Features
 | Move master volume sliders (speaker / headphone and microphone) to the new panel | Always show the microphone volume slider, but the icon in the top don't change behavior ! | Move (or duplicate) media controls into this panel |
 | <img src="images/master+media+mixer.png" width="300px" /> | <img src="images/reorder1.png" width="200px" /><img src="images/reorder2.png" width="200px" /> | <img src="images/merge.png" width="300px" /> |
 | Create an application mixer | You can also reorder everything the way you like | If you want to, you can even merge the new panel into the main one |
-| <img src="images/panel-left.png" width="200px" /><img src="images/panel-right.png" width="200px" /> | <img src="images/panel-top.png" width="200px" /><img src="images/panel-top-merged.png" width="200px" /> | |
+| <img src="images/panel-left.png" width="300px" /><img src="images/panel-right.png" width="300px" /> | <img src="images/panel-top.png" width="200px" /><img src="images/panel-top-merged.png" width="200px" /> | |
 | The panel can be (almost) wherever you want ! | It's more limited on merged panel though | |
 
 

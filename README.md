@@ -12,6 +12,7 @@ Features
 | Move (or duplicate) media controls into this panel | ![](images/master+media.png) |
 | Create an application mixer | ![](images/master+media+mixer.png) |
 | You can also reorder everything the way you like | ![](images/reorder1.png) ![](images/reorder2.png) |
+| If you want to, you can even merge the new panel into the main one | ![](images/merge.png) |
 
 Notice
 ------

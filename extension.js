@@ -92,7 +92,12 @@ class Extension {
                 }
             }
 
-            QuickSettingsBox.add_child(this._panel);
+            if(merge_panel) {
+                QuickSettingsGrid.add_child(this._panel);
+                QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, this._panel, 'column-span', 2)
+            } else {
+                QuickSettingsBox.add_child(this._panel);
+            }
         }
 
         if(always_show_input) {

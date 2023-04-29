@@ -29,4 +29,3 @@ Known incompatibilities are:
   - Both media controls can be activated at the same time, even if it doesn't make sense
   - Everything in the `Input/Output` tab of Quick Settings Tweaks won't work if you enable `Move master volume sliders`. However, no crash should be observed
   - `Remove Media Control on Date Menu` (but not `Remove Notifications On Date Menu`) will remove the media controls from the sound panel if you **move** the media controls using this extension. If you **duplicate** the media controls with the extension, they will not be affected
-  - "Always show microphone volume slider" **won't work** if Quick Settings Tweaks is enabled (I made a pull request on their side to fix this issue)

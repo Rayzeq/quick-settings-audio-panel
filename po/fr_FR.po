@@ -1,122 +1,124 @@
+# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-# Heimen Stoffels <vistausss@fastmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-29 14:05+0200\n"
-"PO-Revision-Date: 2023-04-30 17:37+0200\n"
-"Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
-"Language-Team: Dutch\n"
-"Language: nl\n"
+"POT-Creation-Date: 2023-04-30 21:11+0200\n"
+"PO-Revision-Date: 2023-04-30 21:31+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.2.2\n"
 
 #: prefs.js:25
 msgid "Move master volume sliders"
-msgstr "Hoofdvolumeknoppen verplaatsen"
+msgstr "Déplacer les principaux curseurs de volume"
 
 #: prefs.js:26
 msgid "Thoses are the speaker / headphone and microphone volume sliders"
 msgstr ""
-"Dit zijn de schuifknoppen van luidsprekers, hoofdtelefoons en microfoons"
+"Il s'agit des curseurs de volume du haut-parleur / casque et du "
+"microphone"
 
 #: prefs.js:32
 msgid "Always show microphone volume slider"
-msgstr "Microfoonvolumeknop altijd tonen"
+msgstr "Toujours afficher le curseur de volume du microphone"
 
 #: prefs.js:33
 msgid "Show even when there is no application recording audio"
-msgstr "Toon de schuifknop ook als er geen opnametoepassing actief is"
+msgstr "L'affiche même quand aucune application n'enregistre le son"
 
 #: prefs.js:39 prefs.js:85
 msgid "Media controls"
-msgstr "Mediabediening"
+msgstr "Contrôles de médias"
 
 #: prefs.js:40
 msgid "What should we do with media controls ?"
-msgstr "Wat moet er gebeuren met de mediabediening?"
+msgstr "Que faire des contrôles de médias ?"
 
 #: prefs.js:42
 msgid "Leave as is"
-msgstr "Op huidige plek laten staan"
+msgstr "Laisser tels quels"
 
 #: prefs.js:43
 msgid "Move into new panel"
-msgstr "Verplaatsen naar nieuwe balk"
+msgstr "Déplacer dans le nouveau panneau"
 
 #: prefs.js:44
 msgid "Duplicate into new panel"
-msgstr "Klonen naar nieuwe balk"
+msgstr "Dupliquer dans le nouveau panneau"
 
 #: prefs.js:54
 msgid "Create applications mixer"
-msgstr "Toepassingsmengpaneel samenstellen"
+msgstr "Créer un mélangeur d'applications"
 
 #: prefs.js:55
 msgid ""
 "Thoses sliders are the same you can find in pavucontrol or in the sound "
 "settings"
 msgstr ""
-"Dit zijn de schuifknoppen uit pavucontrol en de geluidsvoorkeuren van "
-"het systeem"
+"Ces curseurs sont les mêmes que ceux que l'on trouve dans Pavucontrol ou "
+"dans les paramètres sonores"
 
 #: prefs.js:61
 msgid "Merge the new panel into the main one"
-msgstr "Nieuwe balk in samenvoegen met hoofdbalk"
+msgstr "Fusionner le nouveau panneau avec le panneau principal"
 
 #: prefs.js:62
 msgid "The new panel will not be separated from the main one"
-msgstr "De nieuwe balk wordt hierdoor niet los van de hoofdbalk getoond"
+msgstr "Le nouveau panneau ne sera pas séparé du panneau principal"
 
 #: prefs.js:68
 msgid "Panel position"
-msgstr "Balklocatie"
+msgstr "Position du panneau"
 
 #: prefs.js:69
 msgid "Where the new panel should be located relative to the main panel"
-msgstr ""
-"Waar de balk dient te worden getoond ten opzichte van de hoofdbalk"
+msgstr "L'emplacement du nouveau panneau par rapport au panneau principal"
 
 #: prefs.js:71
 msgid "Left"
-msgstr "Links"
+msgstr "À gauche"
 
 #: prefs.js:72
 msgid "Right"
-msgstr "Rechts"
+msgstr "À droite"
 
 #: prefs.js:73
 msgid "Top"
-msgstr "Bovenaan"
+msgstr "Au dessus"
 
 #: prefs.js:74
 msgid "Bottom"
-msgstr "Onderaan"
+msgstr "En dessous"
 
 #: prefs.js:80
 msgid "Elements order"
-msgstr "Itemvolgorde"
+msgstr "Ordre des éléments"
 
 #: prefs.js:81
 msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
-"Herschik items op de nieuwe balk (uitgeschakelde items worden genegeerd)"
+"Réorganiser les éléments dans le nouveau panneau (les éléments "
+"désactivés seront ignorés)"
 
 #: prefs.js:83
 msgid "Speaker / Headphone volume slider"
-msgstr "Luidspreker-/Hoofdtelefoonvolumeknop"
+msgstr "Curseur de volume du haut-parleur / casque"
 
 #: prefs.js:84
 msgid "Microphone volume slider"
-msgstr "Microfoonvolumeknop"
+msgstr "Curseur de volume du microphone"
 
 #: prefs.js:86
 msgid "Applications mixer"
-msgstr "Toepassingsmengpaneel"
+msgstr "Mélangeur d'applications"

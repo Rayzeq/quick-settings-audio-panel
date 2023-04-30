@@ -19,7 +19,7 @@ Notice
 
 When changing the settings, it is necessary to disable and re-enable the extension for the changes to take effect.
 
-**The layout will be completlty broken if you merge the sound panel in the main one with an horizontal layout** (everything works correctly but it looks terrible).
+**The layout will be completly broken if you merge the sound panel in the main one with an horizontal layout** (everything works correctly but it looks terrible).
 
 Compatibility
 -------------
@@ -30,7 +30,7 @@ Known incompatibilities are:
   - Both volume mixers can be activated at the same time, even if it doesn't make sense
   - Both media controls can be activated at the same time, even if it doesn't make sense
   - Everything in the `Input/Output` tab of Quick Settings Tweaker won't work if you enable `Move master volume sliders`. However, no crash should be observed
-  - `Remove Media Control on Date Menu` (but not `Remove Notifications On Date Menu`) will remove the media controls from the sound panel if you **move** the media controls using this extension. If you **duplicate** the media controls with the extension, they will not be affected
+  - `Remove Media Control on Date Menu` (but not `Remove Notifications On Date Menu`) will remove the media controls from the sound panel if you **move** the media controls using this extension. If you **duplicate** the media controls with the extension, they won't be affected
   - If you meet these conditions:
     - The sound panel is separated from the main one
     - You're using an horizontal layout (sound panel at left or right of the main panel) 

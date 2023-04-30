@@ -78,7 +78,7 @@ function fillPreferencesWindow(window) {
 
     const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
         title: _("Elements order"),
-        description: _("Reorder elements in the new panel, disabled elments will just be ignored")
+        description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
     });
     widgets_order_group.add(new DraggableRow("volume-output", { title: _("Speaker / Headphone volume slider") }));
     widgets_order_group.add(new DraggableRow("volume-input", { title: _("Microphone volume slider") }));

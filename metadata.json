@@ -4,5 +4,5 @@
   "description": "Create a new panel containing volumes and media control in the quick settings",
   "shell-version": ["43", "44"],
   "url": "https://github.com/Rayzeq/quick-settings-audio-panel",
-  "version": 6
+  "version": 7
 }

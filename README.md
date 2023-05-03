@@ -39,3 +39,5 @@ Known incompatibilities are:
     - The notifications are in their own panel
 
     Then the notification panel will be really narrow and will be a little bit too tall
+
+On Gnome Shell 43, compatibility with Quick Settings Tweaker has not been tested.

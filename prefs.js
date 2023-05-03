@@ -114,7 +114,7 @@ function create_dropdown(settings, id, options) {
     const fields = options.fields;
     delete options.fields;
 
-    const model = new Gtk.StringList({ strings: fields.map(x => x[1]) });
+    const model = Gtk.StringList.new(fields.map(x => x[1]));
     const row = new Adw.ComboRow({
         model: model,
         selected: fields.map(x => x[0]).indexOf(settings.get_string(id)),

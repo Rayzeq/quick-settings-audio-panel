@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-30 21:28+0200\n"
+"POT-Creation-Date: 2023-05-07 02:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "Show even when there is no application recording audio"
 msgstr ""
 
-#: prefs.js:39 prefs.js:85
+#: prefs.js:39 prefs.js:92
 msgid "Media controls"
 msgstr ""
 
@@ -95,23 +95,33 @@ msgstr ""
 msgid "Bottom"
 msgstr ""
 
-#: prefs.js:80
+#: prefs.js:81
+msgid "Overlay popups"
+msgstr ""
+
+#: prefs.js:82
+msgid ""
+"This feature will prevent the main panel from expanding when a popup is "
+"opened. It's mainly aimed at fixing a bug with popups in the new panel"
+msgstr ""
+
+#: prefs.js:87
 msgid "Elements order"
 msgstr ""
 
-#: prefs.js:81
+#: prefs.js:88
 msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
 
-#: prefs.js:83
+#: prefs.js:90
 msgid "Speaker / Headphone volume slider"
 msgstr ""
 
-#: prefs.js:84
+#: prefs.js:91
 msgid "Microphone volume slider"
 msgstr ""
 
-#: prefs.js:86
+#: prefs.js:93
 msgid "Applications mixer"
 msgstr ""

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-30 21:11+0200\n"
-"PO-Revision-Date: 2023-04-30 21:31+0200\n"
+"POT-Creation-Date: 2023-05-07 02:11+0200\n"
+"PO-Revision-Date: 2023-05-07 02:13+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -25,8 +25,7 @@ msgstr "Déplacer les principaux curseurs de volume"
 #: prefs.js:26
 msgid "Thoses are the speaker / headphone and microphone volume sliders"
 msgstr ""
-"Il s'agit des curseurs de volume du haut-parleur / casque et du "
-"microphone"
+"Il s'agit des curseurs de volume du haut-parleur / casque et du microphone"
 
 #: prefs.js:32
 msgid "Always show microphone volume slider"
@@ -36,7 +35,7 @@ msgstr "Toujours afficher le curseur de volume du microphone"
 msgid "Show even when there is no application recording audio"
 msgstr "L'affiche même quand aucune application n'enregistre le son"
 
-#: prefs.js:39 prefs.js:85
+#: prefs.js:39 prefs.js:92
 msgid "Media controls"
 msgstr "Contrôles de médias"
 
@@ -100,25 +99,38 @@ msgstr "Au dessus"
 msgid "Bottom"
 msgstr "En dessous"
 
-#: prefs.js:80
+#: prefs.js:81
+msgid "Overlay popups"
+msgstr "Superposition des popups"
+
+#: prefs.js:82
+msgid ""
+"This feature will prevent the main panel from expanding when a popup is "
+"opened. It's mainly aimed at fixing a bug with popups in the new panel"
+msgstr ""
+"Cette fonctionnalité empêchera le panneau principal de s'étendre lorsqu'un "
+"popup est ouvert. Elle est principalement destinée à corriger un bug avec "
+"les popups dans le nouveau panneau."
+
+#: prefs.js:87
 msgid "Elements order"
 msgstr "Ordre des éléments"
 
-#: prefs.js:81
+#: prefs.js:88
 msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
-"Réorganiser les éléments dans le nouveau panneau (les éléments "
-"désactivés seront ignorés)"
+"Réorganiser les éléments dans le nouveau panneau (les éléments désactivés "
+"seront ignorés)"
 
-#: prefs.js:83
+#: prefs.js:90
 msgid "Speaker / Headphone volume slider"
 msgstr "Curseur de volume du haut-parleur / casque"
 
-#: prefs.js:84
+#: prefs.js:91
 msgid "Microphone volume slider"
 msgstr "Curseur de volume du microphone"
 
-#: prefs.js:86
+#: prefs.js:93
 msgid "Applications mixer"
 msgstr "Mélangeur d'applications"

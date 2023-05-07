@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-const { GObject } = imports.gi;
+const { GObject, Clutter } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Gettext = imports.gettext;
 
@@ -58,6 +58,7 @@ class Extension {
         this._qsb_backup_vertical = null;
         this._ivssa_callback = null;
         this._ivssr_callback = null;
+        this._qsphc_backup = null;
     }
 
     enable() {
@@ -68,6 +69,7 @@ class Extension {
         const create_mixer_sliders = this.settings.get_boolean("create-mixer-sliders");
         const merge_panel = this.settings.get_boolean("merge-panel");
         const panel_position = this.settings.get_string("panel-position");
+        const fix_popups = this.settings.get_boolean("fix-popups");
         const widgets_ordering = this.settings.get_strv("ordering");
 
         if(!merge_panel) {
@@ -142,6 +144,12 @@ class Extension {
             InputVolumeSlider.visible = true;
             InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
         }
+
+        if(fix_popups) {
+            const placeholder = QuickSettings.menu._grid.layout_manager._overlay;
+            this._qsphc_backup = placeholder.get_constraints()[0];
+            placeholder.remove_constraint(this._qsphc_backup);
+        }
     }
 
     _move_slider(slider) {
@@ -151,7 +159,29 @@ class Extension {
         parent.remove_child(slider);
         this._panel.add_child(slider);
 
-        this._master_volumes.push([slider, index, parent]);
+        // Move menu to change input / output
+        const menu_constraint = slider.menu.actor.get_constraints()[0];
+        slider.menu.actor.remove_constraint(menu_constraint);
+
+        const new_constraint = new Clutter.BindConstraint({
+            coordinate: Clutter.BindCoordinate.Y,
+            source: slider,
+        })
+        const callback = this._panel.connect(
+            'notify::allocation',
+            () => { new_constraint.offset = this._panel.allocation.y1 + slider.height; }
+        );
+        slider.bind_property_full(
+            'height',
+            new_constraint, 'offset',
+            GObject.BindingFlags.SYNC_CREATE,
+            (binding, value) => {
+                return [true, this._panel.allocation.y1 + value];
+            }, null
+        );
+        slider.menu.actor.add_constraint(new_constraint);
+
+        this._master_volumes.push([slider, index, parent, menu_constraint, new_constraint, callback]);
     }
 
     _move_media_controls() {
@@ -178,6 +208,10 @@ class Extension {
     }
 
     disable() {
+        if(this._qsphc_backup) {
+            QuickSettings.menu._grid.layout_manager._overlay.add_constraint(this._qsphc_backup);
+            this._qsphc_backup = null;
+        }
         if(this._ivssr_callback) {
             InputVolumeSlider.disconnect(this._ivssr_callback);
             this._ivssr_callback = null;
@@ -219,9 +253,13 @@ class Extension {
         }
 
         this._master_volumes.reverse();
-        for(const [slider, index, parent] of this._master_volumes) {
+        for(const [slider, index, parent, backup_constraint, current_constraint, callback] of this._master_volumes) {
             this._panel.remove_child(slider);
             parent.insert_child_at_index(slider, index);
+
+            slider.menu.actor.remove_constraint(current_constraint);
+            slider.menu.actor.add_constraint(backup_constraint);
+            this._panel.disconnect(callback);
         }
         this._master_volumes = [];
 

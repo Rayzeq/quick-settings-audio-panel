@@ -75,6 +75,13 @@ function fillPreferencesWindow(window) {
             ]
         }
     ));
+    main_group.add(create_switch(
+        settings, "fix-popups",
+        {
+            title: _("Overlay popups"),
+            subtitle: _("This feature will prevent the main panel from expanding when a popup is opened. It's mainly aimed at fixing a bug with popups in the new panel")
+        }
+    ));
 
     const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
         title: _("Elements order"),

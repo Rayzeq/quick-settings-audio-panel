@@ -166,7 +166,7 @@ class Extension {
         const new_constraint = new Clutter.BindConstraint({
             coordinate: Clutter.BindCoordinate.Y,
             source: slider,
-        })
+        });
         const callback = this._panel.connect(
             'notify::allocation',
             () => { new_constraint.offset = this._panel.allocation.y1 + slider.height; }

@@ -87,7 +87,7 @@ var ApplicationVolumeSlider = GObject.registerClass(
             hbox.remove_child(slider);
             hbox.insert_child_at_index(vbox, 1);
 
-            const label = new St.Label({ x_expand: true });
+            const label = new St.Label({ natural_width: 0 });
             label.style_class = "QSAP-application-volume-slider-label";
             label.text = `${stream.get_name()} - ${stream.get_description()}`;
 

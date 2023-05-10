@@ -72,7 +72,7 @@ class Extension {
         const fix_popups = this.settings.get_boolean("fix-popups");
         const widgets_ordering = this.settings.get_strv("ordering");
 
-        if(!merge_panel) {
+        if (!merge_panel) {
             // By default, QuickSettingsBox is the visual box you see, and QuickSettingsGrid is an invisible layout widget.
             // This extension make so that QuickSettingsBox is invisible and QuickSettingsGrid is the visual box,
             // in that way we can add siblings to QuickSettingsGrid to make new panels
@@ -82,11 +82,11 @@ class Extension {
             QuickSettingsGrid.style_class += " popup-menu-content quick-settings QSAP-panel-separated";
         }
 
-        if(move_master_volume || media_control_action !== "none" || create_mixer_sliders) {
+        if (move_master_volume || media_control_action !== "none" || create_mixer_sliders) {
             this._panel = new QuickSettingsPanel({ separated: !merge_panel });
 
-            if(merge_panel) {
-                if(panel_position === "left" || panel_position === "right") {
+            if (merge_panel) {
+                if (panel_position === "left" || panel_position === "right") {
                     this._qsglm_backup_ncolumns = QuickSettingsGrid.layout_manager.n_columns;
                     QuickSettingsGrid.layout_manager.n_columns = 4;
 
@@ -98,41 +98,41 @@ class Extension {
                     // Make the 'header' take all the width
                     QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, QuickSettingsGrid.get_children()[1], 'column-span', 4);
                 }
-                if(panel_position === "left" || panel_position === "top") {
+                if (panel_position === "left" || panel_position === "top") {
                     QuickSettingsGrid.insert_child_at_index(this._panel, 2);
                 } else {
                     QuickSettingsGrid.add_child(this._panel);
                 }
                 QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, this._panel, 'column-span', 2);
             } else {
-                if(panel_position === "left" || panel_position === "right") {
+                if (panel_position === "left" || panel_position === "right") {
                     this._qsb_backup_vertical = QuickSettingsBox.vertical;
                     QuickSettingsBox.vertical = false;
                     this._panel.width = QuickSettingsBox.get_children()[0].width;
                 }
-                if(panel_position === "left" || panel_position === "top") {
+                if (panel_position === "left" || panel_position === "top") {
                     QuickSettingsBox.insert_child_at_index(this._panel, 0);
                 } else {
                     QuickSettingsBox.add_child(this._panel);
                 }
             }
 
-            for(const widget of widgets_ordering) {
-                if(widget === "volume-output" && move_master_volume) {
+            for (const widget of widgets_ordering) {
+                if (widget === "volume-output" && move_master_volume) {
                     this._move_slider(OutputVolumeSlider);
-                } else if(widget === "volume-input" && move_master_volume) {
+                } else if (widget === "volume-input" && move_master_volume) {
                     this._move_slider(InputVolumeSlider);
-                } else if(widget === "media" && media_control_action === "move") {
+                } else if (widget === "media" && media_control_action === "move") {
                     this._move_media_controls();
-                } else if(widget === "media" && media_control_action === "duplicate") {
+                } else if (widget === "media" && media_control_action === "duplicate") {
                     this._create_media_controls();
-                } else if(widget === "mixer" && create_mixer_sliders) {
+                } else if (widget === "mixer" && create_mixer_sliders) {
                     this._create_app_mixer();
                 }
             }
         }
 
-        if(always_show_input) {
+        if (always_show_input) {
             this._ivssa_callback = InputVolumeSlider._control.connect("stream-added", () => {
                 InputVolumeSlider.visible = true;
                 InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
@@ -145,7 +145,7 @@ class Extension {
             InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
         }
 
-        if(fix_popups) {
+        if (fix_popups) {
             const placeholder = QuickSettings.menu._grid.layout_manager._overlay;
             this._qsphc_backup = placeholder.get_constraints()[0];
             placeholder.remove_constraint(this._qsphc_backup);
@@ -208,35 +208,35 @@ class Extension {
     }
 
     disable() {
-        if(this._qsphc_backup) {
+        if (this._qsphc_backup) {
             QuickSettings.menu._grid.layout_manager._overlay.add_constraint(this._qsphc_backup);
             this._qsphc_backup = null;
         }
-        if(this._ivssr_callback) {
+        if (this._ivssr_callback) {
             InputVolumeSlider.disconnect(this._ivssr_callback);
             this._ivssr_callback = null;
         }
-        if(this._ivssa_callback) {
+        if (this._ivssa_callback) {
             InputVolumeSlider.disconnect(this._ivssa_callback);
             this._ivssa_callback = null;
         }
         InputVolumeSlider.visible = InputVolumeSlider._shouldBeVisible();
         InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
 
-        if(this._qsb_backup_vertical) {
+        if (this._qsb_backup_vertical) {
             QuickSettingsBox.vertical = this._qsb_backup_vertical;
             this._qsb_backup_vertical = null;
         }
-        if(this._qsglm_backup_header_colspan) {
+        if (this._qsglm_backup_header_colspan) {
             QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, QuickSettingsGrid.get_children()[1], 'column-span', this._qsglm_backup_header_colspan);
             this._qsglm_backup_header_colspan = null;
         }
-        if(this._qsglm_backup_ncolumns) {
+        if (this._qsglm_backup_ncolumns) {
             QuickSettingsGrid.layout_manager.n_columns = this._qsglm_backup_ncolumns;
             this._qsglm_backup_ncolumns = null;
         }
 
-        if(this._applications_mixer) {
+        if (this._applications_mixer) {
             // Needs explicit destroy because it's `this._applications_mixer.actor` which is added to `self._panel`
             // and not directly `this._applications_mixer`
             this._applications_mixer.destroy();
@@ -244,7 +244,7 @@ class Extension {
         }
 
         this._media_section = null;
-        if(this._dmmc_backup_class && this._panel) {
+        if (this._dmmc_backup_class && this._panel) {
             this._panel.remove_child(DateMenuMediaControl);
             DateMenuMediaControlHolder.insert_child_at_index(DateMenuMediaControl, 0);
 
@@ -253,7 +253,7 @@ class Extension {
         }
 
         this._master_volumes.reverse();
-        for(const [slider, index, parent, backup_constraint, current_constraint, callback] of this._master_volumes) {
+        for (const [slider, index, parent, backup_constraint, current_constraint, callback] of this._master_volumes) {
             this._panel.remove_child(slider);
             parent.insert_child_at_index(slider, index);
 
@@ -263,15 +263,15 @@ class Extension {
         }
         this._master_volumes = [];
 
-        if(this._panel) {
+        if (this._panel) {
             this._panel.destroy();
             this._panel = null;
         }
-        if(this._qsb_backup_class) {
+        if (this._qsb_backup_class) {
             QuickSettingsBox.style_class = this._qsb_backup_class;
             this._qsb_backup_class = null;
         }
-        if(this._qsg_backup_class) {
+        if (this._qsg_backup_class) {
             QuickSettingsGrid.style_class = this._qsg_backup_class;
             this._qsg_backup_class = null;
         }

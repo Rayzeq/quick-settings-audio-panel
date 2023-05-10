@@ -17,6 +17,29 @@ var QuickSettingsPanel = GObject.registerClass(
                 style_class: separated ? " popup-menu-content quick-settings QSAP-panel-separated" : " QSAP-panel-merged",
                 ...options
             });
+
+            this.hide();
+        }
+
+        add_child(widget) {
+            if (widget.visible) {
+                this.show();
+            }
+            widget._qsap_show_callack = widget.connect("show", () => this.show());
+            widget._qsap_hide_callack = widget.connect_after("hide", () => {
+                for (const child of this.get_children()) {
+                    if (child.visible)
+                        return;
+                }
+                this.hide();
+            });
+            super.add_child(widget);
+        }
+
+        remove_child(widget) {
+            widget.disconnect(widget._qsap_show_callack);
+            widget.disconnect(widget._qsap_hide_callack);
+            super.remove_child(widget);
         }
     }
 )
@@ -25,6 +48,7 @@ var QuickSettingsPanel = GObject.registerClass(
 var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSection {
     constructor() {
         super();
+        this.actor.hide();
 
         this._sliders = {};
 
@@ -32,16 +56,16 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
         this._sr_event_id = this._mixer_control.connect("stream-removed", this._stream_removed.bind(this));
 
-        for(const stream of this._mixer_control.get_streams()) {
+        for (const stream of this._mixer_control.get_streams()) {
             this._stream_added(this._mixer_control, stream.get_id());
         }
     }
 
     _stream_added(control, id) {
-        if(id in this._sliders) return;
+        if (id in this._sliders) return;
 
         const stream = control.lookup_stream_id(id);
-        if(stream.is_event_stream || !(stream instanceof MixerSinkInput)) {
+        if (stream.is_event_stream || !(stream instanceof MixerSinkInput)) {
             return;
         }
 
@@ -51,13 +75,18 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         );
         this._sliders[id] = slider;
         this.actor.add(slider);
+        this.actor.show();
     }
 
     _stream_removed(control, id) {
-        if(id in this._sliders) {
+        if (id in this._sliders) {
             this._sliders[id].destroy();
             delete this._sliders[id];
         }
+
+        if (Object.keys(this._sliders).length === 0) {
+            this.actor.hide();
+        };
     }
 
     destroy() {

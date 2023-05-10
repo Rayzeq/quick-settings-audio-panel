@@ -45,7 +45,7 @@ function fillPreferencesWindow(window) {
             ]
         }
     ));
-    if(settings.get_strv("ordering").length != 4) {
+    if (settings.get_strv("ordering").length != 4) {
         settings.set_strv("ordering", ["volume-output", "volume-input", "media", "mixer"]);
     }
     main_group.add(create_switch(
@@ -163,7 +163,7 @@ const ReorderablePreferencesGroup = GObject.registerClass(
                 const data = this._settings.get_strv(this._key);
                 const source_index = data.indexOf(source.id);
                 const target_index = data.indexOf(target.id);
-                if(target_index < source_index) {
+                if (target_index < source_index) {
                     data.splice(source_index, 1); // remove 1 element at source_index
                     data.splice(target_index, 0, source.id) // insert source.id at target_index
                 } else {
@@ -179,46 +179,46 @@ const ReorderablePreferencesGroup = GObject.registerClass(
 );
 
 class DraggableRowClass extends Adw.ActionRow {
-        constructor(id, options) {
-            super(options);
+    constructor(id, options) {
+        super(options);
 
-            this.id = id;
+        this.id = id;
 
-            const drag_handle = new Gtk.Image({ icon_name: "list-drag-handle-symbolic" });
-            // css don't work
-            drag_handle.add_css_class("drag-handle");
-            this.add_prefix(drag_handle);
+        const drag_handle = new Gtk.Image({ icon_name: "list-drag-handle-symbolic" });
+        // css don't work
+        drag_handle.add_css_class("drag-handle");
+        this.add_prefix(drag_handle);
 
-            const drag_source = new Gtk.DragSource({ actions: Gdk.DragAction.MOVE });
-            drag_source.connect("prepare", (source, x, y) => {
-                this._drag_x = x;
-                this._drag_y = y;
-                return Gdk.ContentProvider.new_for_value(this);
-            });
-            drag_source.connect("drag-begin", (source, drag) => {
-                this._drag_widget = new Gtk.ListBox();
-                this._drag_widget.set_size_request(this.get_allocated_width(), this.get_allocated_height());
+        const drag_source = new Gtk.DragSource({ actions: Gdk.DragAction.MOVE });
+        drag_source.connect("prepare", (source, x, y) => {
+            this._drag_x = x;
+            this._drag_y = y;
+            return Gdk.ContentProvider.new_for_value(this);
+        });
+        drag_source.connect("drag-begin", (source, drag) => {
+            this._drag_widget = new Gtk.ListBox();
+            this._drag_widget.set_size_request(this.get_allocated_width(), this.get_allocated_height());
 
-                const row_copy = new DraggableRow("", options);
-                this._drag_widget.append(row_copy);
-                this._drag_widget.drag_highlight_row(row_copy);
+            const row_copy = new DraggableRow("", options);
+            this._drag_widget.append(row_copy);
+            this._drag_widget.drag_highlight_row(row_copy);
 
-                Gtk.DragIcon.get_for_drag(drag).set_child(this._drag_widget);
-                drag.set_hotspot(this._drag_x, this._drag_y);
-            });
-            this.add_controller(drag_source);
+            Gtk.DragIcon.get_for_drag(drag).set_child(this._drag_widget);
+            drag.set_hotspot(this._drag_x, this._drag_y);
+        });
+        this.add_controller(drag_source);
 
-            const drop_target = Gtk.DropTarget.new(DraggableRow, Gdk.DragAction.MOVE);
-            drop_target.preload = true;
-            drop_target.connect("drop", (target, value, x, y) => {
-                const source = value;
-                source.emit("move-row", this);
+        const drop_target = Gtk.DropTarget.new(DraggableRow, Gdk.DragAction.MOVE);
+        drop_target.preload = true;
+        drop_target.connect("drop", (target, value, x, y) => {
+            const source = value;
+            source.emit("move-row", this);
 
-                return true;
-            });
-            this.add_controller(drop_target);
-        }
+            return true;
+        });
+        this.add_controller(drop_target);
     }
+}
 
 const DraggableRow = GObject.registerClass({
     Signals: {

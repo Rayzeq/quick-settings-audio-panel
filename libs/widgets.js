@@ -6,43 +6,15 @@ const Volume = imports.ui.status.volume; // https://gitlab.gnome.org/GNOME/gnome
 
 const StreamSlider = imports.ui.main.panel.statusArea.quickSettings._volume._output.constructor;
 
-var QuickSettingsPanel = GObject.registerClass(
-    class QuickSettingsPanel extends St.BoxLayout {
-        constructor(options) {
-            const separated = options.separated;
-            delete options.separated;
+const QuickSettingsMenu = imports.ui.quickSettings.QuickSettingsMenu;
 
-            super({
-                vertical: true,
-                style_class: separated ? " popup-menu-content quick-settings QSAP-panel-separated" : " QSAP-panel-merged",
-                ...options
-            });
+var QuickSettingsPanel = class QuickSettingsPanel extends QuickSettingsMenu {
+    constructor(sourceActor, separated = true, nColumns = 2) {
+        super(sourceActor, nColumns);
 
-            this.hide();
-        }
-
-        add_child(widget) {
-            if (widget.visible) {
-                this.show();
-            }
-            widget._qsap_show_callack = widget.connect("show", () => this.show());
-            widget._qsap_hide_callack = widget.connect_after("hide", () => {
-                for (const child of this.get_children()) {
-                    if (child.visible)
-                        return;
-                }
-                this.hide();
-            });
-            super.add_child(widget);
-        }
-
-        remove_child(widget) {
-            widget.disconnect(widget._qsap_show_callack);
-            widget.disconnect(widget._qsap_hide_callack);
-            super.remove_child(widget);
-        }
+        this.actor.style_class = separated ? " popup-menu-content quick-settings QSAP-panel-separated" : " QSAP-panel-merged";
     }
-)
+}
 
 // This class is a modified version of VolumeMixer from quick-settings-tweaks@qwreey
 var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSection {

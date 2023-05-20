@@ -210,8 +210,7 @@ class DraggableRowClass extends Adw.ActionRow {
 
         const drop_target = Gtk.DropTarget.new(DraggableRow, Gdk.DragAction.MOVE);
         drop_target.preload = true;
-        drop_target.connect("drop", (target, value, x, y) => {
-            const source = value;
+        drop_target.connect("drop", (target, source, x, y) => {
             source.emit("move-row", this);
 
             return true;

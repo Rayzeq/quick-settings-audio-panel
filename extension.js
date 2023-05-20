@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-const { GObject, Clutter } = imports.gi;
+const { GObject, Clutter, St } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Gettext = imports.gettext;
 
@@ -38,11 +38,24 @@ const DateMenuNotifications = DateMenuHolder.get_children().find(item => item.co
 const DateMenuMediaControlHolder = DateMenuNotifications.last_child.first_child.last_child;
 const DateMenuMediaControl = DateMenuMediaControlHolder.first_child;
 
-const OutputVolumeSlider = imports.ui.main.panel.statusArea.quickSettings._volume._output;
-const InputVolumeSlider = imports.ui.main.panel.statusArea.quickSettings._volume._input;
-const InputVolumeIndicator = imports.ui.main.panel.statusArea.quickSettings._volume._inputIndicator;
+const OutputVolumeSlider = QuickSettings._volume._output;
+const InputVolumeSlider = QuickSettings._volume._input;
+const InputVolumeIndicator = QuickSettings._volume._inputIndicator;
 
 const { QuickSettingsPanel, ApplicationsMixer } = Self.imports.libs.widgets;
+const { LibPanel, Panel, PanelGroup } = Self.imports.libs.libpanel.main;
+
+// QuickSettingsMenu.actor (QuickSettings.menu.actor / StWidget.panel-menu)
+// ├─ Gjs_Boxpointer
+// │  ├─ StDrawingArea
+// │  └─ StBin
+// │     └─ QuickSettingsMenu.box (StBoxLayout)
+// │        ├─ QuickSettingsMenu._grid (StWidget.quick-settings-grid)
+// │        │  ╠═ layout_manager: QuickSettingsLayout
+// │        │  └─ Items of the panel
+// │        └─ this._panel (QuickSettingsPanel)
+// └─ QuickSettingsMenu._overlay / QuickSettingsLayout._overlay (ClutterActor)
+//    └─ Popups from quick settings
 
 class Extension {
     constructor() {
@@ -62,7 +75,83 @@ class Extension {
     }
 
     enable() {
-        this.settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.quick-settings-audio-panel');
+        // Main.panel.statusArea.quickSettings.menu._grid.get_children()[9].visible
+        /*this._menu_backup = QuickSettings.menu;
+        QuickSettings._menu_backup = this._menu_backup; // for lg access: m=Main.panel.statusArea.quickSettings.menu
+        QuickSettings.menu = null; // prevent old menu from being destroyed
+        Main.panel.menuManager.removeMenu(this._menu_backup);
+
+        QuickSettings.setMenu(grid);
+
+        QuickSettings.setMenu(this._menu_backup)
+        Main.panel.menuManager.addMenu(this._menu_backup);*/
+
+        LibPanel.enable("quick-settings-audio-panel");
+
+        const panel = new Panel('test-1', 2);
+
+        /*const a = QuickSettingsGrid.get_children()[1];
+        const b = QuickSettingsGrid.get_children()[5];
+        const c = QuickSettingsGrid.get_children()[6];
+        a.get_parent().remove_child(a);
+        b.get_parent().remove_child(b);
+        c.get_parent().remove_child(c);
+        panel.addItem(a, 2);
+        panel.addItem(b);
+        panel.addItem(c);*/
+
+        const label = St.Label.new("0, 0 aaa");
+        label.style_class = "quick-settings-system-item";
+        panel.addItem(label);
+
+        const panel2 = new Panel('test-2', 2);
+        const label1 = St.Label.new("dfhfdkjgfkfyyu");
+        label1.style_class = "quick-settings-system-item";
+        panel2.addItem(label1);
+        const label2 = St.Label.new("dfhfdkjgfkfyyu");
+        label2.style_class = "quick-settings-system-item";
+        panel2.addItem(label2);
+        const label3 = St.Label.new("dfhfdkjgfkfyyu");
+        label3.style_class = "quick-settings-system-item";
+        panel2.addItem(label3);
+        const label4 = St.Label.new("dfhfdkjgfkfyyu");
+        label4.style_class = "quick-settings-system-item";
+        panel2.addItem(label4);
+        const label5 = St.Label.new("dfhfdkjgfkfyyu");
+        label5.style_class = "quick-settings-system-item";
+        panel2.addItem(label5);
+        const label6 = St.Label.new("dfhfdkjgfkfyyu");
+        label6.style_class = "quick-settings-system-item";
+        panel2.addItem(label6);
+        const label7 = St.Label.new("dfhfdkjgfkfyyu");
+        label7.style_class = "quick-settings-system-item";
+        panel2.addItem(label7);
+        const label8 = St.Label.new("dfhfdkjgfkfyyu\ngfdgggerg_ ge\nefgergerger\negregerge\nefezdf\nsfregte");
+        label8.style_class = "quick-settings-system-item";
+        panel2.addItem(label8);
+        const button = new imports.ui.quickSettings.QuickToggle({ title: "aaaaaaaaa" });
+        panel2.addItem(button);
+        const label9 = St.Label.new("dfhfdkjgfkfyyu\ngfdgggerg_ ge\nefgergerger\negregerge\nefezdf\nsfregte");
+        label9.style_class = "quick-settings-system-item";
+        panel2.addItem(label9);
+        const label10 = St.Label.new("dfhfdkjgfkfyyu\ngfdgggerg_ ge\nefgergerger\negregerge\nefezdf\nsfregte");
+        label10.style_class = "quick-settings-system-item";
+        panel2.addItem(label10);
+
+        LibPanel.addPanel(panel2);
+        LibPanel.addPanel(new PanelGroup('test-group', { panels: [panel] }));
+
+        /*Main.layoutManager.disconnectObject(Main.panel.statusArea.quickSettings._menu_backup)
+        const [_, signal_id, signal_detail] = GObject.signal_parse_name('system-modal-opened', Main.layoutManager.constructor.$gtype, false);
+        GObject.signal_handlers_block_matched(Main.layoutManager, { data: Main.panel.statusArea.quickSettings._menu_backup, detail: signal_detail, signal_id: signal_id })
+        for(const signal of GObject.signal_list_ids(Main.layoutManager)) {
+            log(GObject.signal_query(signal))
+            GObject.signal_handler_block(Main.layoutManager, signal)
+        }*/
+
+        //Main.uiGroup.remove_child(Main.panel.statusArea.quickSettings._menu_backup)
+        //https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Virtual-devices?version_id=2366658e8c18457f3dc400b14f46789cba2eddcc#create-a-sink
+        /*this.settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.quick-settings-audio-panel');
         const move_master_volume = this.settings.get_boolean("move-master-volume");
         const always_show_input = this.settings.get_boolean("always-show-input-slider");
         const media_control_action = this.settings.get_string("media-control");
@@ -83,7 +172,7 @@ class Extension {
         }
 
         if (move_master_volume || media_control_action !== "none" || create_mixer_sliders) {
-            this._panel = new QuickSettingsPanel({ separated: !merge_panel });
+            this._panel = new QuickSettingsPanel(QuickSettings.menu.sourceActor, !merge_panel, 2);
 
             if (merge_panel) {
                 if (panel_position === "left" || panel_position === "right") {
@@ -99,21 +188,21 @@ class Extension {
                     QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, QuickSettingsGrid.get_children()[1], 'column-span', 4);
                 }
                 if (panel_position === "left" || panel_position === "top") {
-                    QuickSettingsGrid.insert_child_at_index(this._panel, 2);
+                    QuickSettingsGrid.insert_child_at_index(this._panel.actor, 2);
                 } else {
-                    QuickSettingsGrid.add_child(this._panel);
+                    QuickSettingsGrid.add_child(this._panel.actor);
                 }
-                QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, this._panel, 'column-span', 2);
+                QuickSettingsGrid.layout_manager.child_set_property(QuickSettingsGrid, this._panel.actor, 'column-span', 2);
             } else {
                 if (panel_position === "left" || panel_position === "right") {
                     this._qsb_backup_vertical = QuickSettingsBox.vertical;
                     QuickSettingsBox.vertical = false;
-                    this._panel.width = QuickSettingsBox.get_children()[0].width;
+                    this._panel.actor.width = QuickSettingsBox.get_children()[0].width;
                 }
                 if (panel_position === "left" || panel_position === "top") {
-                    QuickSettingsBox.insert_child_at_index(this._panel, 0);
+                    QuickSettingsBox.insert_child_at_index(this._panel.actor, 0);
                 } else {
-                    QuickSettingsBox.add_child(this._panel);
+                    QuickSettings.menu.actor.add_child(this._panel.actor);
                 }
             }
 
@@ -149,15 +238,19 @@ class Extension {
             const placeholder = QuickSettings.menu._grid.layout_manager._overlay;
             this._qsphc_backup = placeholder.get_constraints()[0];
             placeholder.remove_constraint(this._qsphc_backup);
-        }
+        }*/
     }
 
     _move_slider(slider) {
         const parent = slider.get_parent();
         const index = parent.get_children().indexOf(slider);
 
+        const menu = slider.menu.actor;
+        const menu_parent = menu.get_parent();
+
         parent.remove_child(slider);
-        this._panel.add_child(slider);
+        menu_parent.remove_child(menu);
+        this._panel.addItem(slider, 2);
 
         // Move menu to change input / output
         const menu_constraint = slider.menu.actor.get_constraints()[0];
@@ -186,7 +279,7 @@ class Extension {
 
     _move_media_controls() {
         DateMenuMediaControlHolder.remove_child(DateMenuMediaControl);
-        this._panel.add_child(DateMenuMediaControl);
+        this._panel.addItem(DateMenuMediaControl, 2);
         this._dmmc_backup_class = DateMenuMediaControl.style_class;
         DateMenuMediaControl.style_class += " QSAP-media-section";
     }
@@ -197,17 +290,18 @@ class Extension {
         this._media_section = datemenu_widget._messageList._mediaSection;
         this._media_section.get_parent().remove_child(this._media_section);
         this._media_section.style_class += " QSAP-media-section";
-        this._panel.add_child(this._media_section);
+        this._panel.addItem(this._media_section, 2);
 
         datemenu_widget.destroy();
     }
 
     _create_app_mixer() {
         this._applications_mixer = new ApplicationsMixer();
-        this._panel.add_child(this._applications_mixer.actor);
+        this._panel.addItem(this._applications_mixer.actor, 2);
     }
 
     disable() {
+        LibPanel.disable("quick-settings-audio-panel");
         if (this._qsphc_backup) {
             QuickSettings.menu._grid.layout_manager._overlay.add_constraint(this._qsphc_backup);
             this._qsphc_backup = null;

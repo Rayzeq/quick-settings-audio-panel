@@ -1,5 +1,6 @@
 build:
 	xgettext --from-code=UTF-8 --output=po/example.pot *.js
+	glib-compile-schemas libs/libpanel/
 	gnome-extensions pack --extra-source=LICENSE --extra-source=libs --podir=po --force
 
 install: build

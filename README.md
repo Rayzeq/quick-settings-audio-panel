@@ -23,6 +23,8 @@ When changing the settings, it is necessary to disable and re-enable the extensi
 
 **The layout will be completly broken if you merge the sound panel in the main one with an horizontal layout** (everything works correctly but it looks terrible).
 
+The Bluetooth menu is overflowing on the other quick settings below. It's a known issue that is also present in the original panel, and I can't fix it.
+
 Compatibility
 -------------
 

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-07 02:11+0200\n"
-"PO-Revision-Date: 2023-05-07 02:13+0200\n"
+"POT-Creation-Date: 2023-05-23 22:43+0200\n"
+"PO-Revision-Date: 2023-05-23 22:52+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -110,7 +110,7 @@ msgid ""
 msgstr ""
 "Cette fonctionnalité empêchera le panneau principal de s'étendre lorsqu'un "
 "popup est ouvert. Elle est principalement destinée à corriger un bug avec "
-"les popups dans le nouveau panneau."
+"les popups dans le nouveau panneau"
 
 #: prefs.js:87
 msgid "Elements order"
@@ -134,3 +134,35 @@ msgstr "Curseur de volume du microphone"
 #: prefs.js:93
 msgid "Applications mixer"
 msgstr "Mélangeur d'applications"
+
+#: prefs.js:97
+msgid "Mixer filtering"
+msgstr "Filtrage du mélangeur"
+
+#: prefs.js:98
+msgid ""
+"Allow you to filter the streams that show up in the application mixer "
+"**using regexes**"
+msgstr ""
+"Permet de filtrer les curseurs qui s'affichent dans le mélangeur "
+"d'applications **en utilisant des expressions régulières**"
+
+#: prefs.js:104
+msgid "Filtering mode"
+msgstr "Mode de filtrage"
+
+#: prefs.js:105
+msgid ""
+"On blacklist mode, matching elements are removed from the list. On whitelist "
+"mode, only matching elements will be shown"
+msgstr ""
+"En mode liste noire, les éléments correspondants sont supprimés de la liste. "
+"En mode liste blanche, seuls les éléments correspondants sont affichés"
+
+#: prefs.js:107
+msgid "Blacklist"
+msgstr "Liste noire"
+
+#: prefs.js:108
+msgid "Whitelist"
+msgstr "Liste blanche"

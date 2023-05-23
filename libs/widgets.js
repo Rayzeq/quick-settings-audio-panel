@@ -73,7 +73,6 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
         var matched = false;
         for (const filter of this.filters) {
-            console.log("Searching", filter, "against", stream.get_name(), "and", "stream.get_description()")
             if ((stream.get_name().search(filter) > -1) || (stream.get_description().search(filter) > -1)) {
                 if (this.filter_mode === 'blacklist') return;
                 matched = true;

@@ -92,9 +92,57 @@ function fillPreferencesWindow(window) {
     widgets_order_group.add(new DraggableRow("media", { title: _("Media controls") }));
     widgets_order_group.add(new DraggableRow("mixer", { title: _("Applications mixer") }));
 
+    const add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
+    const mixer_filter_group = new Adw.PreferencesGroup({
+        title: _("Mixer filtering"),
+        description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
+        header_suffix: add_filter_button
+    });
+    mixer_filter_group.add(create_dropdown(
+        settings, "filter-mode",
+        {
+            title: _("Filtering mode"),
+            subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
+            fields: [
+                ["blacklist", _("Blacklist")],
+                ["whitelist", _("Whitelist")],
+            ]
+        }
+    ));
+    const filters = [];
+    const create_filter_row = (text) => {
+        const new_row = new Adw.EntryRow();
+        if (text != undefined) new_row.text = text;
+
+        const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
+        delete_button.connect('clicked', () => {
+            mixer_filter_group.remove(new_row);
+            filters.splice(filters.indexOf(new_row), 1);
+            save_filters(settings, filters);
+        });
+        new_row.add_suffix(delete_button);
+
+        new_row.connect('changed', () => save_filters(settings, filters));
+
+        filters.push(new_row);
+        mixer_filter_group.add(new_row);
+    };
+    add_filter_button.connect('clicked', () => {
+        create_filter_row();
+    });
+
+    for (const filter of settings.get_strv('filters')) {
+        create_filter_row(filter);
+    }
+
     page.add(main_group);
     page.add(widgets_order_group);
+    page.add(mixer_filter_group);
     window.add(page);
+}
+
+function save_filters(settings, filters) {
+    settings.set_strv('filters', filters.map(filter => filter.text));
 }
 
 function create_switch(settings, id, options) {

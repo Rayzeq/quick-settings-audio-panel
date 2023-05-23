@@ -72,6 +72,9 @@ class Extension {
         const fix_popups = this.settings.get_boolean("fix-popups");
         const widgets_ordering = this.settings.get_strv("ordering");
 
+        const filter_mode = this.settings.get_string("filter-mode");
+        const filters = this.settings.get_strv("filters");
+
         if (!merge_panel) {
             // By default, QuickSettingsBox is the visual box you see, and QuickSettingsGrid is an invisible layout widget.
             // This extension make so that QuickSettingsBox is invisible and QuickSettingsGrid is the visual box,
@@ -127,7 +130,7 @@ class Extension {
                 } else if (widget === "media" && media_control_action === "duplicate") {
                     this._create_media_controls();
                 } else if (widget === "mixer" && create_mixer_sliders) {
-                    this._create_app_mixer();
+                    this._create_app_mixer(filter_mode, filters);
                 }
             }
         }
@@ -202,8 +205,8 @@ class Extension {
         datemenu_widget.destroy();
     }
 
-    _create_app_mixer() {
-        this._applications_mixer = new ApplicationsMixer();
+    _create_app_mixer(filter_mode, filters) {
+        this._applications_mixer = new ApplicationsMixer(filter_mode, filters);
         this._panel.add_child(this._applications_mixer.actor);
     }
 

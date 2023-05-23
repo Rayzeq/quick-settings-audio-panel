@@ -46,11 +46,13 @@ var QuickSettingsPanel = GObject.registerClass(
 
 // This class is a modified version of VolumeMixer from quick-settings-tweaks@qwreey
 var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSection {
-    constructor() {
+    constructor(filter_mode, filters) {
         super();
         this.actor.hide();
 
         this._sliders = {};
+        this.filter_mode = filter_mode;
+        this.filters = filters.map(f => new RegExp(f));
 
         this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
@@ -68,6 +70,16 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         if (stream.is_event_stream || !(stream instanceof MixerSinkInput)) {
             return;
         }
+
+        var matched = false;
+        for (const filter of this.filters) {
+            console.log("Searching", filter, "against", stream.get_name(), "and", "stream.get_description()")
+            if ((stream.get_name().search(filter) > -1) || (stream.get_description().search(filter) > -1)) {
+                if (this.filter_mode === 'blacklist') return;
+                matched = true;
+            }
+        }
+        if (!matched && this.filter_mode === 'whitelist') return;
 
         const slider = new ApplicationVolumeSlider(
             this._mixer_control,

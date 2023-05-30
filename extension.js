@@ -26,6 +26,7 @@ const _ = Domain.gettext;
 const ngettext = Domain.ngettext;
 
 const Main = imports.ui.main;
+const { MediaSection } = imports.ui.mpris;
 
 const QuickSettings = Main.panel.statusArea.quickSettings;
 const QuickSettingsBox = QuickSettings.menu.box;
@@ -195,14 +196,9 @@ class Extension {
     }
 
     _create_media_controls() {
-        const datemenu_widget = new imports.ui.dateMenu.DateMenuButton();
-
-        this._media_section = datemenu_widget._messageList._mediaSection;
-        this._media_section.get_parent().remove_child(this._media_section);
+        this._media_section = new MediaSection();
         this._media_section.style_class += " QSAP-media-section";
         this._panel.add_child(this._media_section);
-
-        datemenu_widget.destroy();
     }
 
     _create_app_mixer(filter_mode, filters) {

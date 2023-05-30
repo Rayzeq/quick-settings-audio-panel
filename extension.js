@@ -174,7 +174,7 @@ class Extension {
             'notify::allocation',
             () => { new_constraint.offset = this._panel.allocation.y1 + slider.height; }
         );
-        slider.bind_property_full(
+        const constraint_binding = slider.bind_property_full(
             'height',
             new_constraint, 'offset',
             GObject.BindingFlags.SYNC_CREATE,
@@ -184,7 +184,7 @@ class Extension {
         );
         slider.menu.actor.add_constraint(new_constraint);
 
-        this._master_volumes.push([slider, index, parent, menu_constraint, new_constraint, callback]);
+        this._master_volumes.push([slider, index, parent, menu_constraint, new_constraint, constraint_binding, callback]);
     }
 
     _move_media_controls() {
@@ -256,10 +256,11 @@ class Extension {
         }
 
         this._master_volumes.reverse();
-        for (const [slider, index, parent, backup_constraint, current_constraint, callback] of this._master_volumes) {
+        for (const [slider, index, parent, backup_constraint, current_constraint, constraint_binding, callback] of this._master_volumes) {
             this._panel.remove_child(slider);
             parent.insert_child_at_index(slider, index);
 
+            constraint_binding.unbind();
             slider.menu.actor.remove_constraint(current_constraint);
             slider.menu.actor.add_constraint(backup_constraint);
             this._panel.disconnect(callback);

@@ -26,6 +26,7 @@ const _ = Domain.gettext;
 const ngettext = Domain.ngettext;
 
 const Main = imports.ui.main;
+const { MediaSection } = imports.ui.mpris;
 
 const QuickSettings = Main.panel.statusArea.quickSettings;
 const QuickSettingsBox = QuickSettings.menu.box;
@@ -267,7 +268,7 @@ class Extension {
             'notify::allocation',
             () => { new_constraint.offset = this._panel.allocation.y1 + slider.height; }
         );
-        slider.bind_property_full(
+        const constraint_binding = slider.bind_property_full(
             'height',
             new_constraint, 'offset',
             GObject.BindingFlags.SYNC_CREATE,
@@ -277,7 +278,7 @@ class Extension {
         );
         slider.menu.actor.add_constraint(new_constraint);
 
-        this._master_volumes.push([slider, index, parent, menu_constraint, new_constraint, callback]);
+        this._master_volumes.push([slider, index, parent, menu_constraint, new_constraint, constraint_binding, callback]);
     }
 
     _move_media_controls() {
@@ -288,14 +289,9 @@ class Extension {
     }
 
     _create_media_controls() {
-        const datemenu_widget = new imports.ui.dateMenu.DateMenuButton();
-
-        this._media_section = datemenu_widget._messageList._mediaSection;
-        this._media_section.get_parent().remove_child(this._media_section);
+        this._media_section = new MediaSection();
         this._media_section.style_class += " QSAP-media-section";
         this._panel.addItem(this._media_section, 2);
-
-        datemenu_widget.destroy();
     }
 
     _create_app_mixer(filter_mode, filters) {
@@ -350,10 +346,11 @@ class Extension {
         }
 
         this._master_volumes.reverse();
-        for (const [slider, index, parent, backup_constraint, current_constraint, callback] of this._master_volumes) {
+        for (const [slider, index, parent, backup_constraint, current_constraint, constraint_binding, callback] of this._master_volumes) {
             this._panel.remove_child(slider);
             parent.insert_child_at_index(slider, index);
 
+            constraint_binding.unbind();
             slider.menu.actor.remove_constraint(current_constraint);
             slider.menu.actor.add_constraint(backup_constraint);
             this._panel.disconnect(callback);

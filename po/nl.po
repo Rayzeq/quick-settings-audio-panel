@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-29 14:05+0200\n"
-"PO-Revision-Date: 2023-04-30 17:37+0200\n"
+"POT-Creation-Date: 2023-05-23 22:43+0200\n"
+"PO-Revision-Date: 2023-05-26 11:14+0200\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: Dutch\n"
 "Language: nl\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.3.1\n"
 
 #: prefs.js:25
 msgid "Move master volume sliders"
@@ -34,7 +34,7 @@ msgstr "Microfoonvolumeknop altijd tonen"
 msgid "Show even when there is no application recording audio"
 msgstr "Toon de schuifknop ook als er geen opnametoepassing actief is"
 
-#: prefs.js:39 prefs.js:85
+#: prefs.js:39 prefs.js:92
 msgid "Media controls"
 msgstr "Mediabediening"
 
@@ -63,8 +63,8 @@ msgid ""
 "Thoses sliders are the same you can find in pavucontrol or in the sound "
 "settings"
 msgstr ""
-"Dit zijn de schuifknoppen uit pavucontrol en de geluidsvoorkeuren van "
-"het systeem"
+"Dit zijn de schuifknoppen uit pavucontrol en de geluidsvoorkeuren van het "
+"systeem"
 
 #: prefs.js:61
 msgid "Merge the new panel into the main one"
@@ -80,8 +80,7 @@ msgstr "Balklocatie"
 
 #: prefs.js:69
 msgid "Where the new panel should be located relative to the main panel"
-msgstr ""
-"Waar de balk dient te worden getoond ten opzichte van de hoofdbalk"
+msgstr "Waar de balk dient te worden getoond ten opzichte van de hoofdbalk"
 
 #: prefs.js:71
 msgid "Left"
@@ -99,24 +98,69 @@ msgstr "Bovenaan"
 msgid "Bottom"
 msgstr "Onderaan"
 
-#: prefs.js:80
+#: prefs.js:81
+msgid "Overlay popups"
+msgstr "Zwevende pop-ups"
+
+#: prefs.js:82
+msgid ""
+"This feature will prevent the main panel from expanding when a popup is "
+"opened. It's mainly aimed at fixing a bug with popups in the new panel"
+msgstr ""
+"Met behulp van deze functie wordt de bovenbalk niet vergroot als er een pop-"
+"up wordt geopend. Deze functie is vooral gericht op een bug met betrekking "
+"tot pop-ups op de nieuwe bovenbalk."
+
+#: prefs.js:87
 msgid "Elements order"
 msgstr "Itemvolgorde"
 
-#: prefs.js:81
+#: prefs.js:88
 msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
 "Herschik items op de nieuwe balk (uitgeschakelde items worden genegeerd)"
 
-#: prefs.js:83
+#: prefs.js:90
 msgid "Speaker / Headphone volume slider"
 msgstr "Luidspreker-/Hoofdtelefoonvolumeknop"
 
-#: prefs.js:84
+#: prefs.js:91
 msgid "Microphone volume slider"
 msgstr "Microfoonvolumeknop"
 
-#: prefs.js:86
+#: prefs.js:93
 msgid "Applications mixer"
 msgstr "Toepassingsmengpaneel"
+
+#: prefs.js:97
+msgid "Mixer filtering"
+msgstr "Mengpaneelfilter"
+
+#: prefs.js:98
+msgid ""
+"Allow you to filter the streams that show up in the application mixer "
+"**using regexes**"
+msgstr ""
+"Hiermee kunt u het toepassingsmengpaneel filteren met behulp van **reguliere "
+"uitdrukkingen**"
+
+#: prefs.js:104
+msgid "Filtering mode"
+msgstr "Filtermodus"
+
+#: prefs.js:105
+msgid ""
+"On blacklist mode, matching elements are removed from the list. On whitelist "
+"mode, only matching elements will be shown"
+msgstr ""
+"In de zwartelijstmodus worden items die overeenkomen verwijderd van de "
+"lijst. In de wittelijstmodus worden alleen overeenkomende elementen getoond."
+
+#: prefs.js:107
+msgid "Blacklist"
+msgstr "Zwarte lijst"
+
+#: prefs.js:108
+msgid "Whitelist"
+msgstr "Witte lijst"

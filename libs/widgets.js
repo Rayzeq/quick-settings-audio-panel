@@ -118,6 +118,9 @@ var ApplicationVolumeSlider = GObject.registerClass(
             // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
             // Note that icons can't be found anyway
             this._icons = [stream.get_icon_name()];
+            if (stream.get_name() != null && stream.get_icon_name()=="applications-multimedia") {
+                this._icons = [stream.get_name().toLowerCase()]
+            }
             this.stream = stream;
 
             const vbox = new St.BoxLayout({ vertical: true });

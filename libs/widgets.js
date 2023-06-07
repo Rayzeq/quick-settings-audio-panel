@@ -73,7 +73,7 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
         var matched = false;
         for (const filter of this.filters) {
-            if ((stream.get_name().search(filter) > -1) || (stream.get_description().search(filter) > -1)) {
+            if ((stream.get_name()?.search(filter) > -1) || (stream.get_description().search(filter) > -1)) {
                 if (this.filter_mode === 'blacklist') return;
                 matched = true;
             }
@@ -129,7 +129,11 @@ var ApplicationVolumeSlider = GObject.registerClass(
 
             const label = new St.Label({ natural_width: 0 });
             label.style_class = "QSAP-application-volume-slider-label";
-            label.text = `${stream.get_name()} - ${stream.get_description()}`;
+            if (stream.get_name() == null) {
+                label.text = `${stream.get_description()}`;
+            } else {
+                label.text = `${stream.get_name()} - ${stream.get_description()}`;
+            }
 
             vbox.add(label);
             vbox.add(slider);

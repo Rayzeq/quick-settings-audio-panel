@@ -132,14 +132,21 @@ var ApplicationVolumeSlider = GObject.registerClass(
 
             const label = new St.Label({ natural_width: 0 });
             label.style_class = "QSAP-application-volume-slider-label";
-            if (stream.get_name() == null) {
-                label.text = `${stream.get_description()}`;
-            } else {
-                label.text = `${stream.get_name()} - ${stream.get_description()}`;
-            }
+            stream.bind_property_full('description', label, 'text',
+                GObject.BindingFlags.SYNC_CREATE,
+                (binding, value) => {
+                    return [true, this._get_label_text(stream)];
+                },
+                null
+            );
 
             vbox.add(label);
             vbox.add(slider);
+        }
+
+        _get_label_text(stream) {
+            const { name, description } = stream;
+            return name === null ? description : `${name} - ${description}`
         }
     }
 )

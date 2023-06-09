@@ -53,6 +53,7 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         this._sliders = {};
         this.filter_mode = filter_mode;
         this.filters = filters.map(f => new RegExp(f));
+        this._icon_theme = St.IconTheme.new();
 
         this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
@@ -82,7 +83,8 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
         const slider = new ApplicationVolumeSlider(
             this._mixer_control,
-            stream
+            stream,
+            this._icon_theme
         );
         this._sliders[id] = slider;
         this.actor.add(slider);
@@ -112,12 +114,15 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
 var ApplicationVolumeSlider = GObject.registerClass(
     class ApplicationVolumeSlider extends StreamSlider {
-        constructor(control, stream) {
+        constructor(control, stream, icon_theme) {
             super(control);
 
             // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
             // Note that icons can't be found anyway
             this._icons = [stream.get_icon_name()];
+            if (stream.get_name() != null && icon_theme.has_icon(stream.get_name().toLowerCase())) {
+                this._icons = [stream.get_name().toLowerCase()]
+            }
             this.stream = stream;
 
             const vbox = new St.BoxLayout({ vertical: true });

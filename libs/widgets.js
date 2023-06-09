@@ -51,16 +51,16 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         this.actor.hide();
 
         this._sliders = {};
-        this.filter_mode = filter_mode;
-        this.filters = filters.map(f => new RegExp(f));
-        this._icon_theme = St.IconTheme.new();
+        this._filter_mode = filter_mode;
+        this._filters = filters.map(f => new RegExp(f));
+        this._icon_theme = new St.IconTheme();
 
         this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
         this._sr_event_id = this._mixer_control.connect("stream-removed", this._stream_removed.bind(this));
 
         for (const stream of this._mixer_control.get_streams()) {
-            this._stream_added(this._mixer_control, stream.get_id());
+            this._stream_added(this._mixer_control, stream.id);
         }
     }
 
@@ -73,13 +73,13 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         }
 
         var matched = false;
-        for (const filter of this.filters) {
-            if ((stream.get_name()?.search(filter) > -1) || (stream.get_description().search(filter) > -1)) {
-                if (this.filter_mode === 'blacklist') return;
+        for (const filter of this._filters) {
+            if ((stream.name?.search(filter) > -1) || (stream.description.search(filter) > -1)) {
+                if (this._filter_mode === 'blacklist') return;
                 matched = true;
             }
         }
-        if (!matched && this.filter_mode === 'whitelist') return;
+        if (!matched && this._filter_mode === 'whitelist') return;
 
         const slider = new ApplicationVolumeSlider(
             this._mixer_control,
@@ -91,7 +91,7 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         this.actor.show();
     }
 
-    _stream_removed(control, id) {
+    _stream_removed(_control, id) {
         if (id in this._sliders) {
             this._sliders[id].destroy();
             delete this._sliders[id];
@@ -117,11 +117,10 @@ var ApplicationVolumeSlider = GObject.registerClass(
         constructor(control, stream, icon_theme) {
             super(control);
 
-            // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
-            // Note that icons can't be found anyway
+            // Those lines need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
             this._icons = [stream.get_icon_name()];
-            if (stream.get_name() != null && icon_theme.has_icon(stream.get_name().toLowerCase())) {
-                this._icons = [stream.get_name().toLowerCase()]
+            if (stream.name != null && icon_theme.has_icon(stream.name.toLowerCase())) {
+                this._icons = [stream.name.toLowerCase()]
             }
             this.stream = stream;
 

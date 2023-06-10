@@ -117,12 +117,11 @@ var ApplicationVolumeSlider = GObject.registerClass(
         constructor(control, stream, icon_theme) {
             super(control);
 
-            // Those lines need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
-            this._icons = [stream.get_icon_name()];
-            if (stream.name != null && icon_theme.has_icon(stream.name.toLowerCase())) {
-                this._icons = [stream.name.toLowerCase()]
-            }
+            // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
+            this._icons = [stream.icon_name];
             this.stream = stream;
+            // And this one need to be after this.stream assignement.
+            this._icon.fallback_icon_name = stream.name.toLowerCase();
 
             const vbox = new St.BoxLayout({ vertical: true });
 

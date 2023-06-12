@@ -42,7 +42,7 @@ var QuickSettingsPanel = GObject.registerClass(
             super.remove_child(widget);
         }
     }
-)
+);
 
 // This class is a modified version of VolumeMixer from quick-settings-tweaks@qwreey
 var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSection {
@@ -110,7 +110,7 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
         super.destroy();
     }
-}
+};
 
 var ApplicationVolumeSlider = GObject.registerClass(
     class ApplicationVolumeSlider extends StreamSlider {
@@ -118,10 +118,10 @@ var ApplicationVolumeSlider = GObject.registerClass(
             super(control);
 
             // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
-            this._icons = [stream.icon_name];
+            this._icons = [stream.name.toLowerCase()];
             this.stream = stream;
             // And this one need to be after this.stream assignement.
-            this._icon.fallback_icon_name = stream.name.toLowerCase();
+            this._icon.fallback_icon_name = stream.icon_name;
 
             const vbox = new St.BoxLayout({ vertical: true });
 
@@ -146,7 +146,7 @@ var ApplicationVolumeSlider = GObject.registerClass(
 
         _get_label_text(stream) {
             const { name, description } = stream;
-            return name === null ? description : `${name} - ${description}`
+            return name === null ? description : `${name} - ${description}`;
         }
     }
-)
+);

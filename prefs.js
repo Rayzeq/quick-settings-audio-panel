@@ -178,7 +178,7 @@ function create_dropdown(settings, id, options) {
 
     row.connect('notify::selected', () => {
         settings.set_string(id, fields[row.selected][0]);
-    })
+    });
 
     return row;
 }
@@ -213,14 +213,14 @@ const ReorderablePreferencesGroup = GObject.registerClass(
                 const target_index = data.indexOf(target.id);
                 if (target_index < source_index) {
                     data.splice(source_index, 1); // remove 1 element at source_index
-                    data.splice(target_index, 0, source.id) // insert source.id at target_index
+                    data.splice(target_index, 0, source.id); // insert source.id at target_index
                 } else {
-                    data.splice(target_index + 1, 0, source.id) // insert source.id at target_index
+                    data.splice(target_index + 1, 0, source.id); // insert source.id at target_index
                     data.splice(source_index, 1); // remove 1 element at source_index
                 }
                 this._settings.set_strv(this._key, data);
                 this._list_box.invalidate_sort();
-            })
+            });
             this._list_box.append(row);
         }
     }

@@ -116,7 +116,7 @@ var ApplicationVolumeSlider = GObject.registerClass(
             super(control);
 
             // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
-            this._icons = [stream.name.toLowerCase()];
+            this._icons = [stream.name ? stream.name.toLowerCase() : stream.icon_name];
             this.stream = stream;
             // And this one need to be after this.stream assignement.
             this._icon.fallback_icon_name = stream.icon_name;

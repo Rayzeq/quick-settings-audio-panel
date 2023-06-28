@@ -43,20 +43,9 @@ const OutputVolumeSlider = QuickSettings._volume._output;
 const InputVolumeSlider = QuickSettings._volume._input;
 const InputVolumeIndicator = QuickSettings._volume._inputIndicator;
 
-const { QuickSettingsPanel, ApplicationsMixer } = Self.imports.libs.widgets;
-const { LibPanel, Panel, PanelGroup } = Self.imports.libs.libpanel.main;
+//const { QuickSettingsPanel, ApplicationsMixer } = Self.imports.libs.widgets;
+const { LibPanel, Panel } = Self.imports.libpanel.main;
 
-// QuickSettingsMenu.actor (QuickSettings.menu.actor / StWidget.panel-menu)
-// ├─ Gjs_Boxpointer
-// │  ├─ StDrawingArea
-// │  └─ StBin
-// │     └─ QuickSettingsMenu.box (StBoxLayout)
-// │        ├─ QuickSettingsMenu._grid (StWidget.quick-settings-grid)
-// │        │  ╠═ layout_manager: QuickSettingsLayout
-// │        │  └─ Items of the panel
-// │        └─ this._panel (QuickSettingsPanel)
-// └─ QuickSettingsMenu._overlay / QuickSettingsLayout._overlay (ClutterActor)
-//    └─ Popups from quick settings
 
 class Extension {
     constructor() {
@@ -76,82 +65,8 @@ class Extension {
     }
 
     enable() {
-        // Main.panel.statusArea.quickSettings.menu._grid.get_children()[9].visible
-        /*this._menu_backup = QuickSettings.menu;
-        QuickSettings._menu_backup = this._menu_backup; // for lg access: m=Main.panel.statusArea.quickSettings.menu
-        QuickSettings.menu = null; // prevent old menu from being destroyed
-        Main.panel.menuManager.removeMenu(this._menu_backup);
+        LibPanel.enable();
 
-        QuickSettings.setMenu(grid);
-
-        QuickSettings.setMenu(this._menu_backup)
-        Main.panel.menuManager.addMenu(this._menu_backup);*/
-
-        LibPanel.enable("quick-settings-audio-panel");
-
-        const panel = new Panel('test-1', 2);
-
-        /*const a = QuickSettingsGrid.get_children()[1];
-        const b = QuickSettingsGrid.get_children()[5];
-        const c = QuickSettingsGrid.get_children()[6];
-        a.get_parent().remove_child(a);
-        b.get_parent().remove_child(b);
-        c.get_parent().remove_child(c);
-        panel.addItem(a, 2);
-        panel.addItem(b);
-        panel.addItem(c);*/
-
-        const label = St.Label.new("0, 0 aaa");
-        label.style_class = "quick-settings-system-item";
-        panel.addItem(label);
-
-        const panel2 = new Panel('test-2', 2);
-        const label1 = St.Label.new("dfhfdkjgfkfyyu");
-        label1.style_class = "quick-settings-system-item";
-        panel2.addItem(label1);
-        const label2 = St.Label.new("dfhfdkjgfkfyyu");
-        label2.style_class = "quick-settings-system-item";
-        panel2.addItem(label2);
-        const label3 = St.Label.new("dfhfdkjgfkfyyu");
-        label3.style_class = "quick-settings-system-item";
-        panel2.addItem(label3);
-        const label4 = St.Label.new("dfhfdkjgfkfyyu");
-        label4.style_class = "quick-settings-system-item";
-        panel2.addItem(label4);
-        const label5 = St.Label.new("dfhfdkjgfkfyyu");
-        label5.style_class = "quick-settings-system-item";
-        panel2.addItem(label5);
-        const label6 = St.Label.new("dfhfdkjgfkfyyu");
-        label6.style_class = "quick-settings-system-item";
-        panel2.addItem(label6);
-        const label7 = St.Label.new("dfhfdkjgfkfyyu");
-        label7.style_class = "quick-settings-system-item";
-        panel2.addItem(label7);
-        const label8 = St.Label.new("dfhfdkjgfkfyyu\ngfdgggerg_ ge\nefgergerger\negregerge\nefezdf\nsfregte");
-        label8.style_class = "quick-settings-system-item";
-        panel2.addItem(label8);
-        const button = new imports.ui.quickSettings.QuickToggle({ title: "aaaaaaaaa" });
-        panel2.addItem(button);
-        const label9 = St.Label.new("dfhfdkjgfkfyyu\ngfdgggerg_ ge\nefgergerger\negregerge\nefezdf\nsfregte");
-        label9.style_class = "quick-settings-system-item";
-        panel2.addItem(label9);
-        const label10 = St.Label.new("dfhfdkjgfkfyyu\ngfdgggerg_ ge\nefgergerger\negregerge\nefezdf\nsfregte");
-        label10.style_class = "quick-settings-system-item";
-        panel2.addItem(label10);
-
-        LibPanel.addPanel(panel2);
-        LibPanel.addPanel(new PanelGroup('test-group', { panels: [panel] }));
-
-        /*Main.layoutManager.disconnectObject(Main.panel.statusArea.quickSettings._menu_backup)
-        const [_, signal_id, signal_detail] = GObject.signal_parse_name('system-modal-opened', Main.layoutManager.constructor.$gtype, false);
-        GObject.signal_handlers_block_matched(Main.layoutManager, { data: Main.panel.statusArea.quickSettings._menu_backup, detail: signal_detail, signal_id: signal_id })
-        for(const signal of GObject.signal_list_ids(Main.layoutManager)) {
-            log(GObject.signal_query(signal))
-            GObject.signal_handler_block(Main.layoutManager, signal)
-        }*/
-
-        //Main.uiGroup.remove_child(Main.panel.statusArea.quickSettings._menu_backup)
-        //https://gitlab.freedesktop.org/pipewire/pipewire/-/wikis/Virtual-devices?version_id=2366658e8c18457f3dc400b14f46789cba2eddcc#create-a-sink
         /*this.settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.quick-settings-audio-panel');
         const move_master_volume = this.settings.get_boolean("move-master-volume");
         const always_show_input = this.settings.get_boolean("always-show-input-slider");
@@ -300,7 +215,7 @@ class Extension {
     }
 
     disable() {
-        LibPanel.disable("quick-settings-audio-panel");
+        LibPanel.disable();
         if (this._qsphc_backup) {
             QuickSettings.menu._grid.layout_manager._overlay.add_constraint(this._qsphc_backup);
             this._qsphc_backup = null;

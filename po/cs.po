@@ -1,0 +1,163 @@
+# Czech translation for Quick settings audio panel.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Amerey.eu <info@amerey.eu>, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-05-23 22:43+0200\n"
+"PO-Revision-Date: 2023-07-01 15:56+0200\n"
+"Last-Translator: Amerey.eu <info@amerey.eu>\n"
+"Language-Team: \n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.3.1\n"
+
+#: prefs.js:25
+msgid "Move master volume sliders"
+msgstr "Posunout hlavní posuvníky hlasitosti"
+
+#: prefs.js:26
+msgid "Thoses are the speaker / headphone and microphone volume sliders"
+msgstr "Jedná se o posuvníky hlasitosti reproduktoru / sluchátek a mikrofonu"
+
+#: prefs.js:32
+msgid "Always show microphone volume slider"
+msgstr "Vždy zobrazovat posuvník hlasitosti mikrofonu"
+
+#: prefs.js:33
+msgid "Show even when there is no application recording audio"
+msgstr "Zobrazit, i když žádná aplikace nenahrává zvuk"
+
+#: prefs.js:39 prefs.js:92
+msgid "Media controls"
+msgstr "Ovládání médií"
+
+#: prefs.js:40
+msgid "What should we do with media controls ?"
+msgstr "Co bychom měli dělat s ovládáním médií?"
+
+#: prefs.js:42
+msgid "Leave as is"
+msgstr "Nechte tak, jak je"
+
+#: prefs.js:43
+msgid "Move into new panel"
+msgstr "Přesunout do nového panelu"
+
+#: prefs.js:44
+msgid "Duplicate into new panel"
+msgstr "Duplikovat do nového panelu"
+
+#: prefs.js:54
+msgid "Create applications mixer"
+msgstr "Vytvořit mixér aplikací"
+
+#: prefs.js:55
+msgid ""
+"Thoses sliders are the same you can find in pavucontrol or in the sound "
+"settings"
+msgstr ""
+"Tyto posuvníky jsou stejné, jaké najdete v pavucontrol nebo v nastavení zvuku"
+
+#: prefs.js:61
+msgid "Merge the new panel into the main one"
+msgstr "Sloučit nový panel do hlavního"
+
+#: prefs.js:62
+msgid "The new panel will not be separated from the main one"
+msgstr "Nový panel nebude oddělen od hlavního"
+
+#: prefs.js:68
+msgid "Panel position"
+msgstr "Umístění panelu"
+
+#: prefs.js:69
+msgid "Where the new panel should be located relative to the main panel"
+msgstr "Kde by měl být umístěn nový panel vzhledem k hlavnímu panelu"
+
+#: prefs.js:71
+msgid "Left"
+msgstr "Vlevo"
+
+#: prefs.js:72
+msgid "Right"
+msgstr "Vpravo"
+
+#: prefs.js:73
+msgid "Top"
+msgstr "Nahoře"
+
+#: prefs.js:74
+msgid "Bottom"
+msgstr "Dole"
+
+#: prefs.js:81
+msgid "Overlay popups"
+msgstr "Vyskakovací okna"
+
+#: prefs.js:82
+msgid ""
+"This feature will prevent the main panel from expanding when a popup is "
+"opened. It's mainly aimed at fixing a bug with popups in the new panel"
+msgstr ""
+"Tato funkce zabrání rozbalení hlavního panelu při otevření vyskakovacího "
+"okna. Zaměřuje se hlavně na opravu chyby s vyskakovacími okny v novém panelu"
+
+#: prefs.js:87
+msgid "Elements order"
+msgstr "Pořadí prvků"
+
+#: prefs.js:88
+msgid ""
+"Reorder elements in the new panel (disabled elments will just be ignored)"
+msgstr ""
+"Změnit pořadí prvků v novém panelu (zakázané prvky budou pouze ignorovány)"
+
+#: prefs.js:90
+msgid "Speaker / Headphone volume slider"
+msgstr "Posuvník hlasitosti reproduktoru / sluchátek"
+
+#: prefs.js:91
+msgid "Microphone volume slider"
+msgstr "Posuvník hlasitosti mikrofonu"
+
+#: prefs.js:93
+msgid "Applications mixer"
+msgstr "Mixér aplikací"
+
+#: prefs.js:97
+msgid "Mixer filtering"
+msgstr "Filtrace mixéru"
+
+#: prefs.js:98
+msgid ""
+"Allow you to filter the streams that show up in the application mixer "
+"**using regexes**"
+msgstr ""
+"Umožňuje filtrovat streamy, které se zobrazují v aplikačním mixu **pomocí "
+"regulárních výrazů**"
+
+#: prefs.js:104
+msgid "Filtering mode"
+msgstr "Režim filtrování"
+
+#: prefs.js:105
+msgid ""
+"On blacklist mode, matching elements are removed from the list. On whitelist "
+"mode, only matching elements will be shown"
+msgstr ""
+"V režimu černé listiny jsou odpovídající prvky ze seznamu odstraněny. V "
+"režimu seznamu povolených se zobrazí pouze odpovídající prvky"
+
+#: prefs.js:107
+msgid "Blacklist"
+msgstr "Černá listina"
+
+#: prefs.js:108
+msgid "Whitelist"
+msgstr "Seznam povolených"

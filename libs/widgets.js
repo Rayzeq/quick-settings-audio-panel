@@ -6,16 +6,6 @@ const Volume = imports.ui.status.volume; // https://gitlab.gnome.org/GNOME/gnome
 
 const StreamSlider = imports.ui.main.panel.statusArea.quickSettings._volume._output.constructor;
 
-const QuickSettingsMenu = imports.ui.quickSettings.QuickSettingsMenu;
-
-var QuickSettingsPanel = class QuickSettingsPanel extends QuickSettingsMenu {
-    constructor(sourceActor, separated = true, nColumns = 2) {
-        super(sourceActor, nColumns);
-
-        this.actor.style_class = separated ? " popup-menu-content quick-settings QSAP-panel-separated" : " QSAP-panel-merged";
-    }
-}
-
 // This class is a modified version of VolumeMixer from quick-settings-tweaks@qwreey
 var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSection {
     constructor(filter_mode, filters) {
@@ -82,7 +72,7 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
         super.destroy();
     }
-}
+};
 
 var ApplicationVolumeSlider = GObject.registerClass(
     class ApplicationVolumeSlider extends StreamSlider {
@@ -118,7 +108,7 @@ var ApplicationVolumeSlider = GObject.registerClass(
 
         _get_label_text(stream) {
             const { name, description } = stream;
-            return name === null ? description : `${name} - ${description}`
+            return name === null ? description : `${name} - ${description}`;
         }
     }
-)
+);

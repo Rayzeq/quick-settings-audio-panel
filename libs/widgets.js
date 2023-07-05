@@ -15,7 +15,6 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         this._sliders = {};
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
-        this._icon_theme = new St.IconTheme();
 
         this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
@@ -46,7 +45,6 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
         const slider = new ApplicationVolumeSlider(
             this._mixer_control,
             stream,
-            this._icon_theme
         );
         this._sliders[id] = slider;
         this.actor.add(slider);
@@ -76,14 +74,14 @@ var ApplicationsMixer = class ApplicationsMixer extends PopupMenu.PopupMenuSecti
 
 var ApplicationVolumeSlider = GObject.registerClass(
     class ApplicationVolumeSlider extends StreamSlider {
-        constructor(control, stream, icon_theme) {
+        constructor(control, stream) {
             super(control);
 
             // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
-            this._icons = [stream.icon_name];
+            this._icons = [stream.name ? stream.name.toLowerCase() : stream.icon_name];
             this.stream = stream;
             // And this one need to be after this.stream assignement.
-            this._icon.fallback_icon_name = stream.name.toLowerCase();
+            this._icon.fallback_icon_name = stream.icon_name;
 
             const vbox = new St.BoxLayout({ vertical: true });
 
@@ -96,7 +94,7 @@ var ApplicationVolumeSlider = GObject.registerClass(
             label.style_class = "QSAP-application-volume-slider-label";
             stream.bind_property_full('description', label, 'text',
                 GObject.BindingFlags.SYNC_CREATE,
-                (binding, value) => {
+                (_binding, _value) => {
                     return [true, this._get_label_text(stream)];
                 },
                 null

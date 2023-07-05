@@ -14,83 +14,77 @@ function init() {
 }
 
 function fillPreferencesWindow(window) {
-    const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.quick-settings-audio-panel");
+    const settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.quick-settings-audio-panel');
     
     const page = new Adw.PreferencesPage();
     const main_group = new Adw.PreferencesGroup();
 
     main_group.add(create_switch(
-        settings, "move-master-volume",
+        settings, 'move-master-volume',
         {
             title: _("Move master volume sliders"),
             subtitle: _("Thoses are the speaker / headphone and microphone volume sliders")
         }
     ));
     main_group.add(create_switch(
-        settings, "always-show-input-slider",
+        settings, 'always-show-input-slider',
         {
             title: _("Always show microphone volume slider"),
             subtitle: _("Show even when there is no application recording audio")
         }
     ));
     main_group.add(create_dropdown(
-        settings, "media-control",
+        settings, 'media-control',
         {
             title: _("Media controls"),
             subtitle: _("What should we do with media controls ?"),
             fields: [
-                ["none", _("Leave as is")],
-                ["move", _("Move into new panel")],
-                ["duplicate", _("Duplicate into new panel")]
+                ['none', _("Leave as is")],
+                ['move', _("Move into new panel")],
+                ['duplicate', _("Duplicate into new panel")]
             ]
         }
     ));
-    if (settings.get_strv("ordering").length != 4) {
-        settings.set_strv("ordering", ["volume-output", "volume-input", "media", "mixer"]);
+    if (settings.get_strv('ordering').length != 4) {
+        settings.set_strv('ordering', ['volume-output', 'volume-input', 'media', 'mixer']);
     }
     main_group.add(create_switch(
-        settings, "create-mixer-sliders",
+        settings, 'create-mixer-sliders',
         {
             title: _("Create applications mixer"),
             subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
         }
     ));
     main_group.add(create_switch(
-        settings, "merge-panel",
+        settings, 'merge-panel',
         {
             title: _("Merge the new panel into the main one"),
             subtitle: _("The new panel will not be separated from the main one")
         }
     ));
-    main_group.add(create_dropdown(
-        settings, "panel-position",
+    const position_dropdown = create_dropdown(
+        settings, 'panel-position',
         {
             title: _("Panel position"),
             subtitle: _("Where the new panel should be located relative to the main panel"),
             fields: [
-                ["left", _("Left")],
-                ["right", _("Right")],
-                ["top", _("Top")],
-                ["bottom", _("Bottom")]
+                ['top', _("Top")],
+                ['bottom', _("Bottom")]
             ]
         }
-    ));
-    main_group.add(create_switch(
-        settings, "fix-popups",
-        {
-            title: _("Overlay popups"),
-            subtitle: _("This feature will prevent the main panel from expanding when a popup is opened. It's mainly aimed at fixing a bug with popups in the new panel")
-        }
-    ));
+    );
+    settings.bind('merge-panel', position_dropdown, 'visible', Gio.SettingsBindFlags.GET);
+    main_group.add(position_dropdown);
 
-    const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
+
+    const widgets_order_group = new ReorderablePreferencesGroup(settings, 'ordering', {
         title: _("Elements order"),
         description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
     });
-    widgets_order_group.add(new DraggableRow("volume-output", { title: _("Speaker / Headphone volume slider") }));
-    widgets_order_group.add(new DraggableRow("volume-input", { title: _("Microphone volume slider") }));
-    widgets_order_group.add(new DraggableRow("media", { title: _("Media controls") }));
-    widgets_order_group.add(new DraggableRow("mixer", { title: _("Applications mixer") }));
+    widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
+    widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
+    widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
+    widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));
 
     const add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
     const mixer_filter_group = new Adw.PreferencesGroup({
@@ -99,13 +93,13 @@ function fillPreferencesWindow(window) {
         header_suffix: add_filter_button
     });
     mixer_filter_group.add(create_dropdown(
-        settings, "filter-mode",
+        settings, 'filter-mode',
         {
             title: _("Filtering mode"),
             subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
             fields: [
-                ["blacklist", _("Blacklist")],
-                ["whitelist", _("Whitelist")],
+                ['blacklist', _("Blacklist")],
+                ['whitelist', _("Whitelist")],
             ]
         }
     ));
@@ -178,7 +172,7 @@ function create_dropdown(settings, id, options) {
 
     row.connect('notify::selected', () => {
         settings.set_string(id, fields[row.selected][0]);
-    })
+    });
 
     return row;
 }
@@ -194,7 +188,7 @@ const ReorderablePreferencesGroup = GObject.registerClass(
             this._key = key;
 
             this._list_box = new Gtk.ListBox({ selection_mode: Gtk.SelectionMode.NONE });
-            this._list_box.add_css_class("boxed-list");
+            this._list_box.add_css_class('boxed-list');
             this._list_box.set_sort_func((a, b) => {
                 const data = settings.get_strv(key);
                 const index_a = data.indexOf(a.id);
@@ -206,21 +200,21 @@ const ReorderablePreferencesGroup = GObject.registerClass(
 
         add(row) {
             this._list_box.set_valign(Gtk.Align.FILL);
-            row.connect("move-row", (source, target) => {
+            row.connect('move-row', (source, target) => {
                 this.selected_row = source;
                 const data = this._settings.get_strv(this._key);
                 const source_index = data.indexOf(source.id);
                 const target_index = data.indexOf(target.id);
                 if (target_index < source_index) {
                     data.splice(source_index, 1); // remove 1 element at source_index
-                    data.splice(target_index, 0, source.id) // insert source.id at target_index
+                    data.splice(target_index, 0, source.id); // insert source.id at target_index
                 } else {
-                    data.splice(target_index + 1, 0, source.id) // insert source.id at target_index
+                    data.splice(target_index + 1, 0, source.id); // insert source.id at target_index
                     data.splice(source_index, 1); // remove 1 element at source_index
                 }
                 this._settings.set_strv(this._key, data);
                 this._list_box.invalidate_sort();
-            })
+            });
             this._list_box.append(row);
         }
     }
@@ -232,18 +226,18 @@ class DraggableRowClass extends Adw.ActionRow {
 
         this.id = id;
 
-        const drag_handle = new Gtk.Image({ icon_name: "list-drag-handle-symbolic" });
+        const drag_handle = new Gtk.Image({ icon_name: 'list-drag-handle-symbolic' });
         // css don't work
-        drag_handle.add_css_class("drag-handle");
+        drag_handle.add_css_class('drag-handle');
         this.add_prefix(drag_handle);
 
         const drag_source = new Gtk.DragSource({ actions: Gdk.DragAction.MOVE });
-        drag_source.connect("prepare", (source, x, y) => {
+        drag_source.connect('prepare', (source, x, y) => {
             this._drag_x = x;
             this._drag_y = y;
             return Gdk.ContentProvider.new_for_value(this);
         });
-        drag_source.connect("drag-begin", (source, drag) => {
+        drag_source.connect('drag-begin', (source, drag) => {
             this._drag_widget = new Gtk.ListBox();
             this._drag_widget.set_size_request(this.get_allocated_width(), this.get_allocated_height());
 
@@ -258,8 +252,8 @@ class DraggableRowClass extends Adw.ActionRow {
 
         const drop_target = Gtk.DropTarget.new(DraggableRow, Gdk.DragAction.MOVE);
         drop_target.preload = true;
-        drop_target.connect("drop", (target, source, x, y) => {
-            source.emit("move-row", this);
+        drop_target.connect('drop', (target, source, x, y) => {
+            source.emit('move-row', this);
 
             return true;
         });
@@ -270,7 +264,7 @@ class DraggableRowClass extends Adw.ActionRow {
 const DraggableRow = GObject.registerClass({
     Signals: {
         flags: GObject.SignalFlags.RUN_LAST,
-        "move-row": {
+        'move-row': {
             param_types: [DraggableRowClass],
         }
     },

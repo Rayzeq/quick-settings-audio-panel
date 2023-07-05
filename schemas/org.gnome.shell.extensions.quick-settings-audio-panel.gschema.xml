@@ -24,15 +24,10 @@
     </key>
     <key name="panel-position" type="s">
       <choices>
-        <choice value="left" />
-        <choice value="right" />
         <choice value="top" />
         <choice value="bottom" />
       </choices>
       <default>"bottom"</default>
-    </key>
-    <key name="fix-popups" type="b">
-      <default>false</default>
     </key>
 
     <key name="ordering" type="as">

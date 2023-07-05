@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-23 22:43+0200\n"
+"POT-Creation-Date: 2023-07-06 00:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "Show even when there is no application recording audio"
 msgstr ""
 
-#: prefs.js:39 prefs.js:92
+#: prefs.js:39 prefs.js:86
 msgid "Media controls"
 msgstr ""
 
@@ -80,76 +80,58 @@ msgid "Where the new panel should be located relative to the main panel"
 msgstr ""
 
 #: prefs.js:71
-msgid "Left"
-msgstr ""
-
-#: prefs.js:72
-msgid "Right"
-msgstr ""
-
-#: prefs.js:73
 msgid "Top"
 msgstr ""
 
-#: prefs.js:74
+#: prefs.js:72
 msgid "Bottom"
 msgstr ""
 
 #: prefs.js:81
-msgid "Overlay popups"
+msgid "Elements order"
 msgstr ""
 
 #: prefs.js:82
 msgid ""
-"This feature will prevent the main panel from expanding when a popup is "
-"opened. It's mainly aimed at fixing a bug with popups in the new panel"
-msgstr ""
-
-#: prefs.js:87
-msgid "Elements order"
-msgstr ""
-
-#: prefs.js:88
-msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
 
-#: prefs.js:90
+#: prefs.js:84
 msgid "Speaker / Headphone volume slider"
 msgstr ""
 
-#: prefs.js:91
+#: prefs.js:85
 msgid "Microphone volume slider"
 msgstr ""
 
-#: prefs.js:93
+#: prefs.js:87
 msgid "Applications mixer"
 msgstr ""
 
-#: prefs.js:97
+#: prefs.js:91
 msgid "Mixer filtering"
 msgstr ""
 
-#: prefs.js:98
+#: prefs.js:92
 msgid ""
 "Allow you to filter the streams that show up in the application mixer "
 "**using regexes**"
 msgstr ""
 
-#: prefs.js:104
+#: prefs.js:98
 msgid "Filtering mode"
 msgstr ""
 
-#: prefs.js:105
+#: prefs.js:99
 msgid ""
 "On blacklist mode, matching elements are removed from the list. On whitelist "
 "mode, only matching elements will be shown"
 msgstr ""
 
-#: prefs.js:107
+#: prefs.js:101
 msgid "Blacklist"
 msgstr ""
 
-#: prefs.js:108
+#: prefs.js:102
 msgid "Whitelist"
 msgstr ""

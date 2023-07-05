@@ -44,7 +44,7 @@ const InputVolumeSlider = QuickSettings._volume._input;
 const InputVolumeIndicator = QuickSettings._volume._inputIndicator;
 
 //const { QuickSettingsPanel, ApplicationsMixer } = Self.imports.libs.widgets;
-const { LibPanel, Panel } = Self.imports.libpanel.main;
+const { LibPanel, Panel } = Self.imports.libs.libpanel.main;
 
 
 class Extension {

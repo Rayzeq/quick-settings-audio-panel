@@ -1,0 +1,3 @@
+[submodule "libs/libpanel"]
+	path = libs/libpanel
+	url = git@github.com:Rayzeq/libpanel.git

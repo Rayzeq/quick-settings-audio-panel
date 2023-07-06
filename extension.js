@@ -16,24 +16,20 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-const { GObject, Clutter, St } = imports.gi;
+const { Clutter } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Gettext = imports.gettext;
 
 const Self = ExtensionUtils.getCurrentExtension();
 const Domain = Gettext.domain(Self.metadata.uuid);
 const _ = Domain.gettext;
-const ngettext = Domain.ngettext;
 
 const Main = imports.ui.main;
 const { MediaSection } = imports.ui.mpris;
 
-const QuickSettings = Main.panel.statusArea.quickSettings;
-const QuickSettingsBox = QuickSettings.menu.box;
-const QuickSettingsGrid = QuickSettings.menu._grid;
-
 const DateMenu = Main.panel.statusArea.dateMenu;
-const DateMenuBox = DateMenu.menu.box;
+const QuickSettings = Main.panel.statusArea.quickSettings;
+
 const DateMenuHolder = DateMenu.menu.box.first_child.first_child;
 const DateMenuNotifications = DateMenuHolder.get_children().find(item => item.constructor.name === 'CalendarMessageList');
 const DateMenuMediaControlHolder = DateMenuNotifications.last_child.first_child.last_child;
@@ -44,7 +40,7 @@ const OutputVolumeSlider = QuickSettings._volume._output;
 const InputVolumeSlider = QuickSettings._volume._input;
 const InputVolumeIndicator = QuickSettings._volume._inputIndicator;
 
-const { QuickSettingsPanel, ApplicationsMixer } = Self.imports.libs.widgets;
+const { ApplicationsMixer } = Self.imports.libs.widgets;
 const { LibPanel, Panel } = Self.imports.libs.libpanel.main;
 
 

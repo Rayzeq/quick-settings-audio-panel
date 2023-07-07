@@ -30,10 +30,8 @@ const { MediaSection } = imports.ui.mpris;
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
 
-const DateMenuHolder = DateMenu.menu.box.first_child.first_child;
-const DateMenuNotifications = DateMenuHolder.get_children().find(item => item.constructor.name === 'CalendarMessageList');
-const DateMenuMediaControlHolder = DateMenuNotifications.last_child.first_child.last_child;
-const DateMenuMediaControl = DateMenuMediaControlHolder.first_child;
+const CalendarMessageList = DateMenu._messageList;
+const MediaSection_DateMenu = CalendarMessageList._mediaSection;
 
 const SystemItem = QuickSettings._system._systemItem;
 const OutputVolumeSlider = QuickSettings._volume._output;
@@ -142,10 +140,10 @@ class Extension {
             this._panel.removeItem(this._media_section);
             this._media_section = null;
         }
-        if (DateMenuMediaControl.has_style_class_name('QSAP-media-section')) {
-            this._panel.removeItem(DateMenuMediaControl);
-            DateMenuMediaControlHolder.insert_child_at_index(DateMenuMediaControl, 0);
-            DateMenuMediaControl.remove_style_class_name('QSAP-media-section');
+        if (MediaSection_DateMenu.has_style_class_name('QSAP-media-section')) {
+            this._panel.removeItem(MediaSection_DateMenu);
+            CalendarMessageList._sectionList.insert_child_at_index(MediaSection_DateMenu, 0);
+            MediaSection_DateMenu.remove_style_class_name('QSAP-media-section');
         }
 
         this._master_volumes.reverse();
@@ -176,15 +174,18 @@ class Extension {
     }
 
     _move_media_controls(index) {
-        DateMenuMediaControlHolder.remove_child(DateMenuMediaControl);
-        this._panel.addItem(DateMenuMediaControl, 2);
-        this._panel._grid.set_child_at_index(DateMenuMediaControl, index);
-        DateMenuMediaControl.add_style_class_name('QSAP-media-section');
+        CalendarMessageList._sectionList.remove_child(MediaSection_DateMenu);
+
+        this._panel.addItem(MediaSection_DateMenu, 2);
+        this._panel._grid.set_child_at_index(MediaSection_DateMenu, index);
+
+        MediaSection_DateMenu.add_style_class_name('QSAP-media-section');
     }
 
     _create_media_controls(index) {
         this._media_section = new MediaSection();
-        this._media_section.style_class += " QSAP-media-section";
+        this._media_section.add_style_class_name('QSAP-media-section');
+
         this._panel.addItem(this._media_section, 2);
         this._panel._grid.set_child_at_index(this._media_section, index);
     }

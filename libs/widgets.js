@@ -83,88 +83,86 @@ var ApplicationsMixer = class {
     }
 };
 
-var ApplicationVolumeSlider = GObject.registerClass(
-    class ApplicationVolumeSlider extends StreamSlider {
-        constructor(control, stream) {
-            super(control);
-            this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
+var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
+    constructor(control, stream) {
+        super(control);
+        this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
-            this._control.connectObject(
-                'output-added', (_control, id) => this._addDevice(id),
-                'output-removed', (_control, id) => this._removeDevice(id),
-                'active-output-update', (_control, _id) => this._checkUsedSink(),
-                this
-            );
-            // unfortunatly we don't have any signal to know that the active device changed
-            //stream.connect('', () => this._setActiveDevice());
+        this._control.connectObject(
+            'output-added', (_control, id) => this._addDevice(id),
+            'output-removed', (_control, id) => this._removeDevice(id),
+            'active-output-update', (_control, _id) => this._checkUsedSink(),
+            this
+        );
+        // unfortunatly we don't have any signal to know that the active device changed
+        //stream.connect('', () => this._setActiveDevice());
 
-            for (const sink of control.get_sinks()) {
-                this._addDevice(this._control.lookup_device_from_stream(sink).get_id());
+        for (const sink of control.get_sinks()) {
+            this._addDevice(this._control.lookup_device_from_stream(sink).get_id());
+        }
+
+        // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
+        this._icons = [stream.name ? stream.name.toLowerCase() : stream.icon_name];
+        this.stream = stream;
+        // And this one need to be after this.stream assignement.
+        this._icon.fallback_icon_name = stream.icon_name;
+
+        this._checkUsedSink();
+
+        const vbox = new St.BoxLayout({ vertical: true });
+
+        const hbox = this.first_child; // this is the only child
+        const slider = hbox.get_children()[1];
+        hbox.remove_child(slider);
+        hbox.insert_child_at_index(vbox, 1);
+
+        const label = new St.Label({ natural_width: 0 });
+        label.style_class = "QSAP-application-volume-slider-label";
+        stream.bind_property_full('description', label, 'text',
+            GObject.BindingFlags.SYNC_CREATE,
+            (_binding, _value) => {
+                return [true, this._get_label_text(stream)];
+            },
+            null
+        );
+
+        vbox.add(label);
+        vbox.add(slider);
+    }
+
+    _get_label_text(stream) {
+        const { name, description } = stream;
+        return name === null ? description : `${name} - ${description}`;
+    }
+
+    _checkUsedSink() {
+        let [, stdout, ,] = GLib.spawn_command_line_sync('pactl -f json list sink-inputs');
+        if (stdout instanceof Uint8Array)
+            stdout = ByteArray.toString(stdout);
+        stdout = JSON.parse(stdout);
+
+        for (const sink_input of stdout) {
+            if (sink_input.index === this.stream.index) {
+                const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink)).get_id();
+                this._setActiveDevice(sink_id);
             }
-
-            // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
-            this._icons = [stream.name ? stream.name.toLowerCase() : stream.icon_name];
-            this.stream = stream;
-            // And this one need to be after this.stream assignement.
-            this._icon.fallback_icon_name = stream.icon_name;
-
-            this._checkUsedSink();
-
-            const vbox = new St.BoxLayout({ vertical: true });
-
-            const hbox = this.first_child; // this is the only child
-            const slider = hbox.get_children()[1];
-            hbox.remove_child(slider);
-            hbox.insert_child_at_index(vbox, 1);
-
-            const label = new St.Label({ natural_width: 0 });
-            label.style_class = "QSAP-application-volume-slider-label";
-            stream.bind_property_full('description', label, 'text',
-                GObject.BindingFlags.SYNC_CREATE,
-                (_binding, _value) => {
-                    return [true, this._get_label_text(stream)];
-                },
-                null
-            );
-
-            vbox.add(label);
-            vbox.add(slider);
-        }
-
-        _get_label_text(stream) {
-            const { name, description } = stream;
-            return name === null ? description : `${name} - ${description}`;
-        }
-
-        _checkUsedSink() {
-            let [, stdout, ,] = GLib.spawn_command_line_sync('pactl -f json list sink-inputs');
-            if (stdout instanceof Uint8Array)
-                stdout = ByteArray.toString(stdout);
-            stdout = JSON.parse(stdout);
-
-            for (const sink_input of stdout) {
-                if (sink_input.index === this.stream.index) {
-                    const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink)).get_id();
-                    this._setActiveDevice(sink_id);
-                }
-            }
-        }
-
-        _lookupDevice(id) {
-            return this._control.lookup_output_id(id);
-        }
-
-        _setActiveDevice(activeId) {
-            for (const [id, item] of this._deviceItems) {
-                item.setOrnament(id === activeId
-                    ? PopupMenu.Ornament.CHECK
-                    : PopupMenu.Ornament.NONE);
-            }
-        }
-
-        _activateDevice(device) {
-            GLib.spawn_command_line_async(`pactl move-sink-input ${this.stream.index} ${this._control.lookup_stream_id(device.stream_id).index}`);
-            this._setActiveDevice(device.get_id());
         }
     }
-);
+
+    _lookupDevice(id) {
+        return this._control.lookup_output_id(id);
+    }
+
+    _setActiveDevice(activeId) {
+        for (const [id, item] of this._deviceItems) {
+            item.setOrnament(id === activeId
+                ? PopupMenu.Ornament.CHECK
+                : PopupMenu.Ornament.NONE);
+        }
+    }
+
+    _activateDevice(device) {
+        GLib.spawn_command_line_async(`pactl move-sink-input ${this.stream.index} ${this._control.lookup_stream_id(device.stream_id).index}`);
+        this._setActiveDevice(device.get_id());
+    }
+});

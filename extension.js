@@ -134,9 +134,6 @@ class Extension {
         if (!this._panel) return;
 
         if (this._applications_mixer) {
-            // Needs explicit destroy because it's `this._applications_mixer.actor` which is added to `self._panel`
-            // and not directly `this._applications_mixer`
-            this._panel.removeItem(this._applications_mixer.actor);
             this._applications_mixer.destroy();
             this._applications_mixer = null;
         }
@@ -159,7 +156,10 @@ class Extension {
         }
         this._master_volumes = [];
 
-        if (this._panel !== LibPanel.main_panel) this._panel.destroy();
+        if (this._panel !== LibPanel.main_panel) {
+            LibPanel.removePanel(this._panel); // prevent the panel's position being forgotten
+            this._panel.destroy();
+        };
         this._panel = null;
 
         LibPanel.disable();
@@ -190,9 +190,7 @@ class Extension {
     }
 
     _create_app_mixer(index, filter_mode, filters) {
-        this._applications_mixer = new ApplicationsMixer(filter_mode, filters);
-        this._panel.addItem(this._applications_mixer.actor, 2);
-        this._panel._grid.set_child_at_index(this._applications_mixer.actor, index);
+        this._applications_mixer = new ApplicationsMixer(this._panel, index, filter_mode, filters);
     }
 
     _set_always_show_input(enabled) {

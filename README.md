@@ -37,7 +37,7 @@ On Gnome Shell 43, compatibility with QST has not been tested.
 Manual installation
 -------------------
 
-If you can't install the extension from ego for some reason, you can install it manually. This **WON'T** work with an older version of gnome-shell than 43.
+If you can't install the extension from ego for some reason, you can install it manually. This extension **CANNOT** be installed on gnome-shell 42 or older.
 
 Instructions:
  * Download the [latest version](https://github.com/Rayzeq/quick-settings-audio-panel/releases)

@@ -109,12 +109,20 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
 
         this._checkUsedSink();
 
-        const vbox = new St.BoxLayout({ vertical: true });
+        this._iconButton.y_expand = false;
+        this._iconButton.y_align = Clutter.ActorAlign.CENTER;
 
-        const hbox = this.first_child; // this is the only child
-        const slider = hbox.get_children()[1];
-        hbox.remove_child(slider);
-        hbox.insert_child_at_index(vbox, 1);
+        const box = this.child;
+        const sliderBin = box.get_children()[1];
+        box.remove_child(sliderBin);
+        box.remove_child(this._menuButton);
+
+        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        box.insert_child_at_index(vbox, 1);
+
+        const hbox = new St.BoxLayout();
+        hbox.add_child(sliderBin);
+        hbox.add_child(this._menuButton);
 
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
@@ -126,8 +134,8 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
             null
         );
 
-        vbox.add(label);
-        vbox.add(slider);
+        vbox.add_child(label);
+        vbox.add_child(hbox);
     }
 
     _get_label_text(stream) {

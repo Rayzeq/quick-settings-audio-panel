@@ -125,6 +125,8 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         hbox.add_child(sliderBin);
         hbox.add_child(this._menuButton);
         this._menuButton.visible = menu_button_visible; // we need to reset `actor.visible` when changing parent
+        // this prevent the tall panel bug when the button is shown
+        this._menuButton.y_expand = false;
 
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";

@@ -115,6 +115,7 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         const box = this.child;
         const sliderBin = box.get_children()[1];
         box.remove_child(sliderBin);
+        const menu_button_visible = this._menuButton.visible;
         box.remove_child(this._menuButton);
 
         const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
@@ -123,6 +124,7 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         const hbox = new St.BoxLayout();
         hbox.add_child(sliderBin);
         hbox.add_child(this._menuButton);
+        this._menuButton.visible = menu_button_visible; // we need to reset `actor.visible` when changing parent
 
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
@@ -159,14 +161,6 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
 
     _lookupDevice(id) {
         return this._control.lookup_output_id(id);
-    }
-
-    _setActiveDevice(activeId) {
-        for (const [id, item] of this._deviceItems) {
-            item.setOrnament(id === activeId
-                ? PopupMenu.Ornament.CHECK
-                : PopupMenu.Ornament.NONE);
-        }
     }
 
     _activateDevice(device) {

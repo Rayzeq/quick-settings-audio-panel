@@ -88,17 +88,25 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         super(control);
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
-        this._control.connectObject(
-            'output-added', (_control, id) => this._addDevice(id),
-            'output-removed', (_control, id) => this._removeDevice(id),
-            'active-output-update', (_control, _id) => this._checkUsedSink(),
-            this
-        );
-        // unfortunatly we don't have any signal to know that the active device changed
-        //stream.connect('', () => this._setActiveDevice());
+        try {
+            GLib.spawn_command_line_sync('pactl');
+        } catch (e) {
+            this._disable_pactl = true;
+        }
 
-        for (const sink of control.get_sinks()) {
-            this._addDevice(this._control.lookup_device_from_stream(sink).get_id());
+        if (!this._disable_pactl) {
+            this._control.connectObject(
+                'output-added', (_control, id) => this._addDevice(id),
+                'output-removed', (_control, id) => this._removeDevice(id),
+                'active-output-update', (_control, _id) => this._checkUsedSink(),
+                this
+            );
+            // unfortunatly we don't have any signal to know that the active device changed
+            //stream.connect('', () => this._setActiveDevice());
+        
+            for (const sink of control.get_sinks()) {
+                this._addDevice(this._control.lookup_device_from_stream(sink).get_id());
+            }
         }
 
         // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
@@ -107,7 +115,9 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         // And this one need to be after this.stream assignement.
         this._icon.fallback_icon_name = stream.icon_name;
 
-        this._checkUsedSink();
+        if (!this._disable_pactl) {
+            this._checkUsedSink();
+        }
 
         this._iconButton.y_expand = false;
         this._iconButton.y_align = Clutter.ActorAlign.CENTER;

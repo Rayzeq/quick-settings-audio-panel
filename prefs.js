@@ -7,7 +7,8 @@ const Gettext = imports.gettext;
 const Self = ExtensionUtils.getCurrentExtension();
 const Domain = Gettext.domain(Self.metadata.uuid);
 const _ = Domain.gettext;
-const ngettext = Domain.ngettext;
+
+const { rsplit, get_stack, get_settings } = Self.imports.libs.libpanel.utils;
 
 function init() {
     ExtensionUtils.initTranslations(Self.metadata.uuid);
@@ -129,9 +130,38 @@ function fillPreferencesWindow(window) {
         create_filter_row(filter);
     }
 
+    const parent_folder = rsplit(get_stack()[0].file, '/', 1)[0];
+    const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
+    const libpanel_group = new Adw.PreferencesGroup({
+        title: _("LibPanel settings"),
+        description: _("Those settings are not specific to this extension, they apply to every panels"),
+    });
+    libpanel_group.add(create_switch_spin(
+        libpanel_settings, 'padding-enabled', 'padding',
+        {
+            title: _("Padding"),
+            subtitle: _("Use this to override the default padding of the panels")
+        }, 0, 41
+    ));
+    libpanel_group.add(create_switch_spin(
+        libpanel_settings, 'row-spacing-enabled', 'row-spacing',
+        {
+            title: _("Row spacing"),
+            subtitle: _("Use this to override the default row spacing of the panels")
+        }, 0, 41
+    ));
+    libpanel_group.add(create_switch_spin(
+        libpanel_settings, 'column-spacing-enabled', 'column-spacing',
+        {
+            title: _("Column spacing"),
+            subtitle: _("Use this to override the default column spacing of the panels")
+        }, 0, 41
+    ));
+
     page.add(main_group);
     page.add(widgets_order_group);
     page.add(mixer_filter_group);
+    page.add(libpanel_group);
     window.add(page);
 }
 
@@ -139,6 +169,7 @@ function save_filters(settings, filters) {
     settings.set_strv('filters', filters.map(filter => filter.text));
 }
 
+// Adw.SwitchRow is not available yet
 function create_switch(settings, id, options) {
     const row = new Adw.ActionRow(options);
 
@@ -155,6 +186,39 @@ function create_switch(settings, id, options) {
 
     row.add_suffix(toggle);
     row.activatable_widget = toggle;
+
+    return row;
+}
+
+function range(start, stop) {
+    return Array.from({ length: stop - start }, (_, i) => i + start);
+}
+
+// Adw.SpinRow is not available yet
+function create_switch_spin(settings, switch_id, spin_id, options, lower = 0, higher = 100) {
+    const model = Gtk.StringList.new(range(lower, higher).map(x => x.toString()));
+    const row = new Adw.ComboRow({
+        model: model,
+        selected: settings.get_int(spin_id) - lower,
+        ...options
+    });
+
+    const switch_ = new Gtk.Switch({
+        active: settings.get_boolean(switch_id),
+        valign: Gtk.Align.CENTER,
+    });
+    settings.bind(
+        switch_id,
+        switch_,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+    row.add_prefix(switch_);
+    row.activatable_widget = switch_;
+
+    row.connect('notify::selected', () => {
+        settings.set_int(spin_id, row.selected + lower);
+    });
 
     return row;
 }
@@ -180,45 +244,43 @@ function create_dropdown(settings, id, options) {
 // From this point, the code is mostly a reimplementation of this:
 // https://gitlab.gnome.org/GNOME/gnome-control-center/-/tree/main/panels/search
 
-const ReorderablePreferencesGroup = GObject.registerClass(
-    class ReorderablePreferencesGroup extends Adw.PreferencesGroup {
-        constructor(settings, key, options) {
-            super(options);
-            this._settings = settings;
-            this._key = key;
+const ReorderablePreferencesGroup = GObject.registerClass(class extends Adw.PreferencesGroup {
+    constructor(settings, key, options) {
+        super(options);
+        this._settings = settings;
+        this._key = key;
 
-            this._list_box = new Gtk.ListBox({ selection_mode: Gtk.SelectionMode.NONE });
-            this._list_box.add_css_class('boxed-list');
-            this._list_box.set_sort_func((a, b) => {
-                const data = settings.get_strv(key);
-                const index_a = data.indexOf(a.id);
-                const index_b = data.indexOf(b.id);
-                return index_a < index_b ? -1 : 1;
-            });
-            super.add(this._list_box);
-        }
-
-        add(row) {
-            this._list_box.set_valign(Gtk.Align.FILL);
-            row.connect('move-row', (source, target) => {
-                this.selected_row = source;
-                const data = this._settings.get_strv(this._key);
-                const source_index = data.indexOf(source.id);
-                const target_index = data.indexOf(target.id);
-                if (target_index < source_index) {
-                    data.splice(source_index, 1); // remove 1 element at source_index
-                    data.splice(target_index, 0, source.id); // insert source.id at target_index
-                } else {
-                    data.splice(target_index + 1, 0, source.id); // insert source.id at target_index
-                    data.splice(source_index, 1); // remove 1 element at source_index
-                }
-                this._settings.set_strv(this._key, data);
-                this._list_box.invalidate_sort();
-            });
-            this._list_box.append(row);
-        }
+        this._list_box = new Gtk.ListBox({ selection_mode: Gtk.SelectionMode.NONE });
+        this._list_box.add_css_class('boxed-list');
+        this._list_box.set_sort_func((a, b) => {
+            const data = settings.get_strv(key);
+            const index_a = data.indexOf(a.id);
+            const index_b = data.indexOf(b.id);
+            return index_a < index_b ? -1 : 1;
+        });
+        super.add(this._list_box);
     }
-);
+
+    add(row) {
+        this._list_box.set_valign(Gtk.Align.FILL);
+        row.connect('move-row', (source, target) => {
+            this.selected_row = source;
+            const data = this._settings.get_strv(this._key);
+            const source_index = data.indexOf(source.id);
+            const target_index = data.indexOf(target.id);
+            if (target_index < source_index) {
+                data.splice(source_index, 1); // remove 1 element at source_index
+                data.splice(target_index, 0, source.id); // insert source.id at target_index
+            } else {
+                data.splice(target_index + 1, 0, source.id); // insert source.id at target_index
+                data.splice(source_index, 1); // remove 1 element at source_index
+            }
+            this._settings.set_strv(this._key, data);
+            this._list_box.invalidate_sort();
+        });
+        this._list_box.append(row);
+    }
+});
 
 class DraggableRowClass extends Adw.ActionRow {
     constructor(id, options) {

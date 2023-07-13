@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-07-06 00:52+0200\n"
+"POT-Creation-Date: 2023-07-13 13:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,121 +17,154 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: prefs.js:25
+#: prefs.js:26
 msgid "Move master volume sliders"
 msgstr ""
 
-#: prefs.js:26
+#: prefs.js:27
 msgid "Thoses are the speaker / headphone and microphone volume sliders"
 msgstr ""
 
-#: prefs.js:32
+#: prefs.js:33
 msgid "Always show microphone volume slider"
 msgstr ""
 
-#: prefs.js:33
+#: prefs.js:34
 msgid "Show even when there is no application recording audio"
 msgstr ""
 
-#: prefs.js:39 prefs.js:86
+#: prefs.js:40 prefs.js:87
 msgid "Media controls"
 msgstr ""
 
-#: prefs.js:40
+#: prefs.js:41
 msgid "What should we do with media controls ?"
 msgstr ""
 
-#: prefs.js:42
+#: prefs.js:43
 msgid "Leave as is"
 msgstr ""
 
-#: prefs.js:43
+#: prefs.js:44
 msgid "Move into new panel"
 msgstr ""
 
-#: prefs.js:44
+#: prefs.js:45
 msgid "Duplicate into new panel"
 msgstr ""
 
-#: prefs.js:54
+#: prefs.js:55
 msgid "Create applications mixer"
 msgstr ""
 
-#: prefs.js:55
+#: prefs.js:56
 msgid ""
 "Thoses sliders are the same you can find in pavucontrol or in the sound "
 "settings"
 msgstr ""
 
-#: prefs.js:61
+#: prefs.js:62
 msgid "Merge the new panel into the main one"
 msgstr ""
 
-#: prefs.js:62
+#: prefs.js:63
 msgid "The new panel will not be separated from the main one"
 msgstr ""
 
-#: prefs.js:68
+#: prefs.js:69
 msgid "Panel position"
 msgstr ""
 
-#: prefs.js:69
+#: prefs.js:70
 msgid "Where the new panel should be located relative to the main panel"
 msgstr ""
 
-#: prefs.js:71
+#: prefs.js:72
 msgid "Top"
 msgstr ""
 
-#: prefs.js:72
+#: prefs.js:73
 msgid "Bottom"
 msgstr ""
 
-#: prefs.js:81
+#: prefs.js:82
 msgid "Elements order"
 msgstr ""
 
-#: prefs.js:82
+#: prefs.js:83
 msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
 
-#: prefs.js:84
+#: prefs.js:85
 msgid "Speaker / Headphone volume slider"
 msgstr ""
 
-#: prefs.js:85
+#: prefs.js:86
 msgid "Microphone volume slider"
 msgstr ""
 
-#: prefs.js:87
+#: prefs.js:88
 msgid "Applications mixer"
 msgstr ""
 
-#: prefs.js:91
+#: prefs.js:92
 msgid "Mixer filtering"
 msgstr ""
 
-#: prefs.js:92
+#: prefs.js:93
 msgid ""
 "Allow you to filter the streams that show up in the application mixer "
 "**using regexes**"
 msgstr ""
 
-#: prefs.js:98
+#: prefs.js:99
 msgid "Filtering mode"
 msgstr ""
 
-#: prefs.js:99
+#: prefs.js:100
 msgid ""
 "On blacklist mode, matching elements are removed from the list. On whitelist "
 "mode, only matching elements will be shown"
 msgstr ""
 
-#: prefs.js:101
+#: prefs.js:102
 msgid "Blacklist"
 msgstr ""
 
-#: prefs.js:102
+#: prefs.js:103
 msgid "Whitelist"
+msgstr ""
+
+#: prefs.js:136
+msgid "LibPanel settings"
+msgstr ""
+
+#: prefs.js:137
+msgid ""
+"Those settings are not specific to this extension, they apply to every panels"
+msgstr ""
+
+#: prefs.js:142
+msgid "Padding"
+msgstr ""
+
+#: prefs.js:143
+msgid "Use this to override the default padding of the panels"
+msgstr ""
+
+#: prefs.js:149
+msgid "Row spacing"
+msgstr ""
+
+#: prefs.js:150
+msgid "Use this to override the default row spacing of the panels"
+msgstr ""
+
+#: prefs.js:156
+msgid "Column spacing"
+msgstr ""
+
+#: prefs.js:157
+msgid "Use this to override the default column spacing of the panels"
 msgstr ""

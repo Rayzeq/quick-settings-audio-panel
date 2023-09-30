@@ -1,3 +1,7 @@
+.QSAP-panel-grid {
+	box-shadow: none;
+}
+
 .QSAP-panel-separated {
 	/* Add spacing between panels */
 	margin-bottom: 5px;

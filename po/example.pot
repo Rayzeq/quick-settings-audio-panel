@@ -136,7 +136,7 @@ msgstr ""
 msgid "Whitelist"
 msgstr ""
 
-#: prefs.js:115
+#: prefs.js:114
 msgid "Stream name"
 msgstr ""
 

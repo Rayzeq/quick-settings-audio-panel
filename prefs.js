@@ -1,225 +1,183 @@
 "use strict";
 
-const { Adw, Gio, Gtk, Gdk, GObject } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Gettext = imports.gettext;
+import Adw from 'gi://Adw';
+import GObject from 'gi://GObject';
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 
-const Self = ExtensionUtils.getCurrentExtension();
-const Domain = Gettext.domain(Self.metadata.uuid);
-const _ = Domain.gettext;
+import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const { rsplit, get_stack, get_settings } = Self.imports.libs.libpanel.utils;
+import { get_settings, get_stack, rsplit, split } from './libs/libpanel/utils.js';
 
-function init() {
-    ExtensionUtils.initTranslations(Self.metadata.uuid);
-}
+export default class QSAPPreferences extends ExtensionPreferences {
+    fillPreferencesWindow(window) {
+        const settings = this.getSettings();
+        const page = new Adw.PreferencesPage();
+        window.add(page);
 
-function fillPreferencesWindow(window) {
-    const settings = ExtensionUtils.getSettings('org.gnome.shell.extensions.quick-settings-audio-panel');
-    
-    const page = new Adw.PreferencesPage();
-    const main_group = new Adw.PreferencesGroup();
+        // ====================================== Main group ======================================
+        const main_group = new Adw.PreferencesGroup();
+        page.add(main_group);
 
-    main_group.add(create_switch(
-        settings, 'move-master-volume',
-        {
-            title: _("Move master volume sliders"),
-            subtitle: _("Thoses are the speaker / headphone and microphone volume sliders")
+        main_group.add(create_switch(
+            settings, 'move-master-volume',
+            {
+                title: _("Move master volume sliders"),
+                subtitle: _("Thoses are the speaker / headphone and microphone volume sliders")
+            }
+        ));
+        main_group.add(create_switch(
+            settings, 'always-show-input-slider',
+            {
+                title: _("Always show microphone volume slider"),
+                subtitle: _("Show even when there is no application recording audio")
+            }
+        ));
+        main_group.add(create_dropdown(
+            settings, 'media-control',
+            {
+                title: _("Media controls"),
+                subtitle: _("What should we do with media controls ?"),
+                fields: [
+                    ['none', _("Leave as is")],
+                    ['move', _("Move into new panel")],
+                    ['duplicate', _("Duplicate into new panel")]
+                ]
+            }
+        ));
+        if (settings.get_strv('ordering').length != 4) {
+            settings.set_strv('ordering', ['volume-output', 'volume-input', 'media', 'mixer']);
         }
-    ));
-    main_group.add(create_switch(
-        settings, 'always-show-input-slider',
-        {
-            title: _("Always show microphone volume slider"),
-            subtitle: _("Show even when there is no application recording audio")
-        }
-    ));
-    main_group.add(create_dropdown(
-        settings, 'media-control',
-        {
-            title: _("Media controls"),
-            subtitle: _("What should we do with media controls ?"),
-            fields: [
-                ['none', _("Leave as is")],
-                ['move', _("Move into new panel")],
-                ['duplicate', _("Duplicate into new panel")]
-            ]
-        }
-    ));
-    if (settings.get_strv('ordering').length != 4) {
-        settings.set_strv('ordering', ['volume-output', 'volume-input', 'media', 'mixer']);
-    }
-    main_group.add(create_switch(
-        settings, 'create-mixer-sliders',
-        {
-            title: _("Create applications mixer"),
-            subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
-        }
-    ));
-    main_group.add(create_switch(
-        settings, 'merge-panel',
-        {
-            title: _("Merge the new panel into the main one"),
-            subtitle: _("The new panel will not be separated from the main one")
-        }
-    ));
-    const position_dropdown = create_dropdown(
-        settings, 'panel-position',
-        {
-            title: _("Panel position"),
-            subtitle: _("Where the new panel should be located relative to the main panel"),
-            fields: [
-                ['top', _("Top")],
-                ['bottom', _("Bottom")]
-            ]
-        }
-    );
-    settings.bind('merge-panel', position_dropdown, 'visible', Gio.SettingsBindFlags.GET);
-    main_group.add(position_dropdown);
+        main_group.add(create_switch(
+            settings, 'create-mixer-sliders',
+            {
+                title: _("Create applications mixer"),
+                subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
+            }
+        ));
+        main_group.add(create_switch(
+            settings, 'merge-panel',
+            {
+                title: _("Merge the new panel into the main one"),
+                subtitle: _("The new panel will not be separated from the main one")
+            }
+        ));
+        const position_dropdown = create_dropdown(
+            settings, 'panel-position',
+            {
+                title: _("Panel position"),
+                subtitle: _("Where the new panel should be located relative to the main panel"),
+                fields: [
+                    ['top', _("Top")],
+                    ['bottom', _("Bottom")]
+                ]
+            }
+        );
+        settings.bind('merge-panel', position_dropdown, 'visible', Gio.SettingsBindFlags.GET);
+        main_group.add(position_dropdown);
 
-
-    const widgets_order_group = new ReorderablePreferencesGroup(settings, 'ordering', {
-        title: _("Elements order"),
-        description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
-    });
-    widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
-    widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
-    widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
-    widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));
-
-    const add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
-    const mixer_filter_group = new Adw.PreferencesGroup({
-        title: _("Mixer filtering"),
-        description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
-        header_suffix: add_filter_button
-    });
-    mixer_filter_group.add(create_dropdown(
-        settings, 'filter-mode',
-        {
-            title: _("Filtering mode"),
-            subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
-            fields: [
-                ['blacklist', _("Blacklist")],
-                ['whitelist', _("Whitelist")],
-            ]
-        }
-    ));
-    const filters = [];
-    const create_filter_row = (text) => {
-        const new_row = new Adw.EntryRow();
-        if (text != undefined) new_row.text = text;
-
-        const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
-        delete_button.connect('clicked', () => {
-            mixer_filter_group.remove(new_row);
-            filters.splice(filters.indexOf(new_row), 1);
-            save_filters(settings, filters);
+        // ================================= Widget ordering group ================================
+        const widgets_order_group = new ReorderablePreferencesGroup(settings, 'ordering', {
+            title: _("Elements order"),
+            description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
         });
-        new_row.add_suffix(delete_button);
+        page.add(widgets_order_group);
 
-        new_row.connect('changed', () => save_filters(settings, filters));
+        widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
+        widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
+        widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
+        widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));
 
-        filters.push(new_row);
-        mixer_filter_group.add(new_row);
-    };
-    add_filter_button.connect('clicked', () => {
-        create_filter_row();
-    });
+        // ================================== Mixer filter group ==================================
+        const add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
+        const mixer_filter_group = new Adw.PreferencesGroup({
+            title: _("Mixer filtering"),
+            description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
+            header_suffix: add_filter_button
+        });
+        mixer_filter_group.add(create_dropdown(
+            settings, 'filter-mode',
+            {
+                title: _("Filtering mode"),
+                subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
+                fields: [
+                    ['blacklist', _("Blacklist")],
+                    ['whitelist', _("Whitelist")],
+                ]
+            }
+        ));
+        page.add(mixer_filter_group);
 
-    for (const filter of settings.get_strv('filters')) {
-        create_filter_row(filter);
+        const filters = [];
+        const create_filter_row = (text) => {
+            const new_row = new Adw.EntryRow({ 'title': "Stream name" });
+            if (text != undefined) new_row.text = text;
+
+            const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
+            delete_button.connect('clicked', () => {
+                mixer_filter_group.remove(new_row);
+                filters.splice(filters.indexOf(new_row), 1);
+                save_filters(settings, filters);
+            });
+            new_row.add_suffix(delete_button);
+
+            new_row.connect('changed', () => save_filters(settings, filters));
+
+            filters.push(new_row);
+            mixer_filter_group.add(new_row);
+        };
+        add_filter_button.connect('clicked', () => {
+            create_filter_row();
+        });
+
+        for (const filter of settings.get_strv('filters')) {
+            create_filter_row(filter);
+        }
+
+        // ==================================== LibPanel group ====================================
+        // were remove the 'file://' and the filename at the end
+        const parent_folder = '/' + split(rsplit(get_stack()[0].file, '/', 1)[0], '/', 3)[3];
+        const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
+        const libpanel_group = new Adw.PreferencesGroup({
+            title: _("LibPanel settings"),
+            description: _("Those settings are not specific to this extension, they apply to every panels"),
+        });
+        page.add(libpanel_group);
+
+        libpanel_group.add(create_switch_spin(
+            libpanel_settings, 'padding-enabled', 'padding',
+            {
+                title: _("Padding"),
+                subtitle: _("Use this to override the default padding of the panels")
+            }, 0, 100
+        ));
+        libpanel_group.add(create_switch_spin(
+            libpanel_settings, 'row-spacing-enabled', 'row-spacing',
+            {
+                title: _("Row spacing"),
+                subtitle: _("Use this to override the default row spacing of the panels")
+            }, 0, 100
+        ));
+        libpanel_group.add(create_switch_spin(
+            libpanel_settings, 'column-spacing-enabled', 'column-spacing',
+            {
+                title: _("Column spacing"),
+                subtitle: _("Use this to override the default column spacing of the panels")
+            }, 0, 100
+        ));
     }
-
-    const parent_folder = rsplit(get_stack()[0].file, '/', 1)[0];
-    const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
-    const libpanel_group = new Adw.PreferencesGroup({
-        title: _("LibPanel settings"),
-        description: _("Those settings are not specific to this extension, they apply to every panels"),
-    });
-    libpanel_group.add(create_switch_spin(
-        libpanel_settings, 'padding-enabled', 'padding',
-        {
-            title: _("Padding"),
-            subtitle: _("Use this to override the default padding of the panels")
-        }, 0, 41
-    ));
-    libpanel_group.add(create_switch_spin(
-        libpanel_settings, 'row-spacing-enabled', 'row-spacing',
-        {
-            title: _("Row spacing"),
-            subtitle: _("Use this to override the default row spacing of the panels")
-        }, 0, 41
-    ));
-    libpanel_group.add(create_switch_spin(
-        libpanel_settings, 'column-spacing-enabled', 'column-spacing',
-        {
-            title: _("Column spacing"),
-            subtitle: _("Use this to override the default column spacing of the panels")
-        }, 0, 41
-    ));
-
-    page.add(main_group);
-    page.add(widgets_order_group);
-    page.add(mixer_filter_group);
-    page.add(libpanel_group);
-    window.add(page);
 }
 
-function save_filters(settings, filters) {
-    settings.set_strv('filters', filters.map(filter => filter.text));
-}
 
-// Adw.SwitchRow is not available yet
 function create_switch(settings, id, options) {
-    const row = new Adw.ActionRow(options);
-
-    const toggle = new Gtk.Switch({
-        active: settings.get_boolean(id),
-        valign: Gtk.Align.CENTER,
-    });
+    const row = new Adw.SwitchRow(options);
     settings.bind(
         id,
-        toggle,
+        row,
         'active',
         Gio.SettingsBindFlags.DEFAULT
     );
-
-    row.add_suffix(toggle);
-    row.activatable_widget = toggle;
-
-    return row;
-}
-
-function range(start, stop) {
-    return Array.from({ length: stop - start }, (_, i) => i + start);
-}
-
-// Adw.SpinRow is not available yet
-function create_switch_spin(settings, switch_id, spin_id, options, lower = 0, higher = 100) {
-    const model = Gtk.StringList.new(range(lower, higher).map(x => x.toString()));
-    const row = new Adw.ComboRow({
-        model: model,
-        selected: settings.get_int(spin_id) - lower,
-        ...options
-    });
-
-    const switch_ = new Gtk.Switch({
-        active: settings.get_boolean(switch_id),
-        valign: Gtk.Align.CENTER,
-    });
-    settings.bind(
-        switch_id,
-        switch_,
-        'active',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-    row.add_prefix(switch_);
-    row.activatable_widget = switch_;
-
-    row.connect('notify::selected', () => {
-        settings.set_int(spin_id, row.selected + lower);
-    });
-
     return row;
 }
 
@@ -241,7 +199,36 @@ function create_dropdown(settings, id, options) {
     return row;
 }
 
-// From this point, the code is mostly a reimplementation of this:
+function create_switch_spin(settings, switch_id, spin_id, options, lower = 0, higher = 100) {
+    const row = Adw.SpinRow.new_with_range(lower, higher, 1);
+    row.title = options.title;
+    row.subtitle = options.subtitle;
+
+    const switch_ = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+    settings.bind(
+        switch_id,
+        switch_,
+        'active',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+    row.add_prefix(switch_);
+    row.activatable_widget = switch_;
+
+    settings.bind(
+        spin_id,
+        row,
+        'value',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    return row;
+}
+
+function save_filters(settings, filters) {
+    settings.set_strv('filters', filters.map(filter => filter.text));
+}
+
+// From this point onwards, the code is mostly a reimplementation of this:
 // https://gitlab.gnome.org/GNOME/gnome-control-center/-/tree/main/panels/search
 
 const ReorderablePreferencesGroup = GObject.registerClass(class extends Adw.PreferencesGroup {

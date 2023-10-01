@@ -111,7 +111,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
 
         const filters = [];
         const create_filter_row = (text) => {
-            const new_row = new Adw.EntryRow({ 'title': "Stream name" });
+            const new_row = new Adw.EntryRow({ 'title': _("Stream name") });
             if (text != undefined) new_row.text = text;
 
             const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });

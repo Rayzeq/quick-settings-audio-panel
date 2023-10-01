@@ -8,5 +8,6 @@
   ],
   "url": "https://github.com/Rayzeq/quick-settings-audio-panel",
   "version": 24,
-  "settings-schema": "org.gnome.shell.extensions.quick-settings-audio-panel"
+  "settings-schema": "org.gnome.shell.extensions.quick-settings-audio-panel",
+  "gettext-domain": "quick-settings-audio-panel@rayzeq.github.io"
 }

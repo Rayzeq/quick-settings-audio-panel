@@ -136,7 +136,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         }
 
         // ==================================== LibPanel group ====================================
-        // were remove the 'file://' and the filename at the end
+        // we remove the 'file://' and the filename at the end
         const parent_folder = '/' + split(rsplit(get_stack()[0].file, '/', 1)[0], '/', 3)[3];
         const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
         const libpanel_group = new Adw.PreferencesGroup({

@@ -1,14 +1,30 @@
-const { GLib, GObject, Clutter, St } = imports.gi;
-const { MixerSinkInput } = imports.gi.Gvc;
-const ByteArray = imports.byteArray;
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gvc from 'gi://Gvc';
+import St from 'gi://St';
 
-const PopupMenu = imports.ui.popupMenu; // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/popupMenu.js
-const Volume = imports.ui.status.volume; // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/status/volume.js
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
-const OutputStreamSlider = imports.ui.main.panel.statusArea.quickSettings._volume._output.constructor;
+export function waitProperty(object, name) {
+    return new Promise(waitProperty);
+ 
+    function waitProperty(resolve, reject) {
+        if (object[name])
+            resolve(object[name]);
+        else
+            setTimeout(waitProperty.bind(this, resolve, reject), 30);
+    }
+}
+
+// don't know why, but I can't import it directly
+const MixerSinkInput = Gvc.MixerSinkInput;
+// `_volumeOutput` is set in an async function, so we need to ensure it's currently defined
+const OutputStreamSlider = (await waitProperty(Main.panel.statusArea.quickSettings, '_volumeOutput'))._output.constructor;
 const StreamSlider = Object.getPrototypeOf(OutputStreamSlider);
 
-var ApplicationsMixer = class {
+export class ApplicationsMixer {
     constructor(panel, index, filter_mode, filters) {
         this.panel = panel;
 
@@ -83,7 +99,7 @@ var ApplicationsMixer = class {
     }
 };
 
-var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
+const ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
     constructor(control, stream) {
         super(control);
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
@@ -160,7 +176,7 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
     _checkUsedSink() {
         let [, stdout, ,] = GLib.spawn_command_line_sync('pactl -f json list sink-inputs');
         if (stdout instanceof Uint8Array)
-            stdout = ByteArray.toString(stdout);
+            stdout = new TextDecoder().decode(stdout);
         stdout = JSON.parse(stdout);
 
         for (const sink_input of stdout) {

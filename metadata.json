@@ -2,8 +2,11 @@
   "uuid": "quick-settings-audio-panel@rayzeq.github.io",
   "name": "Quick Settings Audio Panel",
   "description": "Create a new panel containing volumes and media control in the quick settings",
-  "shell-version": ["43", "44"],
+  "shell-version": [
+    "43",
+    "44"
+  ],
   "url": "https://github.com/Rayzeq/quick-settings-audio-panel",
-  "version": 23,
+  "version": 24,
   "settings-schema": "org.gnome.shell.extensions.quick-settings-audio-panel"
 }

@@ -8,13 +8,25 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 export function waitProperty(object, name) {
-    return new Promise(waitProperty);
+    if (!this.timeouts) {
+        this.timeouts = [];
+    }
+
+    return new Promise(waitPropertyInner);
  
-    function waitProperty(resolve, reject) {
-        if (object[name])
+    function waitPropertyInner(resolve, reject, timeout = -1) {
+        if (timeout != -1) {
+            var index = waitProperty.timeouts.indexOf(item);
+            if (index !== -1) {
+                waitProperty.timeouts.splice(index, 1);
+            }
+        }
+
+        if (object[name]) {
             resolve(object[name]);
-        else
-            setTimeout(waitProperty.bind(this, resolve, reject), 30);
+        } else {
+            waitProperty.timeouts.push(setTimeout(waitPropertyInner.bind(this, resolve, reject), 30));
+        }
     }
 }
 

@@ -56,6 +56,10 @@ export default class QSAP extends Extension {
     disable() {
         this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
+        for (const timeout of waitProperty.timouts) {
+            clearTimeout(timeout);
+        }
+        waitProperty.timouts = [];
 
         this._set_always_show_input(false);
         this._cleanup_panel();

@@ -8,31 +8,36 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 export function waitProperty(object, name) {
-    if (!this.timeouts) {
-        this.timeouts = [];
+    if (!waitProperty.idle_ids) {
+        waitProperty.idle_ids = [];
     }
 
-    return new Promise(waitPropertyInner);
- 
-    function waitPropertyInner(resolve, reject, timeout = -1) {
-        if (timeout != -1) {
-            var index = waitProperty.timeouts.indexOf(item);
-            if (index !== -1) {
-                waitProperty.timeouts.splice(index, 1);
-            }
-        }
+    return new Promise((resolve, _reject) => {
+        // very ugly hack
+        const id_pointer = {};
+        const id = GLib.idle_add(GLib.PRIORITY_DEFAULT, waitPropertyLoop.bind(this, resolve, id_pointer));
+        id_pointer.id = id;
+        waitProperty.idle_ids.push(id);
+    });
 
+    function waitPropertyLoop(resolve, pointer) {
         if (object[name]) {
+            console.log("removing id", pointer.id);
+            const index = waitProperty.idle_ids.indexOf(pointer.id);
+            if (index !== -1) {
+                waitProperty.idle_ids.splice(index, 1);
+            }
+
             resolve(object[name]);
-        } else {
-            waitProperty.timeouts.push(setTimeout(waitPropertyInner.bind(this, resolve, reject), 30));
+            return GLib.SOURCE_REMOVE;
         }
+        return GLib.SOURCE_CONTINUE;
     }
 }
 
 // don't know why, but I can't import it directly
 const MixerSinkInput = Gvc.MixerSinkInput;
-// `_volumeOutput` is set in an async function, so we need to ensure it's currently defined
+// `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined
 const OutputStreamSlider = (await waitProperty(Main.panel.statusArea.quickSettings, '_volumeOutput'))._output.constructor;
 const StreamSlider = Object.getPrototypeOf(OutputStreamSlider);
 

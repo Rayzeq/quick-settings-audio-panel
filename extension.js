@@ -32,14 +32,14 @@ const CalendarMessageList = DateMenu._messageList;
 const MediaSection_DateMenu = CalendarMessageList._mediaSection;
 
 const SystemItem = QuickSettings._system._systemItem;
-const InputVolumeIndicator = await waitProperty(QuickSettings, '_volumeInput');
-// _volumeOutput is defined here because `./libs/widgets.js` wait on it
+// _volumeOutput is always defined here because `./libs/widgets.js` wait on it
 const OutputVolumeSlider = QuickSettings._volumeOutput._output;
-const InputVolumeSlider = InputVolumeIndicator._input;
-
 
 export default class QSAP extends Extension {
-    enable() {
+    async enable() {
+        this.InputVolumeIndicator = await waitProperty(QuickSettings, '_volumeInput');
+        this.InputVolumeSlider = this.InputVolumeIndicator._input;
+
         this.settings = this.getSettings();
 
         this._scasis_callback = this.settings.connect(
@@ -56,10 +56,10 @@ export default class QSAP extends Extension {
     disable() {
         this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
-        for (const timeout of waitProperty.timouts) {
-            clearTimeout(timeout);
+        for (const id of waitProperty.idle_ids) {
+            GLib.Source.remove(id);
         }
-        waitProperty.timouts = [];
+        waitProperty.idle_ids = null;
 
         this._set_always_show_input(false);
         this._cleanup_panel();
@@ -107,7 +107,7 @@ export default class QSAP extends Extension {
                 if (widget === 'volume-output' && move_master_volume) {
                     this._move_slider(index, OutputVolumeSlider);
                 } else if (widget === 'volume-input' && move_master_volume) {
-                    this._move_slider(index, InputVolumeSlider);
+                    this._move_slider(index, this.InputVolumeSlider);
                 } else if (widget === 'media' && media_control_action === 'move') {
                     this._move_media_controls(index);
                 } else if (widget === 'media' && media_control_action === 'duplicate') {
@@ -187,23 +187,23 @@ export default class QSAP extends Extension {
 
     _set_always_show_input(enabled) {
         if (enabled) {
-            this._ivssa_callback = InputVolumeSlider._control.connect('stream-added', () => {
-                InputVolumeSlider.visible = true;
-                InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+            this._ivssa_callback = this.InputVolumeSlider._control.connect('stream-added', () => {
+                this.InputVolumeSlider.visible = true;
+                this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
             });
-            this._ivssr_callback = InputVolumeSlider._control.connect('stream-removed', () => {
-                InputVolumeSlider.visible = true;
-                InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+            this._ivssr_callback = this.InputVolumeSlider._control.connect('stream-removed', () => {
+                this.InputVolumeSlider.visible = true;
+                this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
             });
-            InputVolumeSlider.visible = true;
-            InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+            this.InputVolumeSlider.visible = true;
+            this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
         } else {
-            if (this._ivssr_callback) InputVolumeSlider._control.disconnect(this._ivssr_callback);
-            if (this._ivssa_callback) InputVolumeSlider._control.disconnect(this._ivssa_callback);
+            if (this._ivssr_callback) this.InputVolumeSlider._control.disconnect(this._ivssr_callback);
+            if (this._ivssa_callback) this.InputVolumeSlider._control.disconnect(this._ivssa_callback);
             this._ivssr_callback = null;
             this._ivssa_callback = null;
-            InputVolumeSlider.visible = InputVolumeSlider._shouldBeVisible();
-            InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+            this.InputVolumeSlider.visible = this.InputVolumeSlider._shouldBeVisible();
+            this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
         }
     }
 }

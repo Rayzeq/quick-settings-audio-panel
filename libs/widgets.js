@@ -105,7 +105,11 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
             //stream.connect('', () => this._setActiveDevice());
         
             for (const sink of control.get_sinks()) {
-                this._addDevice(this._control.lookup_device_from_stream(sink).get_id());
+                // apparently it's possible that this function return null
+                const device = this._control.lookup_device_from_stream(sink)?.get_id();
+                if (device) {
+                    this._addDevice(device);
+                }
             }
         }
 
@@ -165,8 +169,10 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
 
         for (const sink_input of stdout) {
             if (sink_input.index === this.stream.index) {
-                const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink)).get_id();
-                this._setActiveDevice(sink_id);
+                const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink))?.get_id();
+                if (sink_id) {
+                    this._setActiveDevice(sink_id);
+                }
             }
         }
     }

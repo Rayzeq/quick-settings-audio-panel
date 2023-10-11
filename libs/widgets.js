@@ -22,7 +22,6 @@ export function waitProperty(object, name) {
 
     function waitPropertyLoop(resolve, pointer) {
         if (object[name]) {
-            console.log("removing id", pointer.id);
             const index = waitProperty.idle_ids.indexOf(pointer.id);
             if (index !== -1) {
                 waitProperty.idle_ids.splice(index, 1);

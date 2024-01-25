@@ -1,6 +1,7 @@
 const { GLib, GObject, Clutter, St } = imports.gi;
 const { MixerSinkInput } = imports.gi.Gvc;
 const ByteArray = imports.byteArray;
+const Config = imports.misc.config;
 
 const PopupMenu = imports.ui.popupMenu; // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/popupMenu.js
 const Volume = imports.ui.status.volume; // https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/status/volume.js
@@ -123,8 +124,11 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
             this._checkUsedSink();
         }
 
-        this._iconButton.y_expand = false;
-        this._iconButton.y_align = Clutter.ActorAlign.CENTER;
+        const [major, minor] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
+        if (major === 43) {
+            this._iconButton.y_expand = false;
+            this._iconButton.y_align = Clutter.ActorAlign.CENTER;
+        }
 
         const box = this.child;
         const sliderBin = box.get_children()[1];

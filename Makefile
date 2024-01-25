@@ -8,4 +8,5 @@ install: build
 	gnome-extensions install quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip --force
 
 test: install
+	clear
 	SHELL_DEBUG=backtrace-warnings dbus-run-session -- gnome-shell --nested --wayland

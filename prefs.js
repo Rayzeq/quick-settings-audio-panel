@@ -46,14 +46,27 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 ]
             }
         ));
-        if (settings.get_strv('ordering').length != 4) {
-            settings.set_strv('ordering', ['volume-output', 'volume-input', 'media', 'mixer']);
+        if (settings.get_strv('ordering').length != 5) {
+            settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
         }
         main_group.add(create_switch(
             settings, 'create-mixer-sliders',
             {
                 title: _("Create applications mixer"),
                 subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
+            }
+        ));
+        main_group.add(create_switch(
+            settings, 'create-sink-mixer',
+            {
+                title: _("Create per-device volume sliders"),
+            }
+        ));
+        main_group.add(create_switch(
+            settings, 'remove-output-slider',
+            {
+                title: _("Remove the output slider"),
+                subtitle: _("This is useful if you enabled the per-device volume sliders")
             }
         ));
         main_group.add(create_switch(
@@ -85,6 +98,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         page.add(widgets_order_group);
 
         widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
+        widgets_order_group.add(new DraggableRow('sink-mixer', { title: _("Per-device volume sliders") }));
         widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
         widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
         widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));
@@ -133,6 +147,52 @@ export default class QSAPPreferences extends ExtensionPreferences {
 
         for (const filter of settings.get_strv('filters')) {
             create_filter_row(filter);
+        }
+
+        // ================================ Sink mixer filter group ===============================
+        const sink_add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
+        const sink_mixer_filter_group = new Adw.PreferencesGroup({
+            title: _("Output sliders filtering"),
+            description: _("Allow you to filter the per-device volume sliders. The content of the filters are regexes and are applied to the device's display name and pulseaudio name."),
+            header_suffix: sink_add_filter_button
+        });
+        sink_mixer_filter_group.add(create_dropdown(
+            settings, 'sink-filter-mode',
+            {
+                title: _("Filtering mode"),
+                subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
+                fields: [
+                    ['blacklist', _("Blacklist")],
+                    ['whitelist', _("Whitelist")],
+                ]
+            }
+        ));
+        page.add(sink_mixer_filter_group);
+
+        const sink_filters = [];
+        const sink_create_filter_row = (text) => {
+            const new_row = new Adw.EntryRow({ 'title': _("Device name") });
+            if (text != undefined) new_row.text = text;
+
+            const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
+            delete_button.connect('clicked', () => {
+                sink_mixer_filter_group.remove(new_row);
+                sink_filters.splice(sink_filters.indexOf(new_row), 1);
+                sink_save_filters(settings, sink_filters);
+            });
+            new_row.add_suffix(delete_button);
+
+            new_row.connect('changed', () => sink_save_filters(settings, sink_filters));
+
+            sink_filters.push(new_row);
+            sink_mixer_filter_group.add(new_row);
+        };
+        sink_add_filter_button.connect('clicked', () => {
+            sink_create_filter_row();
+        });
+
+        for (const filter of settings.get_strv('sink-filters')) {
+            sink_create_filter_row(filter);
         }
 
         // ==================================== LibPanel group ====================================
@@ -226,6 +286,10 @@ function create_switch_spin(settings, switch_id, spin_id, options, lower = 0, hi
 
 function save_filters(settings, filters) {
     settings.set_strv('filters', filters.map(filter => filter.text));
+}
+
+function sink_save_filters(settings, filters) {
+    settings.set_strv('sink-filters', filters.map(filter => filter.text));
 }
 
 // From this point onwards, the code is mostly a reimplementation of this:

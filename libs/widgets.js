@@ -159,7 +159,7 @@ var SinkMixer = class {
     }
 };
 
-var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
+var SinkVolumeSlider = GObject.registerClass(class extends StreamSlider {
     constructor(control, stream) {
         super(control);
 
@@ -173,7 +173,7 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         this._hasHeadphones = OutputStreamSlider.prototype._findHeadphones(stream);
         this.stream = stream;
 
-        const [major, minor] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
+        const [major, _] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
         if (major > 43) {
             this._iconButton.y_expand = false;
             this._iconButton.y_align = Clutter.ActorAlign.CENTER;
@@ -182,7 +182,6 @@ var ApplicationVolumeSlider = GObject.registerClass(class extends StreamSlider {
         const box = this.child;
         const sliderBin = box.get_children()[1];
         box.remove_child(sliderBin);
-        const menu_button_visible = this._menuButton.visible;
         box.remove_child(this._menuButton);
 
         const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
@@ -250,7 +249,7 @@ var ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSlide
             this._checkUsedSink();
         }
 
-        const [major, minor] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
+        const [major, _] = Config.PACKAGE_VERSION.split('.').map(s => Number(s));
         if (major > 43) {
             this._iconButton.y_expand = false;
             this._iconButton.y_align = Clutter.ActorAlign.CENTER;

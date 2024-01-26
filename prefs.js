@@ -46,14 +46,27 @@ function fillPreferencesWindow(window) {
             ]
         }
     ));
-    if (settings.get_strv('ordering').length != 4) {
-        settings.set_strv('ordering', ['volume-output', 'volume-input', 'media', 'mixer']);
+    if (settings.get_strv('ordering').length != 5) {
+        settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
     }
     main_group.add(create_switch(
         settings, 'create-mixer-sliders',
         {
             title: _("Create applications mixer"),
             subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
+        }
+    ));
+    main_group.add(create_switch(
+        settings, 'create-sink-mixer',
+        {
+            title: _("Create per-device volume sliders"),
+        }
+    ));
+    main_group.add(create_switch(
+        settings, 'remove-output-slider',
+        {
+            title: _("Remove the output slider"),
+            subtitle: _("This is useful if you enabled the per-device volume sliders")
         }
     ));
     main_group.add(create_switch(
@@ -83,6 +96,7 @@ function fillPreferencesWindow(window) {
         description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
     });
     widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
+    widgets_order_group.add(new DraggableRow('sink-mixer', { title: _("Per-device volume sliders") }));
     widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
     widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
     widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));
@@ -130,6 +144,51 @@ function fillPreferencesWindow(window) {
         create_filter_row(filter);
     }
 
+    // ================================ Sink mixer filter group ===============================
+    const sink_add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
+    const sink_mixer_filter_group = new Adw.PreferencesGroup({
+        title: _("Output sliders filtering"),
+        description: _("Allow you to filter the per-device volume sliders. The content of the filters are regexes and are applied to the device's display name and pulseaudio name."),
+        header_suffix: sink_add_filter_button
+    });
+    sink_mixer_filter_group.add(create_dropdown(
+        settings, 'sink-filter-mode',
+        {
+            title: _("Filtering mode"),
+            subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
+            fields: [
+                ['blacklist', _("Blacklist")],
+                ['whitelist', _("Whitelist")],
+            ]
+        }
+    ));
+
+    const sink_filters = [];
+    const sink_create_filter_row = (text) => {
+        const new_row = new Adw.EntryRow({ 'title': _("Device name") });
+        if (text != undefined) new_row.text = text;
+
+        const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
+        delete_button.connect('clicked', () => {
+            sink_mixer_filter_group.remove(new_row);
+            sink_filters.splice(sink_filters.indexOf(new_row), 1);
+            sink_save_filters(settings, sink_filters);
+        });
+        new_row.add_suffix(delete_button);
+
+        new_row.connect('changed', () => sink_save_filters(settings, sink_filters));
+
+        sink_filters.push(new_row);
+        sink_mixer_filter_group.add(new_row);
+    };
+    sink_add_filter_button.connect('clicked', () => {
+        sink_create_filter_row();
+    });
+
+    for (const filter of settings.get_strv('sink-filters')) {
+        sink_create_filter_row(filter);
+    }
+
     const parent_folder = rsplit(get_stack()[0].file, '/', 1)[0];
     const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
     const libpanel_group = new Adw.PreferencesGroup({
@@ -161,12 +220,17 @@ function fillPreferencesWindow(window) {
     page.add(main_group);
     page.add(widgets_order_group);
     page.add(mixer_filter_group);
+    page.add(sink_mixer_filter_group);
     page.add(libpanel_group);
     window.add(page);
 }
 
 function save_filters(settings, filters) {
     settings.set_strv('filters', filters.map(filter => filter.text));
+}
+
+function sink_save_filters(settings, filters) {
+    settings.set_strv('sink-filters', filters.map(filter => filter.text));
 }
 
 // Adw.SwitchRow is not available yet

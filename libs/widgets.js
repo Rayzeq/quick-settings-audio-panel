@@ -134,7 +134,6 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         const box = this.child;
         const sliderBin = box.get_children()[1];
         box.remove_child(sliderBin);
-        const menu_button_visible = this._menuButton.visible;
         box.remove_child(this._menuButton);
 
         const vbox = new St.BoxLayout({ vertical: true, x_expand: true });

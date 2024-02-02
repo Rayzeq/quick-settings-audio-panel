@@ -144,6 +144,11 @@ class Extension {
 
         if (!this._panel) return;
 
+        if (this._sink_mixer) {
+            this._sink_mixer.destroy();
+            this._sink_mixer = null;
+        }
+
         if (this._applications_mixer) {
             this._applications_mixer.destroy();
             this._applications_mixer = null;

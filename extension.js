@@ -209,21 +209,16 @@ export default class QSAP extends Extension {
 
     _set_always_show_input(enabled) {
         if (enabled) {
-            this._ivssa_callback = this.InputVolumeSlider._control.connect('stream-added', () => {
-                this.InputVolumeSlider.visible = true;
+            this._ivs_vis_callback = this.InputVolumeSlider.connect("notify::visible", () => {
                 this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
-            });
-            this._ivssr_callback = this.InputVolumeSlider._control.connect('stream-removed', () => {
-                this.InputVolumeSlider.visible = true;
-                this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
+                if (!this.InputVolumeSlider.visible) {
+                    this.InputVolumeSlider.visible = true;
+                }
             });
             this.InputVolumeSlider.visible = true;
-            this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
         } else {
-            if (this._ivssr_callback) this.InputVolumeSlider._control.disconnect(this._ivssr_callback);
-            if (this._ivssa_callback) this.InputVolumeSlider._control.disconnect(this._ivssa_callback);
-            this._ivssr_callback = null;
-            this._ivssa_callback = null;
+            if (this._ivs_vis_callback) this.InputVolumeSlider.disconnect(this._ivs_vis_callback);
+            this._ivs_vis_callback = null;
             this.InputVolumeSlider.visible = this.InputVolumeSlider._shouldBeVisible();
             this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
         }

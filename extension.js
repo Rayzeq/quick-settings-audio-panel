@@ -44,8 +44,7 @@ const { LibPanel, Panel } = Self.imports.libs.libpanel.main;
 
 class Extension {
     constructor() {
-        this._ivssa_callback = null;
-        this._ivssr_callback = null;
+        this._ivs_vis_callback = null;
 
         this._panel = null;
         this._master_volumes = [];
@@ -218,21 +217,16 @@ class Extension {
 
     _set_always_show_input(enabled) {
         if (enabled) {
-            this._ivssa_callback = InputVolumeSlider._control.connect('stream-added', () => {
-                InputVolumeSlider.visible = true;
+            this._ivs_vis_callback = InputVolumeSlider.connect('notify::visible', () => {
                 InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
-            });
-            this._ivssr_callback = InputVolumeSlider._control.connect('stream-removed', () => {
-                InputVolumeSlider.visible = true;
-                InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
+                if (!InputVolumeSlider.visible) {
+                    InputVolumeSlider.visible = true;
+                }
             });
             InputVolumeSlider.visible = true;
-            InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
         } else {
-            if (this._ivssr_callback) InputVolumeSlider._control.disconnect(this._ivssr_callback);
-            if (this._ivssa_callback) InputVolumeSlider._control.disconnect(this._ivssa_callback);
-            this._ivssr_callback = null;
-            this._ivssa_callback = null;
+            if (this._ivs_vis_callback) InputVolumeSlider.disconnect(this._ivs_vis_callback);
+            this._ivs_vis_callback = null;
             InputVolumeSlider.visible = InputVolumeSlider._shouldBeVisible();
             InputVolumeIndicator.visible = InputVolumeSlider._shouldBeVisible();
         }

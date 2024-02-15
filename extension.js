@@ -209,18 +209,33 @@ export default class QSAP extends Extension {
 
     _set_always_show_input(enabled) {
         if (enabled) {
-            this._ivs_vis_callback = this.InputVolumeSlider.connect("notify::visible", () => {
-                this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
-                if (!this.InputVolumeSlider.visible) {
-                    this.InputVolumeSlider.visible = true;
-                }
-            });
+            this._ivs_vis_callback = this.InputVolumeSlider.connect("notify::visible", this._reset_input_slider_vis.bind(this));
+            // make sure to check if the icon should be shown when some events are fired.
+            // we need this because we make the slider always visible, so notify::visible isn't
+            // fired when gnome-shell tries to show it (because it was already visible)
+            this._ivsc_sa_callback = this.InputVolumeSlider._control.connect("stream-added", this._reset_input_slider_vis.bind(this));
+            this._ivsc_sr_callback = this.InputVolumeSlider._control.connect("stream-removed", this._reset_input_slider_vis.bind(this));
+            this._ivsc_dsc_callback = this.InputVolumeSlider._control.connect("default-source-changed", this._reset_input_slider_vis.bind(this));
             this.InputVolumeSlider.visible = true;
         } else {
             if (this._ivs_vis_callback) this.InputVolumeSlider.disconnect(this._ivs_vis_callback);
             this._ivs_vis_callback = null;
+            if (this._ivsc_sa_callback) this.InputVolumeSlider._control.disconnect(this._ivsc_sa_callback);
+            this._ivsc_sa_callback = null;
+            if (this._ivsc_sr_callback) this.InputVolumeSlider._control.disconnect(this._ivsc_sr_callback);
+            this._ivsc_sr_callback = null;
+            if (this._ivsc_dsc_callback) this.InputVolumeSlider._control.disconnect(this._ivsc_dsc_callback);
+            this._ivsc_dsc_callback = null;
+
             this.InputVolumeSlider.visible = this.InputVolumeSlider._shouldBeVisible();
             this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
         }
+    }
+
+    _reset_input_slider_vis() {
+        if (!this.InputVolumeSlider.visible) {
+            this.InputVolumeSlider.visible = true;
+        }
+        this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
     }
 }

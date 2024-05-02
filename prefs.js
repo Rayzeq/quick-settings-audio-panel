@@ -63,6 +63,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
             }
         ));
         main_group.add(create_switch(
+            settings, 'show-current-device',
+            {
+                title: _("Show the currently selected device for the master sliders"),
+            }
+        ));
+        main_group.add(create_switch(
             settings, 'remove-output-slider',
             {
                 title: _("Remove the output slider"),

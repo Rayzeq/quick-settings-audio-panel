@@ -22,6 +22,9 @@
     <key name="create-sink-mixer" type="b">
       <default>false</default>
     </key>
+    <key name="show-current-device" type="b">
+      <default>false</default>
+    </key>
     <key name="remove-output-slider" type="b">
       <default>false</default>
     </key>

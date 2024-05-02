@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-26 09:55+0100\n"
+"POT-Creation-Date: 2024-05-02 21:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "Show even when there is no application recording audio"
 msgstr ""
 
-#: prefs.js:40 prefs.js:103
+#: prefs.js:40 prefs.js:109
 msgid "Media controls"
 msgstr ""
 
@@ -68,138 +68,142 @@ msgid "Create per-device volume sliders"
 msgstr ""
 
 #: prefs.js:68
+msgid "Show the currently selected device for the master sliders"
+msgstr ""
+
+#: prefs.js:74
 msgid "Remove the output slider"
 msgstr ""
 
-#: prefs.js:69
+#: prefs.js:75
 msgid "This is useful if you enabled the per-device volume sliders"
 msgstr ""
 
-#: prefs.js:75
+#: prefs.js:81
 msgid "Merge the new panel into the main one"
 msgstr ""
 
-#: prefs.js:76
+#: prefs.js:82
 msgid "The new panel will not be separated from the main one"
 msgstr ""
 
-#: prefs.js:82
+#: prefs.js:88
 msgid "Panel position"
 msgstr ""
 
-#: prefs.js:83
+#: prefs.js:89
 msgid "Where the new panel should be located relative to the main panel"
 msgstr ""
 
-#: prefs.js:85
+#: prefs.js:91
 msgid "Top"
 msgstr ""
 
-#: prefs.js:86
+#: prefs.js:92
 msgid "Bottom"
 msgstr ""
 
-#: prefs.js:95
+#: prefs.js:101
 msgid "Elements order"
 msgstr ""
 
-#: prefs.js:96
+#: prefs.js:102
 msgid ""
 "Reorder elements in the new panel (disabled elments will just be ignored)"
 msgstr ""
 
-#: prefs.js:100
+#: prefs.js:106
 msgid "Speaker / Headphone volume slider"
 msgstr ""
 
-#: prefs.js:101
+#: prefs.js:107
 msgid "Per-device volume sliders"
 msgstr ""
 
-#: prefs.js:102
+#: prefs.js:108
 msgid "Microphone volume slider"
 msgstr ""
 
-#: prefs.js:104
+#: prefs.js:110
 msgid "Applications mixer"
 msgstr ""
 
-#: prefs.js:109
+#: prefs.js:115
 msgid "Mixer filtering"
 msgstr ""
 
-#: prefs.js:110
+#: prefs.js:116
 msgid ""
 "Allow you to filter the streams that show up in the application mixer "
 "**using regexes**"
 msgstr ""
 
-#: prefs.js:116 prefs.js:162
+#: prefs.js:122 prefs.js:168
 msgid "Filtering mode"
 msgstr ""
 
-#: prefs.js:117 prefs.js:163
+#: prefs.js:123 prefs.js:169
 msgid ""
 "On blacklist mode, matching elements are removed from the list. On whitelist "
 "mode, only matching elements will be shown"
 msgstr ""
 
-#: prefs.js:119 prefs.js:165
+#: prefs.js:125 prefs.js:171
 msgid "Blacklist"
 msgstr ""
 
-#: prefs.js:120 prefs.js:166
+#: prefs.js:126 prefs.js:172
 msgid "Whitelist"
 msgstr ""
 
-#: prefs.js:128
+#: prefs.js:134
 msgid "Stream name"
 msgstr ""
 
-#: prefs.js:155
+#: prefs.js:161
 msgid "Output sliders filtering"
 msgstr ""
 
-#: prefs.js:156
+#: prefs.js:162
 msgid ""
 "Allow you to filter the per-device volume sliders. The content of the "
 "filters are regexes and are applied to the device's display name and "
 "pulseaudio name."
 msgstr ""
 
-#: prefs.js:174
+#: prefs.js:180
 msgid "Device name"
 msgstr ""
 
-#: prefs.js:203
+#: prefs.js:209
 msgid "LibPanel settings"
 msgstr ""
 
-#: prefs.js:204
+#: prefs.js:210
 msgid ""
 "Those settings are not specific to this extension, they apply to every panels"
 msgstr ""
 
-#: prefs.js:211
+#: prefs.js:217
 msgid "Padding"
 msgstr ""
 
-#: prefs.js:212
+#: prefs.js:218
 msgid "Use this to override the default padding of the panels"
 msgstr ""
 
-#: prefs.js:218
+#: prefs.js:224
 msgid "Row spacing"
 msgstr ""
 
-#: prefs.js:219
+#: prefs.js:225
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 
-#: prefs.js:225
+#: prefs.js:231
 msgid "Column spacing"
 msgstr ""
 
-#: prefs.js:226
+#: prefs.js:232
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""

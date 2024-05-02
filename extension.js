@@ -17,6 +17,7 @@
  */
 
 import Clutter from 'gi://Clutter';
+import St from 'gi://St';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
@@ -48,12 +49,31 @@ export default class QSAP extends Extension {
         );
         this.settings.emit('changed::always-show-input-slider', 'always-show-input-slider');
 
+        this._scscd_callback = this.settings.connect(
+            'changed::show-current-device',
+            () => {
+                if (this.settings.get_boolean('show-current-device')) {
+                    this._patch_show_current_device(OutputVolumeSlider);
+                    this._patch_show_current_device(this.InputVolumeSlider);
+
+                } else {
+                    this._unpatch_show_current_device(OutputVolumeSlider);
+                    this._unpatch_show_current_device(this.InputVolumeSlider);
+                }
+            }
+        );
+        this.settings.emit('changed::show-current-device', 'show-current-device');
+
         this._master_volumes = [];
         this._sc_callback = this.settings.connect('changed', () => this._refresh_panel());
         this._refresh_panel();
     }
 
     disable() {
+        this.settings.disconnect(this._scscd_callback);
+        this._unpatch_show_current_device(OutputVolumeSlider);
+        this._unpatch_show_current_device(this.InputVolumeSlider);
+
         this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
         for (const id of waitProperty.idle_ids) {
@@ -237,5 +257,92 @@ export default class QSAP extends Extension {
             this.InputVolumeSlider.visible = true;
         }
         this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
+    }
+
+    // Base slider
+    // slider: OutputStreamSlider
+    //   box: StBoxLayout
+    //     slider._iconButton: StButton
+    //     sliderBin: StBin
+    //     slider._menuButton: StButton
+    //     
+    // Modified slider
+    // slider: OutputStreamSlider
+    //   box: StBoxLayout
+    //     slider._iconButton: StButton
+    //     vbox: StBoxLayout (NEW)
+    //       label: StLabel (NEW)
+    //       hbox: StBoxLayout (NEW)
+    //         sliderBin: StBin
+    //         slider._menuButton: StButton
+
+    _patch_show_current_device(slider) {
+        if (slider._qsap_callback) return;
+
+        slider._iconButton._qsap_y_expand = slider._iconButton.y_expand;
+        slider._iconButton._qsap_y_align = slider._iconButton.y_align;
+        slider._iconButton.y_expand = false;
+        slider._iconButton.y_align = Clutter.ActorAlign.CENTER;
+
+        const box = slider.child;
+        const sliderBin = box.get_children()[1];
+        box.remove_child(sliderBin);
+        const menu_button_visible = slider._menuButton.visible;
+        box.remove_child(slider._menuButton);
+
+        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        box.insert_child_at_index(vbox, 1);
+
+        const hbox = new St.BoxLayout();
+        hbox.add_child(sliderBin);
+        hbox.add_child(slider._menuButton);
+        slider._menuButton.visible = menu_button_visible; // we need to reset `actor.visible` when changing parent
+        // this prevent the tall panel bug when the button is shown
+        slider._menuButton._qsap_y_expand = slider._menuButton.y_expand;
+        slider._menuButton.y_expand = false;
+
+        const label = new St.Label({ natural_width: 0 });
+        label.style_class = "QSAP-application-volume-slider-label";
+
+        const signal_name = slider == OutputVolumeSlider ? "active-output-update" : "active-input-update";
+        slider._qsap_callback = slider._control.connect(signal_name, () => {
+            label.text = slider._control.lookup_device_from_stream(slider._stream).description;
+        });
+
+        if (slider._stream) label.text = slider._control.lookup_device_from_stream(slider._stream).description;
+
+        vbox.add_child(label);
+        vbox.add_child(hbox);
+    }
+
+    _unpatch_show_current_device(slider) {
+        if (!slider._qsap_callback) return;
+        slider._control.disconnect(slider._qsap_callback);
+    
+        slider._iconButton.y_expand = slider._iconButton._qsap_y_expand;
+        slider._iconButton.y_align = slider._iconButton._qsap_y_align;
+
+        const menu_button_visible = slider._menuButton.visible;
+
+        const box = slider.child;
+        const vbox = box.get_children()[1];
+        const hbox = vbox.get_children()[1];
+        const sliderBin = hbox.get_children()[0];
+
+        box.remove_child(vbox);
+        hbox.remove_child(sliderBin);
+        hbox.remove_child(slider._menuButton);
+
+        box.add_child(sliderBin);
+        box.add_child(slider._menuButton);
+
+        // we need to reset `actor.visible` when changing parent
+        slider._menuButton.visible = menu_button_visible;
+        slider._menuButton.y_expand = slider._menuButton._qsap_y_expand;
+
+        delete slider._qsap_callback;
+        delete slider._iconButton._qsap_y_expand;
+        delete slider._iconButton._qsap_y_align;
+        delete slider._menuButton._qsap_y_expand;
     }
 }

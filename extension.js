@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+import GObject from 'gi://GObject';
 import Clutter from 'gi://Clutter';
 import St from 'gi://St';
 
@@ -306,10 +307,15 @@ export default class QSAP extends Extension {
 
         const signal_name = slider == OutputVolumeSlider ? "active-output-update" : "active-input-update";
         slider._qsap_callback = slider._control.connect(signal_name, () => {
-            label.text = slider._control.lookup_device_from_stream(slider._stream).description;
+            const device_id = slider._control.lookup_device_from_stream(slider._stream).get_id();
+            // using the item's text allow for compatibility with extensions that changes it, let's hope this won't break
+            slider._deviceItems.get(device_id).label.bind_property('text', label, 'text', GObject.BindingFlags.SYNC_CREATE);
         });
 
-        if (slider._stream) label.text = slider._control.lookup_device_from_stream(slider._stream).description;
+        if (slider._stream) {
+            const device_id = slider._control.lookup_device_from_stream(slider._stream).get_id();
+            slider._deviceItems.get(device_id).label.bind_property('text', label, 'text', GObject.BindingFlags.SYNC_CREATE);
+        };
 
         vbox.add_child(label);
         vbox.add_child(hbox);

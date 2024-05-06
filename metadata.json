@@ -6,7 +6,7 @@
     "46"
   ],
   "url": "https://github.com/Rayzeq/quick-settings-audio-panel",
-  "version": 47,
+  "version": 49,
   "settings-schema": "org.gnome.shell.extensions.quick-settings-audio-panel",
   "gettext-domain": "quick-settings-audio-panel@rayzeq.github.io"
 }

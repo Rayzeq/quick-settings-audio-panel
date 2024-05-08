@@ -57,6 +57,13 @@ export default class QSAPPreferences extends ExtensionPreferences {
             }
         ));
         main_group.add(create_switch(
+            settings, 'ignore-css',
+            {
+                title: _("Do not apply custom CSS"),
+                subtitle: _("Disable the CSS in this extension that could override your theme")
+            }
+        ));
+        main_group.add(create_switch(
             settings, 'create-sink-mixer',
             {
                 title: _("Create per-device volume sliders"),

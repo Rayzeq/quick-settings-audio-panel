@@ -17,15 +17,18 @@
 	/*margin-bottom: -10px;*/
 }
 
-.QSAP-media-section {
+.QSAP-media-section .message {
+	/* Prevent the text from getting too large */
+	width: 100px;
+}
+
+.QSAP-media-section-optional {
 	/* Add margins because it's too close to sliders */
 	margin-top: 5px;
 	margin-bottom: 8px;
 }
 
-.QSAP-media-section .message {
-	/* Limit width to 100 px */
-	width: 100px;
+.QSAP-media-section-optional .message {
 	/* Make margins smaller */
 	margin: 2px 0px 0px 0px;
 	/* Smoother corners */
@@ -34,19 +37,19 @@
 	margin: 0px;
 }
 
-.QSAP-media-section .message-icon-bin {
+.QSAP-media-section-optional .message-icon-bin {
 	/* Compact layout */
 	padding: 12px;
 	padding-left: 15px;
 	padding-right: 0px;
 }
 
-.QSAP-media-section .media-message-cover-icon.fallback {
+.QSAP-media-section-optional .media-message-cover-icon.fallback {
 	/* Make the fallback icon (the note) the same size as other icons */
 	padding: 9px;
 }
 
-.QSAP-media-section .message-media-control {
+.QSAP-media-section-optional .message-media-control {
 	/* Move control buttons closer to each other */
 	padding-left: 5px;
 	padding-right: 5px;

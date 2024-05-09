@@ -174,6 +174,7 @@ export default class QSAP extends Extension {
             this._panel.removeItem(MediaSection_DateMenu);
             CalendarMessageList._sectionList.insert_child_at_index(MediaSection_DateMenu, 0);
             MediaSection_DateMenu.remove_style_class_name('QSAP-media-section');
+            MediaSection_DateMenu.remove_style_class_name('QSAP-media-section-optional');
             delete MediaSection_DateMenu._qsap_moved;
         }
 
@@ -211,15 +212,17 @@ export default class QSAP extends Extension {
         this._panel._grid.set_child_at_index(MediaSection_DateMenu, index);
 
         MediaSection_DateMenu._qsap_moved = true;
+        MediaSection_DateMenu.add_style_class_name('QSAP-media-section');
         if (!this.settings.get_boolean('ignore-css')) {
-            MediaSection_DateMenu.add_style_class_name('QSAP-media-section');
+            MediaSection_DateMenu.add_style_class_name('QSAP-media-section-optional');
         }
     }
 
     _create_media_controls(index) {
         this._media_section = new MediaSection();
+        this._media_section.add_style_class_name('QSAP-media-section');
         if (!this.settings.get_boolean('ignore-css')) {
-            this._media_section.add_style_class_name('QSAP-media-section');
+            this._media_section.add_style_class_name('QSAP-media-section-optional');
         }
 
         this._panel.addItem(this._media_section, 2);

@@ -49,11 +49,18 @@ export default class QSAPPreferences extends ExtensionPreferences {
         if (settings.get_strv('ordering').length != 5) {
             settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
         }
+
+        let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
+        try {
+            GLib.spawn_command_line_sync('pactl');
+        } catch (e) {
+            subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
+        }
         main_group.add(create_switch(
             settings, 'create-mixer-sliders',
             {
                 title: _("Create applications mixer"),
-                subtitle: _("Thoses sliders are the same you can find in pavucontrol or in the sound settings")
+                subtitle: subtitle
             }
         ));
         main_group.add(create_switch(

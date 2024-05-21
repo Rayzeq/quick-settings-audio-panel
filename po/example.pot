@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-15 20:22+0200\n"
+"POT-Creation-Date: 2024-05-21 11:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -199,25 +199,37 @@ msgid ""
 msgstr ""
 
 #: prefs.js:231
+msgid "Panel alignment"
+msgstr ""
+
+#: prefs.js:233
+msgid "Left"
+msgstr ""
+
+#: prefs.js:234
+msgid "Right"
+msgstr ""
+
+#: prefs.js:241
 msgid "Padding"
 msgstr ""
 
-#: prefs.js:232
+#: prefs.js:242
 msgid "Use this to override the default padding of the panels"
 msgstr ""
 
-#: prefs.js:238
+#: prefs.js:248
 msgid "Row spacing"
 msgstr ""
 
-#: prefs.js:239
+#: prefs.js:249
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 
-#: prefs.js:245
+#: prefs.js:255
 msgid "Column spacing"
 msgstr ""
 
-#: prefs.js:246
+#: prefs.js:256
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""

@@ -225,6 +225,16 @@ export default class QSAPPreferences extends ExtensionPreferences {
         });
         page.add(libpanel_group);
 
+        libpanel_group.add(create_dropdown(
+            libpanel_settings, 'alignment',
+            {
+                title: _("Panel alignment"),
+                fields: [
+                    ['left', _("Left")],
+                    ['right', _("Right")],
+                ]
+            }
+        ));
         libpanel_group.add(create_switch_spin(
             libpanel_settings, 'padding-enabled', 'padding',
             {

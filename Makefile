@@ -9,4 +9,4 @@ install: build
 
 test: install
 	clear
-	SHELL_DEBUG=backtrace-warnings dbus-run-session -- gnome-shell --nested --wayland
+	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --nested --wayland

@@ -1,5 +1,6 @@
 "use strict";
 
+import GLib from 'gi://GLib';
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 import Gdk from 'gi://Gdk';
@@ -54,7 +55,11 @@ export default class QSAPPreferences extends ExtensionPreferences {
         try {
             GLib.spawn_command_line_sync('pactl');
         } catch (e) {
-            subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
+            if (e.message.includes("No such file"))
+                subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
+            else {
+                subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
+            }
         }
         main_group.add(create_switch(
             settings, 'create-mixer-sliders',

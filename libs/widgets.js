@@ -141,14 +141,19 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
 
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
-        stream.bind_property_full('description', label, 'text',
-            GObject.BindingFlags.SYNC_CREATE,
-            (_binding, value) => {
-                return [true, value];
-            },
-            null
-        );
 
+        const updater = () => {
+            const card_name = card.name;
+            const port_name = card.get_ports().find(port => port.port == stream.port)?.human_port;
+            label.text = port_name
+                ? `${port_name} - ${card_name}`
+                : card_name;
+        };
+        const card = control.lookup_card_id(stream.card_index);
+        card.connect("notify::name", updater);
+        stream.connect("notify::port", updater);
+        updater();
+        
         vbox.add_child(label);
         vbox.add_child(sliderBin);
     }

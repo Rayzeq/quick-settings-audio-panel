@@ -25,6 +25,9 @@
     <key name="create-sink-mixer" type="b">
       <default>false</default>
     </key>
+    <key name="pactl-path" type="s">
+      <default>""</default>
+    </key>
     <key name="show-current-device" type="b">
       <default>false</default>
     </key>

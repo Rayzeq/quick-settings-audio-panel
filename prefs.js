@@ -51,23 +51,52 @@ export default class QSAPPreferences extends ExtensionPreferences {
             settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
         }
 
-        let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
-        try {
-            GLib.spawn_command_line_sync('pactl');
-        } catch (e) {
-            if (e.message.includes("No such file"))
-                subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
-            else {
-                subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
-            }
-        }
-        main_group.add(create_switch(
+        const row = create_switch(
             settings, 'create-mixer-sliders',
             {
                 title: _("Create applications mixer"),
-                subtitle: subtitle
             }
-        ));
+        )
+        const updateSubtitle = () => {
+            let found_pactl = false;
+            let found_pactl_using_path = false;
+            let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
+            try {
+                GLib.spawn_command_line_sync('pactl');
+                found_pactl = true;
+            } catch (e) {
+                if (e.message.includes("No such file")) {
+                    try {
+                        GLib.spawn_command_line_sync(settings.get_string("pactl-path"));
+                        found_pactl = true;
+                        found_pactl_using_path = true;
+                    } catch (e) {
+                        if (!e.message.includes("No such file"))
+                            subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
+                    }
+                } else {
+                    subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
+                }
+            }
+            
+            if (!found_pactl) {
+                subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
+            }
+
+            row.subtitle = subtitle;
+            return [found_pactl, found_pactl_using_path];
+        };
+        const [found_pactl, found_pactl_using_path] = updateSubtitle();
+        settings.connect("changed::pactl-path", () => updateSubtitle());
+        main_group.add(row);
+        if (found_pactl_using_path || !found_pactl) {
+            main_group.add(create_file_chooser_row(
+                settings, 'pactl-path',
+                {
+                    title: _("<tt>pactl</tt> path"),
+                }
+            ));
+        }
         main_group.add(create_switch(
             settings, 'ignore-css',
             {
@@ -315,6 +344,28 @@ function create_switch_spin(settings, switch_id, spin_id, options, lower = 0, hi
         'value',
         Gio.SettingsBindFlags.DEFAULT
     );
+
+    return row;
+}
+
+function create_file_chooser_row(settings, id, options) {
+    const row = new Adw.EntryRow({ ...options, show_apply_button: false });
+    settings.bind(
+        id,
+        row,
+        'text',
+        Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const chooser_button = new Gtk.Button({ label: 'Choose file...', has_frame: false });
+    chooser_button.connect("clicked", () => {
+        const dialog = new Gtk.FileDialog();
+        dialog.set_initial_file(Gio.File.new_for_path(row.text));
+        dialog.open(null, null, (_, result) => {
+            row.text = dialog.open_finish(result).get_path();
+        });
+    });
+    row.add_suffix(chooser_button);
 
     return row;
 }

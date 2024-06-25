@@ -230,7 +230,7 @@ export default class QSAP extends Extension {
     }
 
     _create_app_mixer(index, filter_mode, filters) {
-        this._applications_mixer = new ApplicationsMixer(this._panel, index, filter_mode, filters);
+        this._applications_mixer = new ApplicationsMixer(this._panel, index, filter_mode, filters, this.settings);
     }
 
     _create_sink_mixer(index, filter_mode, filters) {

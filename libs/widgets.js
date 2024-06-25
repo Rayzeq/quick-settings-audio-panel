@@ -166,7 +166,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
 });
 
 export class ApplicationsMixer {
-    constructor(panel, index, filter_mode, filters) {
+    constructor(panel, index, filter_mode, filters, settings) {
         this.panel = panel;
 
         // Empty actor used to know where to place sliders
@@ -177,6 +177,7 @@ export class ApplicationsMixer {
         this._sliders_ordered = [placeholder];
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
+        this._settings = settings;
 
         this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
@@ -207,6 +208,7 @@ export class ApplicationsMixer {
         const slider = new ApplicationVolumeSlider(
             this._mixer_control,
             stream,
+            this._settings
         );
         this._sliders[id] = slider;
 
@@ -241,17 +243,28 @@ export class ApplicationsMixer {
 };
 
 const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSlider extends StreamSlider {
-    constructor(control, stream) {
+    constructor(control, stream, settings) {
         super(control);
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
-        try {
-            GLib.spawn_command_line_sync('pactl');
-        } catch (e) {
-            this._disable_pactl = true;
-        }
+        const updatePactl = () => {
+            try {
+                GLib.spawn_command_line_sync('pactl');
+                this._pactl_path = "pactl";
+            } catch (e) {
+                try {
+                    let custom_path = settings.get_string("pactl-path");
+                    GLib.spawn_command_line_sync(custom_path);
+                    this._pactl_path = custom_path;
+                } catch (e) {
+                    this._pactl_path = null;
+                }
+            }
+        };
+        updatePactl();
+        settings.connect("changed::pactl-path", () => updatePactl());
 
-        if (!this._disable_pactl) {
+        if (this._pactl_path) {
             this._control.connectObject(
                 'output-added', (_control, id) => this._addDevice(id),
                 'output-removed', (_control, id) => this._removeDevice(id),
@@ -276,7 +289,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         // And this one need to be after this.stream assignement.
         this._icon.fallback_icon_name = stream.icon_name;
 
-        if (!this._disable_pactl) {
+        if (this._pactl_path) {
             this._checkUsedSink();
         }
 
@@ -319,7 +332,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     }
 
     _checkUsedSink() {
-        let [, stdout, ,] = GLib.spawn_command_line_sync('pactl -f json list sink-inputs');
+        let [, stdout, ,] = GLib.spawn_command_line_sync(`${this._pactl_path} -f json list sink-inputs`);
         if (stdout instanceof Uint8Array)
             stdout = new TextDecoder().decode(stdout);
         stdout = JSON.parse(stdout);
@@ -339,7 +352,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     }
 
     _activateDevice(device) {
-        GLib.spawn_command_line_async(`pactl move-sink-input ${this.stream.index} ${this._control.lookup_stream_id(device.stream_id).index}`);
+        GLib.spawn_command_line_async(`${this._pactl_path} move-sink-input ${this.stream.index} ${this._control.lookup_stream_id(device.stream_id).index}`);
         this._setActiveDevice(device.get_id());
     }
 });

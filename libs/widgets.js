@@ -150,9 +150,13 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
                 : card_name;
         };
         const card = control.lookup_card_id(stream.card_index);
-        card.connect("notify::name", updater);
-        stream.connect("notify::port", updater);
+        let name_signal = card.connect("notify::name", updater);
+        let port_signal = stream.connect("notify::port", updater);
         updater();
+        label.connect("destroy", () => {
+            card.disconnect(name_signal);
+            stream.disconnect(port_signal);
+        });
         
         vbox.add_child(label);
         vbox.add_child(sliderBin);

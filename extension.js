@@ -23,6 +23,8 @@ import St from 'gi://St';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MediaSection } from 'resource:///org/gnome/shell/ui/mpris.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
 import { ApplicationsMixer, SinkMixer, waitProperty } from './libs/widgets.js';
@@ -96,7 +98,8 @@ export default class QSAP extends Extension {
         const create_mixer_sliders = this.settings.get_boolean('create-mixer-sliders');
         const create_sink_mixer = this.settings.get_boolean('create-sink-mixer');
         const remove_output_slider = this.settings.get_boolean('remove-output-slider');
-        const merge_panel = this.settings.get_boolean('merge-panel');
+        const separate_indicator = this.settings.get_boolean('separate-indicator');
+        const merge_panel = this.settings.get_boolean('merge-panel') && !separate_indicator;
         const panel_position = this.settings.get_string("panel-position");
         const widgets_ordering = this.settings.get_strv('ordering');
 
@@ -107,12 +110,27 @@ export default class QSAP extends Extension {
         const sink_filters = this.settings.get_strv('sink-filters');
 
         if (move_master_volume || media_control_action !== 'none' || create_mixer_sliders || create_sink_mixer || remove_output_slider) {
-            LibPanel.enable();
+            if (!separate_indicator)
+                LibPanel.enable();
 
             this._panel = LibPanel.main_panel;
             let index = -1;
 
-            if (!merge_panel) {
+            if (separate_indicator) {
+                this._indicator = new PanelMenu.Button(0.0, "Audio panel", true);
+                this._indicator.add_child(new St.Icon({ style_class: 'system-status-icon', icon_name: 'audio-x-generic-symbolic' }));
+
+                this._panel = new QuickSettingsMenu(this._indicator, 2);
+                // Since the panel contains no element that have a minimal width (like QuickToggle)
+                // we need to force it to take the same with as a normal panel
+                this._panel.box.add_constraint(new Clutter.BindConstraint({
+                    coordinate: Clutter.BindCoordinate.WIDTH,
+                    source: LibPanel.main_panel._boxPointer || LibPanel.main_panel,
+                }));
+                this._indicator.setMenu(this._panel);
+
+                Main.panel.addToStatusArea(this.uuid, this._indicator);
+            } else if (!merge_panel) {
                 this._panel = new Panel('main');
                 // Since the panel contains no element that have a minimal width (like QuickToggle)
                 // we need to force it to take the same with as a normal panel
@@ -186,7 +204,10 @@ export default class QSAP extends Extension {
         }
         this._master_volumes = [];
 
-        if (this._panel !== LibPanel.main_panel) {
+        if (this._indicator) {
+            this._indicator.destroy(); // also destroys `this._panel``
+            delete this._indicator;
+        } else if (this._panel !== LibPanel.main_panel) {
             LibPanel.removePanel(this._panel); // prevent the panel's position being forgotten
             this._panel.destroy();
         };

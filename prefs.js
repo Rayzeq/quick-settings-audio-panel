@@ -143,6 +143,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
         );
         settings.bind('merge-panel', position_dropdown, 'visible', Gio.SettingsBindFlags.GET);
         main_group.add(position_dropdown);
+        main_group.add(create_switch(
+            settings, 'separate-indicator',
+            {
+                title: _("Put the panel in a separate indicator"),
+            }
+        ));
 
         // ================================= Widget ordering group ================================
         const widgets_order_group = new ReorderablePreferencesGroup(settings, 'ordering', {

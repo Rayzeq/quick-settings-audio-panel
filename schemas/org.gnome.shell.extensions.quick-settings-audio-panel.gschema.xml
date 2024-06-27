@@ -44,6 +44,9 @@
       </choices>
       <default>"bottom"</default>
     </key>
+    <key name="separate-indicator" type="b">
+      <default>false</default>
+    </key>
 
     <key name="ordering" type="as">
       <default>["volume-output", "sink-mixer", "volume-input", "media", "mixer"]</default>

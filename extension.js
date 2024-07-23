@@ -127,6 +127,30 @@ export default class QSAP extends Extension {
                     coordinate: Clutter.BindCoordinate.WIDTH,
                     source: LibPanel.main_panel._boxPointer || LibPanel.main_panel,
                 }));
+
+                // Hide the indicator when empty
+                const update_visibility = () => {
+                    for (const child of this._panel._grid.get_children()) {
+                        if (child != this._panel._grid.layout_manager._overlay && child.visible) {
+                            this._indicator.show();
+                            return;
+                        }
+                    }
+                    this._indicator.hide();
+                }
+                this._panel._grid.connect("child-added", (_self, child) => {
+                    child._qsap_vis_changed_callback = child.connect("notify::visible", () => {
+                        update_visibility();
+                    });
+                    update_visibility();
+                });
+                this._panel._grid.connect("child-removed", (_self, child) => {
+                    child.disconnect(child._qsap_vis_changed_callback);
+                    delete child._qsap_vis_changed_callback;
+
+                    update_visibility();
+                });
+
                 this._indicator.setMenu(this._panel);
 
                 Main.panel.addToStatusArea(this.uuid, this._indicator);

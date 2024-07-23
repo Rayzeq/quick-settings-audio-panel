@@ -142,21 +142,31 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
 
-        const updater = () => {
-            const card_name = card.name;
-            const port_name = card.get_ports().find(port => port.port == stream.port)?.human_port;
-            label.text = port_name
-                ? `${port_name} - ${card_name}`
-                : card_name;
-        };
         const card = control.lookup_card_id(stream.card_index);
-        let name_signal = card.connect("notify::name", updater);
-        let port_signal = stream.connect("notify::port", updater);
-        updater();
-        label.connect("destroy", () => {
-            card.disconnect(name_signal);
-            stream.disconnect(port_signal);
-        });
+        if (card) {
+            const updater = () => {
+                const card_name = card.name;
+                const port_name = card.get_ports().find(port => port.port == stream.port)?.human_port;
+                label.text = port_name
+                    ? `${port_name} - ${card_name}`
+                    : card_name;
+            };
+            let name_signal = card.connect("notify::name", updater);
+            let port_signal = stream.connect("notify::port", updater);
+            updater();
+            label.connect("destroy", () => {
+                card.disconnect(name_signal);
+                stream.disconnect(port_signal);
+            });
+        } else {
+            stream.bind_property_full('description', label, 'text',
+                GObject.BindingFlags.SYNC_CREATE,
+                (_binding, value) => {
+                    return [true, value];
+                },
+                null
+            );
+        }
         
         vbox.add_child(label);
         vbox.add_child(sliderBin);

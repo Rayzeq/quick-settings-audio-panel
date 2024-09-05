@@ -3,8 +3,10 @@ import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import St from 'gi://St';
+import Gio from 'gi://Gio';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 export function waitProperty(object, name) {
@@ -176,6 +178,120 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         this.iconName = this._hasHeadphones
             ? 'audio-headphones-symbolic'
             : this.getIcon();
+    }
+});
+
+export const BalanceSlider = GObject.registerClass(class BalanceSlider extends QuickSlider {
+    constructor(settings) {
+        super();
+
+        const updatePactl = () => {
+            try {
+                GLib.spawn_command_line_sync('pactl');
+                this._pactl_path = "pactl";
+            } catch (e) {
+                try {
+                    let custom_path = settings.get_string("pactl-path");
+                    GLib.spawn_command_line_sync(custom_path);
+                    this._pactl_path = custom_path;
+                } catch (e) {
+                    this._pactl_path = null;
+                }
+            }
+        };
+        updatePactl();
+        settings.connect("changed::pactl-path", () => updatePactl());
+
+        this._sliderChangedId = this.slider.connect('notify::value', () => this._sliderChanged());
+        this.slider.connect('drag-end', () => {
+            this._notifyVolumeChange();
+        });
+
+        this._control = Volume.getMixerControl();
+        this._update_sink(this._control.get_default_sink());
+        this._control.connect("default-sink-changed", (_, stream_id) => {
+            this._update_sink(this._control.lookup_stream_id(stream_id))
+        });
+
+        const box = this.child;
+        box.remove_child(this._menuButton);
+        box.remove_child(this._iconButton);
+        delete this._iconButton;
+        delete this._menuButton;
+
+        const slider = box.first_child;
+        box.remove_child(slider);
+
+        const title = new St.Label({ text: "Audio balance" });
+        title.style_class = "QSAP-application-volume-slider-label";
+
+        const leftLabel = new St.Label({ text: "L" });
+        const rightLabel = new St.Label({ text: "R" });
+        leftLabel.y_align = Clutter.ActorAlign.CENTER;
+        rightLabel.y_align = Clutter.ActorAlign.CENTER;
+
+        const hbox = new St.BoxLayout();
+        hbox.add_child(leftLabel);
+        hbox.add_child(slider);
+        hbox.add_child(rightLabel);
+
+        // creating an additional vbox instead of setting `box` as vertical is necessary
+        // because the second solution will add some spacing between the title and the slider
+        // and I don't know how to remove it
+        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        vbox.add_child(title);
+        vbox.add_child(hbox);
+
+        box.add_child(vbox);
+    }
+
+    _update_sink(stream) {
+        if (stream === null)
+            return;
+        this.stream = stream;
+
+        // this command doesn't have a json output :(
+        let [, stdout, ,] = GLib.spawn_command_line_sync(`${this._pactl_path} get-sink-volume ${stream.name}`);
+        if (stdout instanceof Uint8Array)
+            stdout = new TextDecoder().decode(stdout);
+        // let's hope this regex don't break
+        const balance_index = stdout.search(/balance (-?\d+.\d+)/);
+        const balance_str = stdout.substring(balance_index + 8).trim();
+        const balance = parseFloat(balance_str);
+
+        this.slider.block_signal_handler(this._sliderChangedId);
+        this.slider.value = (balance + 1.) / 2.;
+        this.slider.unblock_signal_handler(this._sliderChangedId);
+    }
+
+    _sliderChanged() {
+        const balance = this.slider.value * 2. - 1.;
+
+        let left = 0;
+        let right = 0;
+        if (balance < 0.) {
+            left = this.stream.volume;
+            right = Math.round(this.stream.volume * (1 + balance));
+        } else {
+            left = Math.round(this.stream.volume * (1 - balance));
+            right = this.stream.volume;
+        }
+
+        GLib.spawn_command_line_sync(`${this._pactl_path} set-sink-volume ${this.stream.name} ${left} ${right}`);
+    }
+
+    _notifyVolumeChange() {
+        if (this._volumeCancellable)
+            this._volumeCancellable.cancel();
+        this._volumeCancellable = null;
+
+        if (this.stream.state === Gvc.MixerStreamState.RUNNING)
+            return; // feedback not necessary while playing
+
+        this._volumeCancellable = new Gio.Cancellable();
+        let player = global.display.get_sound_player();
+        player.play_from_theme('audio-volume-change',
+            _('Volume changed'), this._volumeCancellable);
     }
 });
 

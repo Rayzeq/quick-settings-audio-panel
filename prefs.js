@@ -47,8 +47,13 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 ]
             }
         ));
-        if (settings.get_strv('ordering').length != 5) {
+        if (settings.get_strv('ordering').length < 5) {
             settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
+        }
+        if (settings.get_strv('ordering').length < 6) {
+            let ordering = settings.get_strv('ordering');
+            ordering.push('balance-slider');
+            settings.set_strv('ordering', ordering);
         }
 
         const row = create_switch(
@@ -124,6 +129,13 @@ export default class QSAPPreferences extends ExtensionPreferences {
             }
         ));
         main_group.add(create_switch(
+            settings, 'create-balance-slider',
+            {
+                title: _("Add a balance slider"),
+                subtitle: _("This slider allows you to change the balance of the current output")
+            }
+        ));
+        main_group.add(create_switch(
             settings, 'merge-panel',
             {
                 title: _("Merge the new panel into the main one"),
@@ -159,6 +171,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
 
         widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
         widgets_order_group.add(new DraggableRow('sink-mixer', { title: _("Per-device volume sliders") }));
+        widgets_order_group.add(new DraggableRow('balance-slider', { title: _("Output balance slider") }));
         widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
         widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
         widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));

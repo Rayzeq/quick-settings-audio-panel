@@ -27,7 +27,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
-import { ApplicationsMixer, SinkMixer, waitProperty } from './libs/widgets.js';
+import { ApplicationsMixer, SinkMixer, BalanceSlider, waitProperty } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
@@ -98,6 +98,7 @@ export default class QSAP extends Extension {
         const create_mixer_sliders = this.settings.get_boolean('create-mixer-sliders');
         const create_sink_mixer = this.settings.get_boolean('create-sink-mixer');
         const remove_output_slider = this.settings.get_boolean('remove-output-slider');
+        const create_balance_slider = this.settings.get_boolean('create-balance-slider');
         const separate_indicator = this.settings.get_boolean('separate-indicator');
         const merge_panel = this.settings.get_boolean('merge-panel') && !separate_indicator;
         const panel_position = this.settings.get_string("panel-position");
@@ -109,7 +110,7 @@ export default class QSAP extends Extension {
         const sink_filter_mode = this.settings.get_string('sink-filter-mode');
         const sink_filters = this.settings.get_strv('sink-filters');
 
-        if (move_master_volume || media_control_action !== 'none' || create_mixer_sliders || create_sink_mixer || remove_output_slider) {
+        if (move_master_volume || media_control_action !== 'none' || create_mixer_sliders || create_sink_mixer || remove_output_slider || create_balance_slider) {
             if (!separate_indicator)
                 LibPanel.enable();
 
@@ -184,6 +185,8 @@ export default class QSAP extends Extension {
                     this._create_app_mixer(index, filter_mode, filters);
                 } else if (widget === "sink-mixer" && create_sink_mixer) {
                     this._create_sink_mixer(index, sink_filter_mode, sink_filters);
+                } else if (widget === "balance-slider" && create_balance_slider) {
+                    this._create_balance_slider(index);
                 }
             }
 
@@ -197,6 +200,11 @@ export default class QSAP extends Extension {
         OutputVolumeSlider.visible = true;
 
         if (!this._panel) return;
+
+        if (this._balance_slider) {
+            this._balance_slider.destroy();
+            this._balance_slider = null;
+        }
 
         if (this._sink_mixer) {
             this._sink_mixer.destroy();
@@ -280,6 +288,13 @@ export default class QSAP extends Extension {
 
     _create_sink_mixer(index, filter_mode, filters) {
         this._sink_mixer = new SinkMixer(this._panel, index, filter_mode, filters);
+    }
+
+    _create_balance_slider(index) {
+        this._balance_slider = new BalanceSlider(this.settings);
+
+        this._panel.addItem(this._balance_slider, 2);
+        this._panel._grid.set_child_at_index(this._balance_slider, index);
     }
 
     _set_always_show_input(enabled) {

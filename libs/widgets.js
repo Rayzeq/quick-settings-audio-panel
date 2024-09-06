@@ -187,19 +187,9 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         super();
 
         const updatePactl = () => {
-            try {
-                // from what I understood of the doc, this will raise an error if the command is not found,
-                // even though it's an async function
-                GLib.spawn_command_line_async('pactl');
-                this._pactl_path = "pactl";
-            } catch (e) {
-                try {
-                    let custom_path = settings.get_string("pactl-path");
-                    GLib.spawn_command_line_async(custom_path);
-                    this._pactl_path = custom_path;
-                } catch (e) {
-                    this._pactl_path = null;
-                }
+            this._pactl_path = GLib.find_program_in_path(settings.get_string("pactl-path"));
+            if (this._pactl_path == null) {
+                this._pactl_path = GLib.find_program_in_path('pactl');
             }
         };
         this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => updatePactl());
@@ -395,17 +385,9 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
         const updatePactl = () => {
-            try {
-                GLib.spawn_command_line_sync('pactl');
-                this._pactl_path = "pactl";
-            } catch (e) {
-                try {
-                    let custom_path = settings.get_string("pactl-path");
-                    GLib.spawn_command_line_sync(custom_path);
-                    this._pactl_path = custom_path;
-                } catch (e) {
-                    this._pactl_path = null;
-                }
+            this._pactl_path = GLib.find_program_in_path(settings.get_string("pactl-path"));
+            if (this._pactl_path == null) {
+                this._pactl_path = GLib.find_program_in_path('pactl');
             }
         };
         updatePactl();

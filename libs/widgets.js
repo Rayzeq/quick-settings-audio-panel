@@ -4,6 +4,7 @@ import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import St from 'gi://St';
 import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
@@ -187,20 +188,23 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
 
         const updatePactl = () => {
             try {
-                GLib.spawn_command_line_sync('pactl');
+                // from what I understood of the doc, this will raise an error if the command is not found,
+                // even though it's an async function
+                GLib.spawn_command_line_async('pactl');
                 this._pactl_path = "pactl";
             } catch (e) {
                 try {
                     let custom_path = settings.get_string("pactl-path");
-                    GLib.spawn_command_line_sync(custom_path);
+                    GLib.spawn_command_line_async(custom_path);
                     this._pactl_path = custom_path;
                 } catch (e) {
                     this._pactl_path = null;
                 }
             }
         };
+        this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => updatePactl());
+        this.connect("destroy", () => settings.disconnect(this._pactl_path_changed_id));
         updatePactl();
-        settings.connect("changed::pactl-path", () => updatePactl());
 
         this._sliderChangedId = this.slider.connect('notify::value', () => this._sliderChanged());
         this.slider.connect('drag-end', () => {
@@ -251,17 +255,30 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         this.stream = stream;
 
         // this command doesn't have a json output :(
-        let [, stdout, ,] = GLib.spawn_command_line_sync(`${this._pactl_path} get-sink-volume ${stream.name}`);
-        if (stdout instanceof Uint8Array)
-            stdout = new TextDecoder().decode(stdout);
-        // let's hope this regex don't break
-        const balance_index = stdout.search(/balance (-?\d+.\d+)/);
-        const balance_str = stdout.substring(balance_index + 8).trim();
-        const balance = parseFloat(balance_str);
+        const [, , , stdout,] = GLib.spawn_async_with_pipes(null, [this._pactl_path, "get-sink-volume", stream.name], null, GLib.SpawnFlags.SEARCH_PATH, null);
+        const stdout_reader = new Gio.DataInputStream({
+            base_stream: new GioUnix.InputStream({ fd: stdout })
+        });
 
-        this.slider.block_signal_handler(this._sliderChangedId);
-        this.slider.value = (balance + 1.) / 2.;
-        this.slider.unblock_signal_handler(this._sliderChangedId);
+        const readline_callback = (_, result) => {
+            const [stdout, length] = stdout_reader.read_upto_finish(result);
+            // let's hope this regex don't break
+            const balance_index = stdout.search(/balance (-?\d+.\d+)/);
+
+            if (balance_index === -1) {
+                if (length > 0) {
+                    stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
+                }
+            } else {
+                const balance_str = stdout.substring(balance_index + 8).trim();
+                const balance = parseFloat(balance_str);
+
+                this.slider.block_signal_handler(this._sliderChangedId);
+                this.slider.value = (balance + 1.) / 2.;
+                this.slider.unblock_signal_handler(this._sliderChangedId);
+            }
+        };
+        stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
     }
 
     _sliderChanged() {
@@ -277,7 +294,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
             right = this.stream.volume;
         }
 
-        GLib.spawn_command_line_sync(`${this._pactl_path} set-sink-volume ${this.stream.name} ${left} ${right}`);
+        GLib.spawn_command_line_async(`${this._pactl_path} set-sink-volume ${this.stream.name} ${left} ${right}`);
     }
 
     _notifyVolumeChange() {

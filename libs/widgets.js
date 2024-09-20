@@ -1,10 +1,10 @@
 import Clutter from 'gi://Clutter';
+import Gio from 'gi://Gio';
+import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import St from 'gi://St';
-import Gio from 'gi://Gio';
-import GioUnix from 'gi://GioUnix';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
@@ -461,19 +461,26 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     }
 
     _checkUsedSink() {
-        let [, stdout, ,] = GLib.spawn_command_line_sync(`${this._pactl_path} -f json list sink-inputs`);
-        if (stdout instanceof Uint8Array)
-            stdout = new TextDecoder().decode(stdout);
-        stdout = JSON.parse(stdout);
+        const [, , , stdout,] = GLib.spawn_async_with_pipes(null, [this._pactl_path, "-f", "json", "list", "sink-inputs"], null, GLib.SpawnFlags.SEARCH_PATH, null);
+        const stdout_reader = new Gio.DataInputStream({
+            base_stream: new GioUnix.InputStream({ fd: stdout })
+        });
 
-        for (const sink_input of stdout) {
-            if (sink_input.index === this.stream.index) {
-                const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink))?.get_id();
-                if (sink_id) {
-                    this._setActiveDevice(sink_id);
+        const readline_callback = (_, result) => {
+            // the command's result is one line, so we can stop here
+            let [stdout,] = stdout_reader.read_upto_finish(result);
+
+            stdout = JSON.parse(stdout);
+            for (const sink_input of stdout) {
+                if (sink_input.index === this.stream.index) {
+                    const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink))?.get_id();
+                    if (sink_id) {
+                        this._setActiveDevice(sink_id);
+                    }
                 }
             }
-        }
+        };
+        stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
     }
 
     _lookupDevice(id) {

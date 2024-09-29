@@ -204,7 +204,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
 
         this._control = Volume.getMixerControl();
         this._update_sink(this._control.get_default_sink());
-        this._control.connect("default-sink-changed", (_, stream_id) => {
+        this._default_sink_changed_signal = this._control.connect("default-sink-changed", (_, stream_id) => {
             this._update_sink(this._control.lookup_stream_id(stream_id))
         });
 
@@ -300,6 +300,10 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         let player = global.display.get_sound_player();
         player.play_from_theme('audio-volume-change',
             _('Volume changed'), this._volumeCancellable);
+    }
+
+    destroy() {
+        this._control.disconnect(this._default_sink_changed_signal);
     }
 });
 

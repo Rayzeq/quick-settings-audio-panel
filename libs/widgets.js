@@ -7,7 +7,8 @@ import Gvc from 'gi://Gvc';
 import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import { Ornament, PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import { QuickMenuToggle, QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 export function waitProperty(object, name) {
@@ -299,6 +300,85 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         let player = global.display.get_sound_player();
         player.play_from_theme('audio-volume-change',
             _('Volume changed'), this._volumeCancellable);
+    }
+});
+
+export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwitcher extends QuickMenuToggle {
+    constructor(settings) {
+        super();
+
+        this.title = "Audio profile";
+        this._settings = settings;
+        this._profileItems = new Map();
+
+        this._mixer_control = Volume.getMixerControl();
+        this._active_output_update_signal = this._mixer_control.connect("active-output-update", (_, id) => {
+            this._set_device(this._mixer_control.lookup_output_id(id));
+        });
+
+        // We're not a toggle anymore
+        this._box.first_child.reactive = false;
+        // Prevent being displayed as a disabled toggle
+        this._box.first_child.pseudo_class = "";
+
+        const default_sink = this._mixer_control.get_default_sink();
+        if (default_sink != null) {
+            this._set_device(this._mixer_control.lookup_device_from_stream(default_sink));
+        }
+
+        this._autohide_changed_signal = this._settings.connect("changed::autohide-profile-switcher", () => {
+            this._change_visibility_if_neccesary();
+        });
+        this._settings.emit('changed::autohide-profile-switcher', 'autohide-profile-switcher');
+    }
+
+    _set_device(device) {
+        this.menu.removeAll();
+        this._profileItems.clear();
+        this._device = device;
+
+        for (const profile of device.get_profiles()) {
+            const item = new PopupMenuItem(profile.human_profile);
+
+            const profile_name = profile.profile;
+            item.connect("activate", () => {
+                this._mixer_control.change_profile_on_selected_device(device, profile_name);
+                this._sync_active_profile();
+            });
+
+            this._profileItems.set(profile_name, item);
+            this.menu.addMenuItem(item);
+        }
+
+        this._sync_active_profile();
+        this._change_visibility_if_neccesary();
+    }
+
+    _sync_active_profile() {
+        const active_profile = this._device.get_active_profile();
+
+        for (const [name, item] of this._profileItems) {
+            item.setOrnament(name == active_profile ? Ornament.CHECK : Ornament.NONE);
+
+            if (name == active_profile) {
+                this.subtitle = item.label.text;
+            }
+        }
+    }
+
+    _change_visibility_if_neccesary() {
+        const autohide = this._settings.get_boolean('autohide-profile-switcher');
+
+        if (this.menu.numMenuItems <= 1 && autohide) {
+            this.visible = false;
+        } else {
+            this.visible = true;
+        }
+    }
+
+    destroy() {
+        this._mixer_control.disconnect(this._active_output_update_signal);
+        this._settings.disconnect(this._autohide_changed_signal);
     }
 });
 

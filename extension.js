@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-import GObject from 'gi://GObject';
 import Clutter from 'gi://Clutter';
+import GObject from 'gi://GObject';
 import St from 'gi://St';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -27,7 +27,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
-import { ApplicationsMixer, SinkMixer, BalanceSlider, waitProperty } from './libs/widgets.js';
+import { ApplicationsMixer, AudioProfileSwitcher, BalanceSlider, SinkMixer, waitProperty } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
@@ -68,7 +68,11 @@ export default class QSAP extends Extension {
         this.settings.emit('changed::show-current-device', 'show-current-device');
 
         this._master_volumes = [];
-        this._sc_callback = this.settings.connect('changed', () => this._refresh_panel());
+        this._sc_callback = this.settings.connect('changed', (_, name) => {
+            if (name !== "autohide-profile-switcher") {
+                this._refresh_panel();
+            }
+        });
         this._refresh_panel();
     }
 
@@ -99,6 +103,7 @@ export default class QSAP extends Extension {
         const create_sink_mixer = this.settings.get_boolean('create-sink-mixer');
         const remove_output_slider = this.settings.get_boolean('remove-output-slider');
         const create_balance_slider = this.settings.get_boolean('create-balance-slider');
+        const create_profile_switcher = this.settings.get_boolean('create-profile-switcher');
         const separate_indicator = this.settings.get_boolean('separate-indicator');
         const merge_panel = this.settings.get_boolean('merge-panel') && !separate_indicator;
         const panel_position = this.settings.get_string("panel-position");
@@ -110,7 +115,7 @@ export default class QSAP extends Extension {
         const sink_filter_mode = this.settings.get_string('sink-filter-mode');
         const sink_filters = this.settings.get_strv('sink-filters');
 
-        if (move_master_volume || media_control_action !== 'none' || create_mixer_sliders || create_sink_mixer || remove_output_slider || create_balance_slider) {
+        if (move_master_volume || media_control_action !== 'none' || create_mixer_sliders || create_sink_mixer || remove_output_slider || create_balance_slider || create_profile_switcher) {
             if (!separate_indicator)
                 LibPanel.enable();
 
@@ -187,6 +192,8 @@ export default class QSAP extends Extension {
                     this._create_sink_mixer(index, sink_filter_mode, sink_filters);
                 } else if (widget === "balance-slider" && create_balance_slider) {
                     this._create_balance_slider(index);
+                } else if (widget === "profile-switcher" && create_profile_switcher) {
+                    this._create_profile_switcher(index);
                 }
             }
 
@@ -201,7 +208,14 @@ export default class QSAP extends Extension {
 
         if (!this._panel) return;
 
+        if (this._profile_switcher) {
+            this._panel.removeItem(this._profile_switcher);
+            this._profile_switcher.destroy();
+            this._profile_switcher = null;
+        }
+
         if (this._balance_slider) {
+            this._panel.removeItem(this._balance_slider);
             this._balance_slider.destroy();
             this._balance_slider = null;
         }
@@ -295,6 +309,13 @@ export default class QSAP extends Extension {
 
         this._panel.addItem(this._balance_slider, 2);
         this._panel._grid.set_child_at_index(this._balance_slider, index);
+    }
+
+    _create_profile_switcher(index) {
+        this._profile_switcher = new AudioProfileSwitcher(this.settings);
+
+        this._panel.addItem(this._profile_switcher, 1);
+        this._panel._grid.set_child_at_index(this._profile_switcher, index);
     }
 
     _set_always_show_input(enabled) {

@@ -37,6 +37,12 @@
     <key name="create-balance-slider" type="b">
       <default>false</default>
     </key>
+    <key name="create-profile-switcher" type="b">
+      <default>false</default>
+    </key>
+    <key name="autohide-profile-switcher" type="b">
+      <default>false</default>
+    </key>
     <key name="merge-panel" type="b">
       <default>false</default>
     </key>
@@ -52,7 +58,7 @@
     </key>
 
     <key name="ordering" type="as">
-      <default>["volume-output", "sink-mixer", "balance-slider", "volume-input", "media", "mixer"]</default>
+      <default>["profile-switcher", "volume-output", "sink-mixer", "balance-slider", "volume-input", "media", "mixer"]</default>
     </key>
 
     <key name="filter-mode" type="s">

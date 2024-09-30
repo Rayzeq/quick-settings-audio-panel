@@ -1,7 +1,7 @@
 "use strict";
 
-import GLib from 'gi://GLib';
 import Adw from 'gi://Adw';
+import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
@@ -53,6 +53,11 @@ export default class QSAPPreferences extends ExtensionPreferences {
         if (settings.get_strv('ordering').length < 6) {
             let ordering = settings.get_strv('ordering');
             ordering.push('balance-slider');
+            settings.set_strv('ordering', ordering);
+        }
+        if (settings.get_strv('ordering').length < 7) {
+            let ordering = settings.get_strv('ordering');
+            ordering.push('profile-switcher');
             settings.set_strv('ordering', ordering);
         }
 
@@ -136,6 +141,20 @@ export default class QSAPPreferences extends ExtensionPreferences {
             }
         ));
         main_group.add(create_switch(
+            settings, 'create-profile-switcher',
+            {
+                title: _("Add a profile switcher"),
+                subtitle: _("Allows you to quickly change the audio profile of the current device")
+            }
+        ));
+        main_group.add(create_switch(
+            settings, 'autohide-profile-switcher',
+            {
+                title: _("Auto-hide the profile switcher"),
+                subtitle: _("Hide the profile switcher when the current device only have one profile")
+            }
+        ));
+        main_group.add(create_switch(
             settings, 'merge-panel',
             {
                 title: _("Merge the new panel into the main one"),
@@ -169,6 +188,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         });
         page.add(widgets_order_group);
 
+        widgets_order_group.add(new DraggableRow('profile-switcher', { title: _("Profile switcher") }));
         widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
         widgets_order_group.add(new DraggableRow('sink-mixer', { title: _("Per-device volume sliders") }));
         widgets_order_group.add(new DraggableRow('balance-slider', { title: _("Output balance slider") }));

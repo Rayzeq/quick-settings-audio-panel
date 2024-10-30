@@ -147,6 +147,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         label.style_class = "QSAP-application-volume-slider-label";
 
         const setup = () => {
+            clearTimeout(this._setup_timeout);
             if (!control.lookup_device_from_stream(stream)) {
                 this._setup_timeout = setTimeout(setup, 50);
             } else {

@@ -146,32 +146,33 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
 
-        const card = control.lookup_card_id(stream.card_index);
-        if (card) {
-            const updater = () => {
-                const card_name = card.name;
-                const port_name = card.get_ports().find(port => port.port == stream.port)?.human_port;
-                label.text = port_name
-                    ? `${port_name} - ${card_name}`
-                    : card_name;
-            };
-            let name_signal = card.connect("notify::name", updater);
-            let port_signal = stream.connect("notify::port", updater);
-            updater();
-            label.connect("destroy", () => {
-                card.disconnect(name_signal);
-                stream.disconnect(port_signal);
-            });
-        } else {
-            stream.bind_property_full('description', label, 'text',
-                GObject.BindingFlags.SYNC_CREATE,
-                (_binding, value) => {
-                    return [true, value];
-                },
-                null
-            );
-        }
-        
+        const setup = () => {
+            if (!control.lookup_device_from_stream(stream)) {
+                this._setup_timeout = setTimeout(setup, 50);
+            } else {
+                this._setup_timeout = undefined;
+                const updater = () => {
+                    const device = control.lookup_device_from_stream(stream);
+                    if (this._name_binding) this._name_binding.unbind();
+                    // using the text from the output switcher of the master slider to allow compatibility with extensions
+                    // that changes it (like Quick Settings Audio Device Renamer)
+                    this._name_binding = Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id()).label.bind_property('text', label, 'text', GObject.BindingFlags.SYNC_CREATE);
+                };
+                let signal = stream.connect("notify::port", updater);
+                updater();
+                label.connect("destroy", () => {
+                    stream.disconnect(signal);
+
+                    if (this._name_binding) {
+                        this._name_binding.unbind();
+                        this._name_binding = undefined;
+                    }
+                });
+            }
+        };
+        // using a timeout loop because `control.lookup_device_from_stream` won't work right away
+        this._setup_timeout = setTimeout(setup, 0);
+
         vbox.add_child(label);
         vbox.add_child(sliderBin);
     }
@@ -180,6 +181,13 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         this.iconName = this._hasHeadphones
             ? 'audio-headphones-symbolic'
             : this.getIcon();
+    }
+
+    destroy() {
+        if (this._setup_timeout) {
+            clearTimeout(this._setup_timeout);
+        }
+        super.destroy();
     }
 });
 

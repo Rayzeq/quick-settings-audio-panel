@@ -116,7 +116,7 @@ export default class QSAP extends Extension {
         const sink_filters = this.settings.get_strv('sink-filters');
 
         if (move_master_volume || media_control_action !== 'none' || create_mixer_sliders || create_sink_mixer || remove_output_slider || create_balance_slider || create_profile_switcher) {
-            if (!separate_indicator)
+            if (!(separate_indicator || merge_panel))
                 LibPanel.enable();
 
             this._panel = LibPanel.main_panel;

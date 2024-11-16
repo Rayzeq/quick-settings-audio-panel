@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-29 19:42+0200\n"
+"POT-Creation-Date: 2024-11-16 23:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -239,37 +239,47 @@ msgid ""
 msgstr ""
 
 #: prefs.js:304
+msgid "Single-column mode"
+msgstr ""
+
+#: prefs.js:305
+msgid ""
+"Only one column of panels will be allowed. Also prevents the panel from "
+"being put at the left/right of the screen by libpanel."
+msgstr ""
+
+#: prefs.js:311
 msgid "Panel alignment"
 msgstr ""
 
-#: prefs.js:306
+#: prefs.js:313
 msgid "Left"
 msgstr ""
 
-#: prefs.js:307
+#: prefs.js:314
 msgid "Right"
 msgstr ""
 
-#: prefs.js:314
+#: prefs.js:321
 msgid "Padding"
 msgstr ""
 
-#: prefs.js:315
+#: prefs.js:322
 msgid "Use this to override the default padding of the panels"
 msgstr ""
 
-#: prefs.js:321
+#: prefs.js:328
 msgid "Row spacing"
 msgstr ""
 
-#: prefs.js:322
+#: prefs.js:329
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 
-#: prefs.js:328
+#: prefs.js:335
 msgid "Column spacing"
 msgstr ""
 
-#: prefs.js:329
+#: prefs.js:336
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""

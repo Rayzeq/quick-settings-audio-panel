@@ -298,6 +298,13 @@ export default class QSAPPreferences extends ExtensionPreferences {
         });
         page.add(libpanel_group);
 
+        libpanel_group.add(create_switch(
+            libpanel_settings, 'single-column',
+            {
+                title: _("Single-column mode"),
+                subtitle: _("Only one column of panels will be allowed. Also prevents the panel from being put at the left/right of the screen by libpanel.")
+            }
+        ));
         libpanel_group.add(create_dropdown(
             libpanel_settings, 'alignment',
             {

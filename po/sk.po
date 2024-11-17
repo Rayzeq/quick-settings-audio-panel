@@ -1,15 +1,15 @@
-# SOME DESCRIPTIVE TITLE.
+# Quick Settings Audio Panel.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# ozef Gaal <preklady@mayday.sk>, 2024.
+# Jozef Gaal <preklady@mayday.sk>, 2024.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Quick Settings Audio Panel v64\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-29 19:42+0200\n"
-"PO-Revision-Date: 2024-10-10 16:37+0200\n"
+"POT-Creation-Date: 2024-11-16 23:00+0100\n"
+"PO-Revision-Date: 2024-11-17 10:52+0100\n"
 "Last-Translator: Jozef Gaal <preklady@mayday.sk>\n"
 "Language-Team: Jozef Gaal <preklady@mayday.sk>\n"
 "Language: sk_SK\n"
@@ -255,39 +255,51 @@ msgstr ""
 "všetky panely"
 
 #: prefs.js:304
+msgid "Single-column mode"
+msgstr "Režim jedného stĺpca"
+
+#: prefs.js:305
+msgid ""
+"Only one column of panels will be allowed. Also prevents the panel from "
+"being put at the left/right of the screen by libpanel."
+msgstr ""
+"Povolený bude len jeden stĺpec panelov. Zabráni tiež tomu, aby bol panel "
+"umiestnený v ľavej/pravej časti obrazovky pomocou libpanel."
+
+#: prefs.js:311
 msgid "Panel alignment"
 msgstr "Zarovnanie panelu"
 
-#: prefs.js:306
+#: prefs.js:313
 msgid "Left"
 msgstr "Vľavo"
 
-#: prefs.js:307
+#: prefs.js:314
 msgid "Right"
 msgstr "Vpravo"
 
-#: prefs.js:314
+#: prefs.js:321
 msgid "Padding"
 msgstr "Odsadenie"
 
-#: prefs.js:315
+#: prefs.js:322
 msgid "Use this to override the default padding of the panels"
 msgstr "Toto nastavenie použite na prepísanie predvoleného odsadenia panelov"
 
-#: prefs.js:321
+#: prefs.js:328
 msgid "Row spacing"
 msgstr "Rozstup riadkov"
 
-#: prefs.js:322
+#: prefs.js:329
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 "Toto nastavenie použite na prepísanie predvoleného rozstupu riadkov panelov"
 
-#: prefs.js:328
+#: prefs.js:335
 msgid "Column spacing"
 msgstr "Rozstup stĺpcov"
 
-#: prefs.js:329
+#: prefs.js:336
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""
 "Toto nastavenie použite na prepísanie predvoleného rozstupu stĺpcov panelov"

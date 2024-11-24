@@ -1,0 +1,27 @@
+{
+  "name": "quick-settings-audio-panel",
+  "description": "Create a new panel containing volumes and media control in the quick settings",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rayzeq/quick-settings-audio-panel.git"
+  },
+  "author": "Zacharie DUBRULLE <dubrullezacharie@gmail.com>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Rayzeq/quick-settings-audio-panel/issues"
+  },
+  "homepage": "https://github.com/Rayzeq/quick-settings-audio-panel",
+  "sideEffects": false,
+  "devDependencies": {
+    "eslint": "^9.15.0",
+    "eslint-plugin-jsdoc": "^50.5.0",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "@girs/gjs": "^4.0.0-beta.19",
+    "@girs/gnome-shell": "https://github.com/Rayzeq/gnome-shell/releases/latest/download/package.tgz"
+  }
+}

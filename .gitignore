@@ -1,2 +1,4 @@
 *.zip
 *.sublime-workspace
+node_modules/
+dist/

@@ -1,12 +1,43 @@
-build:
-	xgettext --from-code=UTF-8 --output=po/example.pot *.js
-	glib-compile-schemas libs/libpanel/
-	gnome-extensions pack --extra-source=LICENSE --extra-source=libs --podir=po --force
-	zip -d quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip "./libs/libpanel/.git" "./libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml"
+NAME=quick-settings-audio-panel
+DOMAIN=rayzeq.github.io
+OUTPUT_DIR=dist
 
-install: build
-	gnome-extensions install quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip --force
+TS_FILES=extension.ts prefs.ts libs/*.ts libs/libpanel/*.ts
+JS_FILES=$(TS_FILES:%.ts=$(OUTPUT_DIR)/%.js)
+
+TARGET=$(OUTPUT_DIR)/$(NAME)@$(DOMAIN).shell-extension.zip
+
+.PHONY: all pack install test clean
+
+all: pack
+
+node_modules: package.json
+	npm install
+	# npm install doesn't seems to necessarily update the date on the folder
+	touch node_modules
+
+po/example.pot: $(JS_FILES)
+	xgettext --from-code=UTF-8 --output=po/example.pot $(OUTPUT_DIR)/*.js
+
+$(JS_FILES): node_modules $(TS_FILES)
+	-npx tsc
+	touch $(OUTPUT_DIR)/libs
+
+$(OUTPUT_DIR)/libs/libpanel/gschemas.compiled: libs/libpanel/*.gschema.xml
+	mkdir -p  $(OUTPUT_DIR)/libs/libpanel/
+	glib-compile-schemas libs/libpanel/ --targetdir=$(OUTPUT_DIR)/libs/libpanel/
+
+pack: $(OUTPUT_DIR)/libs/libpanel/gschemas.compiled $(JS_FILES) po/example.pot
+	cp -r stylesheet.css metadata.json LICENSE po/ schemas/ $(OUTPUT_DIR)
+	cp libs/libpanel/LICENSE $(OUTPUT_DIR)/libs/libpanel/
+	cd $(OUTPUT_DIR) && gnome-extensions pack --extra-source=LICENSE --extra-source=libs --podir=po --force
+
+install: pack
+	gnome-extensions install $(TARGET) --force
 
 test: install
 	clear
 	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --nested --wayland
+
+clean:
+	rm -r $(OUTPUT_DIR) node_modules

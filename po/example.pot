@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-29 19:42+0200\n"
+"POT-Creation-Date: 2024-11-26 19:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -192,21 +192,21 @@ msgid ""
 "**using regexes**"
 msgstr ""
 
-#: prefs.js:209 prefs.js:255
+#: prefs.js:209 prefs.js:264
 msgid "Filtering mode"
 msgstr ""
 
-#: prefs.js:210 prefs.js:256
+#: prefs.js:210 prefs.js:265
 msgid ""
 "On blacklist mode, matching elements are removed from the list. On whitelist "
 "mode, only matching elements will be shown"
 msgstr ""
 
-#: prefs.js:212 prefs.js:258
+#: prefs.js:212 prefs.js:267
 msgid "Blacklist"
 msgstr ""
 
-#: prefs.js:213 prefs.js:259
+#: prefs.js:213 prefs.js:268
 msgid "Whitelist"
 msgstr ""
 
@@ -214,62 +214,62 @@ msgstr ""
 msgid "Stream name"
 msgstr ""
 
-#: prefs.js:248
+#: prefs.js:257
 msgid "Output sliders filtering"
 msgstr ""
 
-#: prefs.js:249
+#: prefs.js:258
 msgid ""
 "Allow you to filter the per-device volume sliders. The content of the "
 "filters are regexes and are applied to the device's display name and "
 "pulseaudio name."
 msgstr ""
 
-#: prefs.js:267
+#: prefs.js:276
 msgid "Device name"
 msgstr ""
 
-#: prefs.js:296
+#: prefs.js:314
 msgid "LibPanel settings"
 msgstr ""
 
-#: prefs.js:297
+#: prefs.js:315
 msgid ""
 "Those settings are not specific to this extension, they apply to every panels"
 msgstr ""
 
-#: prefs.js:304
+#: prefs.js:322
 msgid "Panel alignment"
 msgstr ""
 
-#: prefs.js:306
+#: prefs.js:324
 msgid "Left"
 msgstr ""
 
-#: prefs.js:307
+#: prefs.js:325
 msgid "Right"
 msgstr ""
 
-#: prefs.js:314
+#: prefs.js:332
 msgid "Padding"
 msgstr ""
 
-#: prefs.js:315
+#: prefs.js:333
 msgid "Use this to override the default padding of the panels"
 msgstr ""
 
-#: prefs.js:321
+#: prefs.js:339
 msgid "Row spacing"
 msgstr ""
 
-#: prefs.js:322
+#: prefs.js:340
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 
-#: prefs.js:328
+#: prefs.js:346
 msgid "Column spacing"
 msgstr ""
 
-#: prefs.js:329
+#: prefs.js:347
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""

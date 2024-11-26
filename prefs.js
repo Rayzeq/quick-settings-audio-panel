@@ -229,7 +229,16 @@ export default class QSAPPreferences extends ExtensionPreferences {
             });
             new_row.add_suffix(delete_button);
 
-            new_row.connect('changed', () => save_filters(settings, filters));
+            new_row.connect('changed', () => {
+                try {
+                    new RegExp(new_row.text);
+                } catch (e) {
+                    new_row.title = "<span color=\"red\" weight=\"bold\">Invalid regex (filters were not saved)</span>";
+                    return;
+                }
+                new_row.title = "Stream name";
+                save_filters(settings, filters);
+            });
 
             filters.push(new_row);
             mixer_filter_group.add(new_row);
@@ -275,7 +284,16 @@ export default class QSAPPreferences extends ExtensionPreferences {
             });
             new_row.add_suffix(delete_button);
 
-            new_row.connect('changed', () => sink_save_filters(settings, sink_filters));
+            new_row.connect('changed', () => {
+                try {
+                    new RegExp(new_row.text);
+                } catch (e) {
+                    new_row.title = "<span color=\"red\" weight=\"bold\">Invalid regex (filters were not saved)</span>";
+                    return;
+                }
+                new_row.title = "Device name";
+                sink_save_filters(settings, sink_filters);
+            });
 
             sink_filters.push(new_row);
             sink_mixer_filter_group.add(new_row);

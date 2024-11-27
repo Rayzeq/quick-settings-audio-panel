@@ -30,7 +30,10 @@ $(OUTPUT_DIR)/libs/libpanel/gschemas.compiled: libs/libpanel/*.gschema.xml
 pack: $(OUTPUT_DIR)/libs/libpanel/gschemas.compiled $(JS_FILES) po/example.pot
 	cp -r stylesheet.css metadata.json LICENSE po/ schemas/ $(OUTPUT_DIR)
 	cp libs/libpanel/LICENSE $(OUTPUT_DIR)/libs/libpanel/
-	cd $(OUTPUT_DIR) && gnome-extensions pack --extra-source=LICENSE --extra-source=libs --podir=po --force
+	# for some reason this prevents `gnome-extensions pack` from putting some empty files in the archive
+	# (because of virtualbox ?)
+	sleep 1
+	cd $(OUTPUT_DIR)/ && gnome-extensions pack --extra-source=LICENSE --extra-source=libs --podir=po --force
 
 install: pack
 	gnome-extensions install $(TARGET) --force

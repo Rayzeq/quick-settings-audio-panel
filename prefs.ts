@@ -1,5 +1,3 @@
-"use strict";
-
 import Adw from 'gi://Adw';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
@@ -10,201 +8,181 @@ import Gtk from 'gi://Gtk';
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import { get_settings, get_stack, rsplit, split } from './libs/libpanel/utils.js';
+import { get_pactl_path } from "./libs/utils.js";
 
 export default class QSAPPreferences extends ExtensionPreferences {
-    fillPreferencesWindow(window) {
+    async fillPreferencesWindow(window: Adw.PreferencesWindow) {
         const settings = this.getSettings();
-        const page = new Adw.PreferencesPage();
-        window.add(page);
+
+        // Update ordering from older versions
+        let ordering = settings.get_strv("ordering");
+        if (ordering.length < 5) ordering = ["volume-output", "sink-mixer", "volume-input", "media", "mixer"];
+        if (ordering.length < 6) ordering.push("balance-slider");
+        if (ordering.length < 7) ordering.push("profile-switcher");
+        settings.set_strv("ordering", ordering);
+
+        window.add(this.makeExtensionSettingsPage(settings));
+
+        // we remove the 'file://' and the filename at the end
+        const parent_folder = '/' + split(rsplit(get_stack()[0].file, '/', 1)[0], '/', 3)[3];
+        const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
+        window.add(this.makeLibpanelSettingsPage(libpanel_settings));
+    }
+
+    makeExtensionSettingsPage(settings: Gio.Settings): Adw.PreferencesPage {
+        const page = new Adw.PreferencesPage({ title: "Extension settings", icon_name: "preferences-system-symbolic" });
 
         // ====================================== Main group ======================================
-        const main_group = new Adw.PreferencesGroup();
-        page.add(main_group);
-
-        main_group.add(create_switch(
-            settings, 'move-master-volume',
+        const main_group = new PreferencesGroup();
+        main_group.add_switch(settings, "move-master-volume",
             {
                 title: _("Move master volume sliders"),
                 subtitle: _("Thoses are the speaker / headphone and microphone volume sliders")
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'always-show-input-slider',
+        );
+        main_group.add_switch(settings, "always-show-input-slider",
             {
                 title: _("Always show microphone volume slider"),
                 subtitle: _("Show even when there is no application recording audio")
             }
-        ));
-        main_group.add(create_dropdown(
-            settings, 'media-control',
+        );
+        main_group.add_combobox(settings, "media-control",
             {
                 title: _("Media controls"),
                 subtitle: _("What should we do with media controls ?"),
                 fields: [
-                    ['none', _("Leave as is")],
-                    ['move', _("Move into new panel")],
-                    ['duplicate', _("Duplicate into new panel")]
+                    ["none", _("Leave as is")],
+                    ["move", _("Move into new panel")],
+                    ["duplicate", _("Duplicate into new panel")]
                 ]
             }
-        ));
-        if (settings.get_strv('ordering').length < 5) {
-            settings.set_strv('ordering', ['volume-output', 'sink-mixer', 'volume-input', 'media', 'mixer']);
-        }
-        if (settings.get_strv('ordering').length < 6) {
-            let ordering = settings.get_strv('ordering');
-            ordering.push('balance-slider');
-            settings.set_strv('ordering', ordering);
-        }
-        if (settings.get_strv('ordering').length < 7) {
-            let ordering = settings.get_strv('ordering');
-            ordering.push('profile-switcher');
-            settings.set_strv('ordering', ordering);
-        }
+        );
 
-        const row = create_switch(
-            settings, 'create-mixer-sliders',
+        const mixer_slier_switch = main_group.add_switch(settings, "create-mixer-sliders",
             {
                 title: _("Create applications mixer"),
             }
-        )
-        const updateSubtitle = () => {
-            let found_pactl = false;
-            let found_pactl_using_path = false;
-            let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
-            try {
-                GLib.spawn_command_line_sync('pactl');
-                found_pactl = true;
-            } catch (e) {
-                if (e.message.includes("No such file")) {
-                    try {
-                        GLib.spawn_command_line_sync(settings.get_string("pactl-path"));
-                        found_pactl = true;
-                        found_pactl_using_path = true;
-                    } catch (e) {
-                        if (!e.message.includes("No such file"))
-                            subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
-                    }
-                } else {
-                    subtitle += "\n" + _(`<span color=\"red\" weight=\"bold\">Cannot check for availability of <tt>pactl</tt>: <tt>${e.message}</tt></span>`);
-                }
-            }
-            
-            if (!found_pactl) {
-                subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
-            }
-
-            row.subtitle = subtitle;
-            return [found_pactl, found_pactl_using_path];
-        };
-        const [found_pactl, found_pactl_using_path] = updateSubtitle();
-        settings.connect("changed::pactl-path", () => updateSubtitle());
-        main_group.add(row);
-        if (found_pactl_using_path || !found_pactl) {
-            main_group.add(create_file_chooser_row(
-                settings, 'pactl-path',
-                {
-                    title: _("<tt>pactl</tt> path"),
-                }
-            ));
-        }
-        main_group.add(create_switch(
-            settings, 'ignore-css',
+        );
+        main_group.add_switch(settings, "ignore-css",
             {
                 title: _("Do not apply custom CSS"),
                 subtitle: _("Disable the CSS in this extension that could override your theme")
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'create-sink-mixer',
+        );
+        main_group.add_switch(settings, "create-sink-mixer",
             {
                 title: _("Create per-device volume sliders"),
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'show-current-device',
+        );
+        main_group.add_switch(settings, "show-current-device",
             {
                 title: _("Show the currently selected device for the master sliders"),
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'remove-output-slider',
+        );
+        main_group.add_switch(settings, "remove-output-slider",
             {
                 title: _("Remove the output slider"),
                 subtitle: _("This is useful if you enabled the per-device volume sliders")
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'create-balance-slider',
+        );
+        const balance_slider_switch = main_group.add_switch(settings, "create-balance-slider",
             {
                 title: _("Add a balance slider"),
-                subtitle: _("This slider allows you to change the balance of the current output")
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'create-profile-switcher',
+        );
+        main_group.add_switch(settings, "create-profile-switcher",
             {
                 title: _("Add a profile switcher"),
                 subtitle: _("Allows you to quickly change the audio profile of the current device")
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'autohide-profile-switcher',
+        );
+        main_group.add_switch(settings, "autohide-profile-switcher",
             {
                 title: _("Auto-hide the profile switcher"),
                 subtitle: _("Hide the profile switcher when the current device only have one profile")
             }
-        ));
-        main_group.add(create_switch(
-            settings, 'merge-panel',
+        );
+        main_group.add_switch(settings, "merge-panel",
             {
                 title: _("Merge the new panel into the main one"),
                 subtitle: _("The new panel will not be separated from the main one")
             }
-        ));
-        const position_dropdown = create_dropdown(
-            settings, 'panel-position',
+        );
+        const position_dropdown = main_group.add_combobox(settings, "panel-position",
             {
                 title: _("Panel position"),
                 subtitle: _("Where the new panel should be located relative to the main panel"),
                 fields: [
-                    ['top', _("Top")],
-                    ['bottom', _("Bottom")]
+                    ["top", _("Top")],
+                    ["bottom", _("Bottom")]
                 ]
             }
         );
-        settings.bind('merge-panel', position_dropdown, 'visible', Gio.SettingsBindFlags.GET);
-        main_group.add(position_dropdown);
-        main_group.add(create_switch(
-            settings, 'separate-indicator',
+        settings.bind("merge-panel", position_dropdown, "visible", Gio.SettingsBindFlags.GET);
+
+        main_group.add_switch(settings, "separate-indicator",
             {
                 title: _("Put the panel in a separate indicator"),
             }
-        ));
+        );
+
+        const pactl_callbacks = [
+            (found: boolean) => {
+                let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
+                if (!found) {
+                    subtitle += "\n" + _(`<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>`);
+                }
+                mixer_slier_switch.subtitle = subtitle;
+            },
+            (found: boolean) => {
+                let subtitle = _("This slider allows you to change the balance of the current output");
+                if (!found) {
+                    subtitle += "\n" + _(`<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, the slider won't work</span>`);
+                }
+                balance_slider_switch.subtitle = subtitle;
+            }
+        ];
+        const pactl_path_entry = main_group.add_file_chooser(settings, "pactl-path",
+            {
+                title: _("Path to the <tt>pactl</tt> executable"),
+            }
+        );
+
+        const update_pactl_status = (): [boolean, boolean] => {
+            let [pactl_path, found_using_custom_path] = get_pactl_path(settings);
+
+            for (const callback of pactl_callbacks) {
+                callback(pactl_path !== null);
+            }
+
+            return [pactl_path !== null, found_using_custom_path];
+        };
+        const [found_pactl, found_pactl_using_path] = update_pactl_status();
+        settings.connect("changed::pactl-path", () => update_pactl_status());
+        pactl_path_entry.visible = found_pactl_using_path || !found_pactl;
 
         // ================================= Widget ordering group ================================
-        const widgets_order_group = new ReorderablePreferencesGroup(settings, 'ordering', {
+        const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
             title: _("Elements order"),
             description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
         });
-        page.add(widgets_order_group);
 
-        widgets_order_group.add(new DraggableRow('profile-switcher', { title: _("Profile switcher") }));
-        widgets_order_group.add(new DraggableRow('volume-output', { title: _("Speaker / Headphone volume slider") }));
-        widgets_order_group.add(new DraggableRow('sink-mixer', { title: _("Per-device volume sliders") }));
-        widgets_order_group.add(new DraggableRow('balance-slider', { title: _("Output balance slider") }));
-        widgets_order_group.add(new DraggableRow('volume-input', { title: _("Microphone volume slider") }));
-        widgets_order_group.add(new DraggableRow('media', { title: _("Media controls") }));
-        widgets_order_group.add(new DraggableRow('mixer', { title: _("Applications mixer") }));
+        widgets_order_group.add(new DraggableRow("profile-switcher", { title: _("Profile switcher") }));
+        widgets_order_group.add(new DraggableRow("volume-output", { title: _("Speaker / Headphone volume slider") }));
+        widgets_order_group.add(new DraggableRow("sink-mixer", { title: _("Per-device volume sliders") }));
+        widgets_order_group.add(new DraggableRow("balance-slider", { title: _("Output balance slider") }));
+        widgets_order_group.add(new DraggableRow("volume-input", { title: _("Microphone volume slider") }));
+        widgets_order_group.add(new DraggableRow("media", { title: _("Media controls") }));
+        widgets_order_group.add(new DraggableRow("mixer", { title: _("Applications mixer") }));
 
         // ================================== Mixer filter group ==================================
-        const add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
-        const mixer_filter_group = new Adw.PreferencesGroup({
+        const add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
+        const mixer_filter_group = new PreferencesGroup({
             title: _("Mixer filtering"),
             description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
             header_suffix: add_filter_button
         });
-        mixer_filter_group.add(create_dropdown(
-            settings, 'filter-mode',
+        mixer_filter_group.add_combobox(settings, "filter-mode",
             {
                 title: _("Filtering mode"),
                 subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
@@ -213,23 +191,22 @@ export default class QSAPPreferences extends ExtensionPreferences {
                     ['whitelist', _("Whitelist")],
                 ]
             }
-        ));
-        page.add(mixer_filter_group);
+        );
 
         const filters = [];
         const create_filter_row = (text) => {
-            const new_row = new Adw.EntryRow({ 'title': _("Stream name") });
+            const new_row = new Adw.EntryRow({ "title": _("Stream name") });
             if (text != undefined) new_row.text = text;
 
-            const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
-            delete_button.connect('clicked', () => {
+            const delete_button = new Gtk.Button({ icon_name: "user-trash-symbolic", has_frame: false });
+            delete_button.connect("clicked", () => {
                 mixer_filter_group.remove(new_row);
                 filters.splice(filters.indexOf(new_row), 1);
                 save_filters(settings, filters);
             });
             new_row.add_suffix(delete_button);
 
-            new_row.connect('changed', () => {
+            new_row.connect("changed", () => {
                 try {
                     new RegExp(new_row.text);
                 } catch (e) {
@@ -243,48 +220,46 @@ export default class QSAPPreferences extends ExtensionPreferences {
             filters.push(new_row);
             mixer_filter_group.add(new_row);
         };
-        add_filter_button.connect('clicked', () => {
+        add_filter_button.connect("clicked", () => {
             create_filter_row();
         });
 
-        for (const filter of settings.get_strv('filters')) {
+        for (const filter of settings.get_strv("filters")) {
             create_filter_row(filter);
         }
 
         // ================================ Sink mixer filter group ===============================
-        const sink_add_filter_button = new Gtk.Button({ icon_name: 'list-add', has_frame: false });
-        const sink_mixer_filter_group = new Adw.PreferencesGroup({
+        const sink_add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
+        const sink_mixer_filter_group = new PreferencesGroup({
             title: _("Output sliders filtering"),
             description: _("Allow you to filter the per-device volume sliders. The content of the filters are regexes and are applied to the device's display name and pulseaudio name."),
             header_suffix: sink_add_filter_button
         });
-        sink_mixer_filter_group.add(create_dropdown(
-            settings, 'sink-filter-mode',
+        sink_mixer_filter_group.add_combobox(settings, "sink-filter-mode",
             {
                 title: _("Filtering mode"),
                 subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
                 fields: [
-                    ['blacklist', _("Blacklist")],
-                    ['whitelist', _("Whitelist")],
+                    ["blacklist", _("Blacklist")],
+                    ["whitelist", _("Whitelist")],
                 ]
             }
-        ));
-        page.add(sink_mixer_filter_group);
+        );
 
         const sink_filters = [];
         const sink_create_filter_row = (text) => {
-            const new_row = new Adw.EntryRow({ 'title': _("Device name") });
+            const new_row = new Adw.EntryRow({ "title": _("Device name") });
             if (text != undefined) new_row.text = text;
 
-            const delete_button = new Gtk.Button({ icon_name: 'user-trash-symbolic', has_frame: false });
-            delete_button.connect('clicked', () => {
+            const delete_button = new Gtk.Button({ icon_name: "user-trash-symbolic", has_frame: false });
+            delete_button.connect("clicked", () => {
                 sink_mixer_filter_group.remove(new_row);
                 sink_filters.splice(sink_filters.indexOf(new_row), 1);
                 sink_save_filters(settings, sink_filters);
             });
             new_row.add_suffix(delete_button);
 
-            new_row.connect('changed', () => {
+            new_row.connect("changed", () => {
                 try {
                     new RegExp(new_row.text);
                 } catch (e) {
@@ -298,148 +273,180 @@ export default class QSAPPreferences extends ExtensionPreferences {
             sink_filters.push(new_row);
             sink_mixer_filter_group.add(new_row);
         };
-        sink_add_filter_button.connect('clicked', () => {
+        sink_add_filter_button.connect("clicked", () => {
             sink_create_filter_row();
         });
 
-        for (const filter of settings.get_strv('sink-filters')) {
+        for (const filter of settings.get_strv("sink-filters")) {
             sink_create_filter_row(filter);
         }
+        
+        page.add(main_group);
+        page.add(widgets_order_group);
+        page.add(mixer_filter_group);
+        page.add(sink_mixer_filter_group);
+        return page;
+    }
 
-        // ==================================== LibPanel group ====================================
-        // we remove the 'file://' and the filename at the end
-        const parent_folder = '/' + split(rsplit(get_stack()[0].file, '/', 1)[0], '/', 3)[3];
-        const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
-        const libpanel_group = new Adw.PreferencesGroup({
+    makeLibpanelSettingsPage(settings: Gio.Settings): Adw.PreferencesPage {
+        const page = new Adw.PreferencesPage({
+            title: "Libpanel settings",
+            icon_name: "view-grid-symbolic"
+        });
+        const group = new PreferencesGroup({
             title: _("LibPanel settings"),
             description: _("Those settings are not specific to this extension, they apply to every panels"),
         });
-        page.add(libpanel_group);
 
-        libpanel_group.add(create_switch(
-            libpanel_settings, 'single-column',
+        group.add_switch(settings, "single-column",
             {
                 title: _("Single-column mode"),
                 subtitle: _("Only one column of panels will be allowed. Also prevents the panel from being put at the left/right of the screen by libpanel.")
             }
-        ));
-        libpanel_group.add(create_dropdown(
-            libpanel_settings, 'alignment',
+        );
+        group.add_combobox(
+            settings, "alignment",
             {
                 title: _("Panel alignment"),
                 fields: [
-                    ['left', _("Left")],
-                    ['right', _("Right")],
+                    ["left", _("Left")],
+                    ["right", _("Right")],
                 ]
             }
-        ));
-        libpanel_group.add(create_switch_spin(
-            libpanel_settings, 'padding-enabled', 'padding',
+        );
+        group.add_switch_spin(settings, "padding-enabled", "padding",
             {
                 title: _("Padding"),
                 subtitle: _("Use this to override the default padding of the panels")
             }, 0, 100
-        ));
-        libpanel_group.add(create_switch_spin(
-            libpanel_settings, 'row-spacing-enabled', 'row-spacing',
+        );
+        group.add_switch_spin(settings, "row-spacing-enabled", "row-spacing",
             {
                 title: _("Row spacing"),
                 subtitle: _("Use this to override the default row spacing of the panels")
             }, 0, 100
-        ));
-        libpanel_group.add(create_switch_spin(
-            libpanel_settings, 'column-spacing-enabled', 'column-spacing',
+        );
+        group.add_switch_spin(settings, "column-spacing-enabled", "column-spacing",
             {
                 title: _("Column spacing"),
                 subtitle: _("Use this to override the default column spacing of the panels")
             }, 0, 100
-        ));
+        );
+
+        page.add(group);
+        return page;
     }
 }
 
+const PreferencesGroup = GObject.registerClass(class PreferencesGroup extends Adw.PreferencesGroup {
+    add_switch(
+        settings: Gio.Settings,
+        key: string,
+        properties: Partial<Adw.SwitchRow.ConstructorProps>
+    ): Adw.SwitchRow {
+        const row = new Adw.SwitchRow(properties);
+        settings.bind(
+            key,
+            row,
+            "active",
+            Gio.SettingsBindFlags.DEFAULT
+        );
 
-function create_switch(settings, id, options) {
-    const row = new Adw.SwitchRow(options);
-    settings.bind(
-        id,
-        row,
-        'active',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-    return row;
-}
+        this.add(row);
+        return row;
+    }
 
-function create_dropdown(settings, id, options) {
-    const fields = options.fields;
-    delete options.fields;
+    add_combobox(
+        settings: Gio.Settings,
+        key: string,
+        properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][] }
+    ): Adw.ComboRow {
+        const { fields, ...props } = properties;
 
-    const model = Gtk.StringList.new(fields.map(x => x[1]));
-    const row = new Adw.ComboRow({
-        model: model,
-        selected: fields.map(x => x[0]).indexOf(settings.get_string(id)),
-        ...options
-    });
-
-    row.connect('notify::selected', () => {
-        settings.set_string(id, fields[row.selected][0]);
-    });
-
-    return row;
-}
-
-function create_switch_spin(settings, switch_id, spin_id, options, lower = 0, higher = 100) {
-    const row = Adw.SpinRow.new_with_range(lower, higher, 1);
-    row.title = options.title;
-    row.subtitle = options.subtitle;
-
-    const switch_ = new Gtk.Switch({ valign: Gtk.Align.CENTER });
-    settings.bind(
-        switch_id,
-        switch_,
-        'active',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-    row.add_prefix(switch_);
-    row.activatable_widget = switch_;
-
-    settings.bind(
-        spin_id,
-        row,
-        'value',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-
-    return row;
-}
-
-function create_file_chooser_row(settings, id, options) {
-    const row = new Adw.EntryRow({ ...options, show_apply_button: false });
-    settings.bind(
-        id,
-        row,
-        'text',
-        Gio.SettingsBindFlags.DEFAULT
-    );
-
-    const chooser_button = new Gtk.Button({ label: 'Choose file...', has_frame: false });
-    chooser_button.connect("clicked", () => {
-        const dialog = new Gtk.FileDialog();
-        dialog.set_initial_file(Gio.File.new_for_path(row.text));
-        dialog.open(null, null, (_, result) => {
-            row.text = dialog.open_finish(result).get_path();
+        const model = Gtk.StringList.new(fields.map(x => x[1]));
+        const row = new Adw.ComboRow({
+            model: model,
+            selected: fields.map(x => x[0]).indexOf(settings.get_string(key)),
+            ...props
         });
-    });
-    row.add_suffix(chooser_button);
 
-    return row;
-}
+        row.connect("notify::selected", () => {
+            settings.set_string(key, fields[row.selected][0]);
+        });
+
+        this.add(row);
+        return row;
+    }
+
+    add_switch_spin(
+        settings: Gio.Settings,
+        switch_key: string,
+        spin_key: string,
+        properties: { title: string, subtitle: string },
+        lower: number = 0,
+        higher: number = 0
+    ): Adw.SpinRow {
+        const row = Adw.SpinRow.new_with_range(lower, higher, 1);
+        row.title = properties.title;
+        row.subtitle = properties.subtitle;
+
+        const switch_ = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+        settings.bind(
+            switch_key,
+            switch_,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        row.add_prefix(switch_);
+        row.activatable_widget = switch_;
+
+        settings.bind(
+            spin_key,
+            row,
+            'value',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.add(row);
+        return row;
+    }
+
+    add_file_chooser(
+        settings: Gio.Settings,
+        key: string,
+        properties: Partial<Adw.EntryRow.ConstructorProps>
+    ): Adw.EntryRow {
+        const row = new Adw.EntryRow({ ...properties, show_apply_button: false });
+        settings.bind(
+            key,
+            row,
+            "text",
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        const chooser_button = new Gtk.Button({ label: "Choose file...", has_frame: false });
+        chooser_button.connect("clicked", () => {
+            const dialog = new Gtk.FileDialog();
+            dialog.set_initial_file(Gio.File.new_for_path(row.text));
+            dialog.open(null, null, (_, result) => {
+                let path = dialog.open_finish(result)?.get_path();
+                if (path !== null && path !== undefined)
+                    row.text = path;
+            });
+        });
+        row.add_suffix(chooser_button);
+
+        this.add(row);
+        return row;
+    }
+});
 
 function save_filters(settings, filters) {
-    settings.set_strv('filters', filters.map(filter => filter.text));
+    settings.set_strv("filters", filters.map(filter => filter.text));
 }
 
 function sink_save_filters(settings, filters) {
-    settings.set_strv('sink-filters', filters.map(filter => filter.text));
+    settings.set_strv("sink-filters", filters.map(filter => filter.text));
 }
 
 // From this point onwards, the code is mostly a reimplementation of this:

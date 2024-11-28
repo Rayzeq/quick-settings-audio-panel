@@ -11,6 +11,8 @@ import { Ornament, PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMen
 import { QuickMenuToggle, QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
+import { get_pactl_path } from "./utils.js";
+
 export function waitProperty(object, name) {
     if (!waitProperty.idle_ids) {
         waitProperty.idle_ids = [];
@@ -197,10 +199,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         super();
 
         const updatePactl = () => {
-            this._pactl_path = GLib.find_program_in_path(settings.get_string("pactl-path"));
-            if (this._pactl_path == null) {
-                this._pactl_path = GLib.find_program_in_path('pactl');
-            }
+            this._pactl_path = get_pactl_path()[0];
         };
         this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => updatePactl());
         this.connect("destroy", () => settings.disconnect(this._pactl_path_changed_id));
@@ -478,10 +477,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
         const updatePactl = () => {
-            this._pactl_path = GLib.find_program_in_path(settings.get_string("pactl-path"));
-            if (this._pactl_path == null) {
-                this._pactl_path = GLib.find_program_in_path('pactl');
-            }
+            this._pactl_path = get_pactl_path()[0];
         };
         updatePactl();
         settings.connect("changed::pactl-path", () => updatePactl());

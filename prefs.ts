@@ -176,110 +176,22 @@ export default class QSAPPreferences extends ExtensionPreferences {
         widgets_order_group.add(new DraggableRow("mixer", { title: _("Applications mixer") }));
 
         // ================================== Mixer filter group ==================================
-        const add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
-        const mixer_filter_group = new PreferencesGroup({
-            title: _("Mixer filtering"),
-            description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
-            header_suffix: add_filter_button
-        });
-        mixer_filter_group.add_combobox(settings, "filter-mode",
+        const mixer_filter_group = new FilterPreferencesGroup(settings, "filters", "filter-mode",
             {
-                title: _("Filtering mode"),
-                subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
-                fields: [
-                    ['blacklist', _("Blacklist")],
-                    ['whitelist', _("Whitelist")],
-                ]
+                title: _("Mixer filtering"),
+                description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
+                placeholder: _("Stream name"),
             }
         );
-
-        const filters = [];
-        const create_filter_row = (text) => {
-            const new_row = new Adw.EntryRow({ "title": _("Stream name") });
-            if (text != undefined) new_row.text = text;
-
-            const delete_button = new Gtk.Button({ icon_name: "user-trash-symbolic", has_frame: false });
-            delete_button.connect("clicked", () => {
-                mixer_filter_group.remove(new_row);
-                filters.splice(filters.indexOf(new_row), 1);
-                save_filters(settings, filters);
-            });
-            new_row.add_suffix(delete_button);
-
-            new_row.connect("changed", () => {
-                try {
-                    new RegExp(new_row.text);
-                } catch (e) {
-                    new_row.title = "<span color=\"red\" weight=\"bold\">Invalid regex (filters were not saved)</span>";
-                    return;
-                }
-                new_row.title = "Stream name";
-                save_filters(settings, filters);
-            });
-
-            filters.push(new_row);
-            mixer_filter_group.add(new_row);
-        };
-        add_filter_button.connect("clicked", () => {
-            create_filter_row();
-        });
-
-        for (const filter of settings.get_strv("filters")) {
-            create_filter_row(filter);
-        }
 
         // ================================ Sink mixer filter group ===============================
-        const sink_add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
-        const sink_mixer_filter_group = new PreferencesGroup({
-            title: _("Output sliders filtering"),
-            description: _("Allow you to filter the per-device volume sliders. The content of the filters are regexes and are applied to the device's display name and pulseaudio name."),
-            header_suffix: sink_add_filter_button
-        });
-        sink_mixer_filter_group.add_combobox(settings, "sink-filter-mode",
+        const sink_mixer_filter_group = new FilterPreferencesGroup(settings, "sink-filters", "sink-filter-mode",
             {
-                title: _("Filtering mode"),
-                subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
-                fields: [
-                    ["blacklist", _("Blacklist")],
-                    ["whitelist", _("Whitelist")],
-                ]
+                title: _("Output sliders filtering"),
+                description: _("Allow you to filter the per-device volume sliders. The content of the filters are regexes and are applied to the device's display name and pulseaudio name."),
+                placeholder: _("Device name"),
             }
         );
-
-        const sink_filters = [];
-        const sink_create_filter_row = (text) => {
-            const new_row = new Adw.EntryRow({ "title": _("Device name") });
-            if (text != undefined) new_row.text = text;
-
-            const delete_button = new Gtk.Button({ icon_name: "user-trash-symbolic", has_frame: false });
-            delete_button.connect("clicked", () => {
-                sink_mixer_filter_group.remove(new_row);
-                sink_filters.splice(sink_filters.indexOf(new_row), 1);
-                sink_save_filters(settings, sink_filters);
-            });
-            new_row.add_suffix(delete_button);
-
-            new_row.connect("changed", () => {
-                try {
-                    new RegExp(new_row.text);
-                } catch (e) {
-                    new_row.title = "<span color=\"red\" weight=\"bold\">Invalid regex (filters were not saved)</span>";
-                    return;
-                }
-                new_row.title = "Device name";
-                sink_save_filters(settings, sink_filters);
-            });
-
-            sink_filters.push(new_row);
-            sink_mixer_filter_group.add(new_row);
-        };
-        sink_add_filter_button.connect("clicked", () => {
-            sink_create_filter_row();
-        });
-
-        for (const filter of settings.get_strv("sink-filters")) {
-            sink_create_filter_row(filter);
-        }
         
         page.add(main_group);
         page.add(widgets_order_group);
@@ -441,13 +353,70 @@ const PreferencesGroup = GObject.registerClass(class PreferencesGroup extends Ad
     }
 });
 
-function save_filters(settings, filters) {
-    settings.set_strv("filters", filters.map(filter => filter.text));
-}
+const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGroup extends PreferencesGroup {
+    private _settings: Gio.Settings;
+    private _key: string;
+    private _placeholder: string;
+    private _rows: Adw.EntryRow[];
 
-function sink_save_filters(settings, filters) {
-    settings.set_strv("sink-filters", filters.map(filter => filter.text));
-}
+    constructor(settings: Gio.Settings, key: string, mode_key: string, properties: Partial<Adw.PreferencesGroup.ConstructorProps> & { placeholder: string }) {
+        const { placeholder, ...props } = properties;
+
+        const add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
+        super({ ...props, header_suffix: add_filter_button });
+
+        this.add_combobox(settings, mode_key,
+            {
+                title: _("Filtering mode"),
+                subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
+                fields: [
+                    ['blacklist', _("Blacklist")],
+                    ['whitelist', _("Whitelist")],
+                ]
+            }
+        );
+        this._settings = settings;
+        this._key = key;
+        this._placeholder = placeholder;
+        this._rows = [];
+
+        add_filter_button.connect("clicked", () => this._create_row());
+        for (const filter of settings.get_strv(key)) {
+            this._create_row(filter);
+        }
+    }
+
+    private _create_row(content?: string) {
+        const new_row = new Adw.EntryRow({ "title": this._placeholder });
+        if (content !== undefined) new_row.text = content;
+
+        const delete_button = new Gtk.Button({ icon_name: "user-trash-symbolic", has_frame: false });
+        delete_button.connect("clicked", () => {
+            this.remove(new_row);
+            this._rows.splice(this._rows.indexOf(new_row), 1);
+            this._save();
+        });
+        new_row.add_suffix(delete_button);
+
+        new_row.connect("changed", () => {
+            try {
+                new RegExp(new_row.text);
+            } catch (e) {
+                new_row.title = "<span color=\"red\" weight=\"bold\">Invalid regex (filters were not saved)</span>";
+                return;
+            }
+            new_row.title = this._placeholder;
+            this._save();
+        });
+
+        this._rows.push(new_row);
+        this.add(new_row);
+    }
+
+    private _save() {
+        this._settings.set_strv(this._key, this._rows.map(row => row.text));
+    }
+});
 
 // From this point onwards, the code is mostly a reimplementation of this:
 // https://gitlab.gnome.org/GNOME/gnome-control-center/-/tree/main/panels/search

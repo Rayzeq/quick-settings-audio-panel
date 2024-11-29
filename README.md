@@ -3,10 +3,12 @@ Quick Settings Audio Panel
 
 [<img src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true" alt="Get it on GNOME Extensions" height="100" align="middle">](https://extensions.gnome.org/extension/5940/quick-settings-audio-panel/)
 
-Quick Settings Audio Panel (QSAP) is a gnome 43/44/45/46 extension that creates a new panel for sound related stuff in the quick settings.
+Quick Settings Audio Panel (QSAP) is a gnome 45/46/47 extension that creates a new panel for sound related stuff in the quick settings.
 
 Features
 --------
+
+Note: not all features are displayed here.
 
 | Move master volume sliders (speaker / headphone and microphone) to the new panel | Always show the microphone volume slider, but the icon in the top don't change behavior ! | Move (or duplicate) media controls into this panel |
 |:--:|:--:|:--:|
@@ -19,7 +21,7 @@ Features
 Notice
 ------
 
-The Bluetooth menu overflows the other quick settings below it. It's a known issue that is also present in the original panel, and I can't fix it.
+The Bluetooth menu overflows the other quick settings below it. It's a known issue that is not related to this extension, and I can't fix it.
 
 Compatibility
 -------------
@@ -32,12 +34,15 @@ Known incompatibilities are:
   - `Remove Media Control on Date Menu` (but not `Remove Notifications On Date Menu`) will remove the media controls from the sound panel if you **move** the media controls using this extension. If you **duplicate** the media controls with the extension, they won't be affected.
   - In some situations, disabling QSAP can crash QST.
 
-On Gnome Shell 43, compatibility with QST has not been tested.
+Older versions
+--------------
+
+Versions for Gnome 43 and 44 are still available, but no new features or bug fixes will be made for these versions.
 
 Manual installation
 -------------------
 
-If you can't install the extension from ego for some reason, you can install it manually. This extension **CANNOT** be installed on gnome-shell 42 or older.
+If you can't install the extension from [extensions.gnome.org](https://extensions.gnome.org) for some reason, you can install it manually. This extension **CANNOT** be installed on gnome-shell 42 or older.
 
 Instructions:
  * Download the [latest version](https://github.com/Rayzeq/quick-settings-audio-panel/releases)

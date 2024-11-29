@@ -452,35 +452,47 @@ function sink_save_filters(settings, filters) {
 // From this point onwards, the code is mostly a reimplementation of this:
 // https://gitlab.gnome.org/GNOME/gnome-control-center/-/tree/main/panels/search
 
-const ReorderablePreferencesGroup = GObject.registerClass(class extends Adw.PreferencesGroup {
-    constructor(settings, key, options) {
-        super(options);
+const ReorderablePreferencesGroup = GObject.registerClass(class ReorderablePreferencesGroup extends Adw.PreferencesGroup {
+    private _settings: Gio.Settings;
+    private _key: string;
+    private _list_box: Gtk.ListBox;
+
+    constructor(
+        settings: Gio.Settings,
+        key: string,
+        properties: Partial<Adw.PreferencesGroup.ConstructorProps>
+    ) {
+        super(properties);
         this._settings = settings;
         this._key = key;
 
         this._list_box = new Gtk.ListBox({ selection_mode: Gtk.SelectionMode.NONE });
-        this._list_box.add_css_class('boxed-list');
+        this._list_box.add_css_class("boxed-list");
         this._list_box.set_sort_func((a, b) => {
+            if (!(a instanceof DraggableRow) || !(b instanceof DraggableRow)) {
+                console.error(`Invalid row type: ${a.constructor.name} or ${b.constructor.name}`);
+                return 0;
+            }
+
             const data = settings.get_strv(key);
-            const index_a = data.indexOf(a.id);
-            const index_b = data.indexOf(b.id);
+            const index_a = data.indexOf(a.key);
+            const index_b = data.indexOf(b.key);
             return index_a < index_b ? -1 : 1;
         });
         super.add(this._list_box);
     }
 
-    add(row) {
+    add(row: DraggableRowClass) {
         this._list_box.set_valign(Gtk.Align.FILL);
-        row.connect('move-row', (source, target) => {
-            this.selected_row = source;
+        row.connect('move-row', (source: DraggableRowClass, target: DraggableRowClass) => {
             const data = this._settings.get_strv(this._key);
-            const source_index = data.indexOf(source.id);
-            const target_index = data.indexOf(target.id);
+            const source_index = data.indexOf(source.key);
+            const target_index = data.indexOf(target.key);
             if (target_index < source_index) {
                 data.splice(source_index, 1); // remove 1 element at source_index
-                data.splice(target_index, 0, source.id); // insert source.id at target_index
+                data.splice(target_index, 0, source.key); // insert source.key at target_index
             } else {
-                data.splice(target_index + 1, 0, source.id); // insert source.id at target_index
+                data.splice(target_index + 1, 0, source.key); // insert source.key at target_index
                 data.splice(source_index, 1); // remove 1 element at source_index
             }
             this._settings.set_strv(this._key, data);
@@ -491,41 +503,50 @@ const ReorderablePreferencesGroup = GObject.registerClass(class extends Adw.Pref
 });
 
 class DraggableRowClass extends Adw.ActionRow {
-    constructor(id, options) {
-        super(options);
+    key: string
 
-        this.id = id;
+    private _drag_x?: number;
+    private _drag_y?: number;
+    private _drag_widget?: Gtk.ListBox;
 
-        const drag_handle = new Gtk.Image({ icon_name: 'list-drag-handle-symbolic' });
+    constructor(key: string, properties: Partial<Adw.ActionRow.ConstructorProps>) {
+        super(properties);
+        this.key = key;
+
+        const drag_handle = new Gtk.Image({ icon_name: "list-drag-handle-symbolic" });
         // css don't work
-        drag_handle.add_css_class('drag-handle');
+        drag_handle.add_css_class("drag-handle");
         this.add_prefix(drag_handle);
 
         const drag_source = new Gtk.DragSource({ actions: Gdk.DragAction.MOVE });
-        drag_source.connect('prepare', (source, x, y) => {
+        drag_source.connect("prepare", (_source, x, y) => {
             this._drag_x = x;
             this._drag_y = y;
             return Gdk.ContentProvider.new_for_value(this);
         });
-        drag_source.connect('drag-begin', (source, drag) => {
+        drag_source.connect("drag-begin", (_source, drag) => {
             this._drag_widget = new Gtk.ListBox();
             this._drag_widget.set_size_request(this.get_allocated_width(), this.get_allocated_height());
 
-            const row_copy = new DraggableRow("", options);
+            const row_copy = new DraggableRow("", properties);
             this._drag_widget.append(row_copy);
             this._drag_widget.drag_highlight_row(row_copy);
 
             Gtk.DragIcon.get_for_drag(drag).set_child(this._drag_widget);
-            drag.set_hotspot(this._drag_x, this._drag_y);
+            // we know values are not undefined because `drag-begin` is sent after `prepare`
+            drag.set_hotspot(this._drag_x!, this._drag_y!);
         });
         this.add_controller(drag_source);
 
+        // @ts-expect-error: `GType` is a little goofy, so DraggableRow is not considered to be a GType
         const drop_target = Gtk.DropTarget.new(DraggableRow, Gdk.DragAction.MOVE);
         drop_target.preload = true;
-        drop_target.connect('drop', (target, source, x, y) => {
-            source.emit('move-row', this);
-
-            return true;
+        drop_target.connect("drop", (_self, source, _x, _y) => {
+            if (source instanceof DraggableRowClass) {
+                source.emit("move-row", this);
+                return true;
+            }
+            return false;
         });
         this.add_controller(drop_target);
     }
@@ -533,8 +554,9 @@ class DraggableRowClass extends Adw.ActionRow {
 
 const DraggableRow = GObject.registerClass({
     Signals: {
-        flags: GObject.SignalFlags.RUN_LAST,
-        'move-row': {
+        "move-row": {
+            flags: GObject.SignalFlags.RUN_LAST,
+            // @ts-expect-error: `GType` is a little goofy, so DraggableRowClass is not considered to be a GType
             param_types: [DraggableRowClass],
         }
     },

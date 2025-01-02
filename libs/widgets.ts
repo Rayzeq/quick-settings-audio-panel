@@ -6,6 +6,7 @@ import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import St from 'gi://St';
 
+import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Ornament, PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { QuickMenuToggle, QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';

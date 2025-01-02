@@ -199,7 +199,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         super();
 
         const updatePactl = () => {
-            this._pactl_path = get_pactl_path()[0];
+            this._pactl_path = get_pactl_path(settings)[0];
         };
         this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => updatePactl());
         this.connect("destroy", () => settings.disconnect(this._pactl_path_changed_id));
@@ -477,7 +477,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
         const updatePactl = () => {
-            this._pactl_path = get_pactl_path()[0];
+            this._pactl_path = get_pactl_path(settings)[0];
         };
         updatePactl();
         settings.connect("changed::pactl-path", () => updatePactl());

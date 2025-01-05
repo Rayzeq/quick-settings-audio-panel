@@ -14,7 +14,7 @@ import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 import { get_pactl_path } from "./utils.js";
 
-export function waitProperty(object, name) {
+export function waitProperty<T extends { [x: string]: any; }, Name extends string>(object: T, name: Name): Promise<T[Name]> {
     if (!waitProperty.idle_ids) {
         waitProperty.idle_ids = [];
     }
@@ -43,18 +43,29 @@ export function waitProperty(object, name) {
 
 const { MixerSinkInput, MixerSink } = Gvc;
 // `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined
-const OutputStreamSlider = (await waitProperty(Main.panel.statusArea.quickSettings, '_volumeOutput'))._output.constructor;
-const StreamSlider = Object.getPrototypeOf(OutputStreamSlider);
+const OutputStreamSlider = (await waitProperty(Main.panel.statusArea.quickSettings, '_volumeOutput'))._output.constructor as (typeof Volume.OutputStreamSlider);
+const StreamSlider = Object.getPrototypeOf(OutputStreamSlider) as (typeof Volume.StreamSlider);
 
 export class SinkMixer {
-    constructor(panel, index, filter_mode, filters) {
+    panel;
+    
+    private _sliders: Map<number, SinkVolumeSlider>;
+    private _sliders_ordered: Clutter.Actor[];
+    private _filter_mode: string
+    private _filters: RegExp[];
+
+    private _mixer_control: Gvc.MixerControl;
+    private _sa_event_id: number;
+    private _sr_event_id: number;
+
+    constructor(panel, index: number, filter_mode: string, filters: string[]) {
         this.panel = panel;
 
         // Empty actor used to know where to place sliders
         const placeholder = new Clutter.Actor({ visible: false });
         panel._grid.insert_child_at_index(placeholder, index);
 
-        this._sliders = {};
+        this._sliders = new Map();
         this._sliders_ordered = [placeholder];
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
@@ -68,8 +79,8 @@ export class SinkMixer {
         }
     }
 
-    _stream_added(control, id) {
-        if (id in this._sliders) return;
+    _stream_added(control: Gvc.MixerControl, id: number) {
+        if (this._sliders.has(id)) return;
 
         const stream = control.lookup_stream_id(id);
         if (stream.is_event_stream || !(stream instanceof MixerSink)) {
@@ -89,7 +100,7 @@ export class SinkMixer {
             this._mixer_control,
             stream,
         );
-        this._sliders[id] = slider;
+        this._sliders.set(id, slider);
 
         this.panel.addItem(slider, 2);
         this.panel._grid.set_child_above_sibling(slider, this._sliders_ordered.at(-1));
@@ -97,17 +108,18 @@ export class SinkMixer {
         this._sliders_ordered.push(slider);
     }
 
-    _stream_removed(_control, id) {
-        if (!(id in this._sliders)) return;
+    _stream_removed(_control: Gvc.MixerControl, id: number) {
+        if (!this._sliders.has(id)) return;
 
-        this.panel.removeItem(this._sliders[id]);
-        this._sliders_ordered.splice(this._sliders_ordered.indexOf(this._sliders[id]), 1);
-        this._sliders[id].destroy();
-        delete this._sliders[id];
+        const slider = this._sliders.get(id);
+        this.panel.removeItem(slider);
+        this._sliders_ordered.splice(this._sliders_ordered.indexOf(slider), 1);
+        slider.destroy();
+        this._sliders.delete(id);
     }
 
     destroy() {
-        for (const slider of Object.values(this._sliders)) {
+        for (const slider of this._sliders.values()) {
             this.panel.removeItem(slider);
             slider.destroy();
         }
@@ -122,7 +134,11 @@ export class SinkMixer {
 };
 
 const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends StreamSlider {
-    constructor(control, stream) {
+    private _hasHeadphones: boolean;
+    private _setup_timeout?: GLib.Source;
+    private _name_binding?: GObject.Binding;
+
+    constructor(control: Gvc.MixerControl, stream: Gvc.MixerSink) {
         super(control);
 
         this._icons = [
@@ -196,15 +212,24 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
 });
 
 export const BalanceSlider = GObject.registerClass(class BalanceSlider extends QuickSlider {
-    constructor(settings) {
+    stream?: Gvc.MixerStream;
+
+    private _pactl_path?: string | null;
+    private _pactl_path_changed_id: number;
+    private _sliderChangedId: number;
+    private _control: Gvc.MixerControl;
+    private _default_sink_changed_signal: number;
+
+    private _volumeCancellable?: Gio.Cancellable;
+
+    constructor(settings: Gio.Settings) {
         super();
 
-        const updatePactl = () => {
+        this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
             this._pactl_path = get_pactl_path(settings)[0];
-        };
-        this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => updatePactl());
+        });
         this.connect("destroy", () => settings.disconnect(this._pactl_path_changed_id));
-        updatePactl();
+        this._pactl_path = get_pactl_path(settings)[0];
 
         this._sliderChangedId = this.slider.connect('notify::value', () => this._sliderChanged());
         this.slider.connect('drag-end', () => {
@@ -249,7 +274,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         box.add_child(vbox);
     }
 
-    _update_sink(stream) {
+    _update_sink(stream: Gvc.MixerStream | null) {
         if (stream === null)
             return;
         this.stream = stream;
@@ -260,7 +285,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
             base_stream: new GioUnix.InputStream({ fd: stdout })
         });
 
-        const readline_callback = (_, result) => {
+        const readline_callback = (_: Gio.DataInputStream | null, result: Gio.AsyncResult) => {
             const [stdout, length] = stdout_reader.read_upto_finish(result);
             // let's hope this regex don't break
             const balance_index = stdout.search(/balance (-?\d+.\d+)/);
@@ -300,7 +325,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
     _notifyVolumeChange() {
         if (this._volumeCancellable)
             this._volumeCancellable.cancel();
-        this._volumeCancellable = null;
+        this._volumeCancellable = undefined;
 
         if (this.stream.state === Gvc.MixerStreamState.RUNNING)
             return; // feedback not necessary while playing
@@ -317,7 +342,15 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
 });
 
 export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwitcher extends QuickMenuToggle {
-    constructor(settings) {
+    private _settings: Gio.Settings;
+    private _mixer_control: Gvc.MixerControl;
+    private _profileItems: Map<string, PopupMenuItem>;
+    private _device?: Gvc.MixerUIDevice;
+
+    private _active_output_update_signal: number;
+    private _autohide_changed_signal: number;
+
+    constructor(settings: Gio.Settings) {
         super();
 
         this.title = "Audio profile";
@@ -345,7 +378,7 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
         this._settings.emit('changed::autohide-profile-switcher', 'autohide-profile-switcher');
     }
 
-    _set_device(device) {
+    _set_device(device: Gvc.MixerUIDevice) {
         this.menu.removeAll();
         this._profileItems.clear();
         this._device = device;
@@ -396,14 +429,26 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
 });
 
 export class ApplicationsMixer {
-    constructor(panel, index, filter_mode, filters, settings) {
+    panel;
+
+    private _settings: Gio.Settings;
+    private _sliders: Map<number, ApplicationVolumeSlider>;
+    private _sliders_ordered: Clutter.Actor[];
+    private _filter_mode: string;
+    private _filters: RegExp[];
+
+    private _mixer_control: Gvc.MixerControl;
+    private _sa_event_id: number;
+    private _sr_event_id: number;
+
+    constructor(panel, index: number, filter_mode: string, filters: string[], settings: Gio.Settings) {
         this.panel = panel;
 
         // Empty actor used to know where to place sliders
         const placeholder = new Clutter.Actor({ visible: false });
         panel._grid.insert_child_at_index(placeholder, index);
 
-        this._sliders = {};
+        this._sliders = new Map();
         this._sliders_ordered = [placeholder];
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
@@ -418,8 +463,8 @@ export class ApplicationsMixer {
         }
     }
 
-    _stream_added(control, id) {
-        if (id in this._sliders) return;
+    _stream_added(control: Gvc.MixerControl, id: number) {
+        if (this._sliders.has(id)) return;
 
         const stream = control.lookup_stream_id(id);
         if (stream.is_event_stream || !(stream instanceof MixerSinkInput)) {
@@ -440,7 +485,7 @@ export class ApplicationsMixer {
             stream,
             this._settings
         );
-        this._sliders[id] = slider;
+        this._sliders.set(id, slider);
 
         this.panel.addItem(slider, 2);
         this.panel._grid.set_child_above_sibling(slider, this._sliders_ordered.at(-1));
@@ -448,17 +493,18 @@ export class ApplicationsMixer {
         this._sliders_ordered.push(slider);
     }
 
-    _stream_removed(_control, id) {
-        if (!(id in this._sliders)) return;
+    _stream_removed(_control: Gvc.MixerControl, id: number) {
+        if (!this._sliders.has(id)) return;
 
-        this.panel.removeItem(this._sliders[id]);
-        this._sliders_ordered.splice(this._sliders_ordered.indexOf(this._sliders[id]), 1);
-        this._sliders[id].destroy();
-        delete this._sliders[id];
+        const slider = this._sliders.get(id);
+        this.panel.removeItem(slider);
+        this._sliders_ordered.splice(this._sliders_ordered.indexOf(slider), 1);
+        slider.destroy();
+        this._sliders.delete(id);
     }
 
     destroy() {
-        for (const slider of Object.values(this._sliders)) {
+        for (const slider of this._sliders.values()) {
             this.panel.removeItem(slider);
             slider.destroy();
         }
@@ -473,21 +519,24 @@ export class ApplicationsMixer {
 };
 
 const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSlider extends StreamSlider {
-    constructor(control, stream, settings) {
+    private _pactl_path: string | null;
+    private _pactl_path_changed_id: number;
+
+    constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
         super(control);
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
-        const updatePactl = () => {
+        this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
             this._pactl_path = get_pactl_path(settings)[0];
-        };
-        updatePactl();
-        settings.connect("changed::pactl-path", () => updatePactl());
+        });
+        this.connect("destroy", () => settings.disconnect(this._pactl_path_changed_id));
+        this._pactl_path = get_pactl_path(settings)[0];
 
         if (this._pactl_path) {
             this._control.connectObject(
-                'output-added', (_control, id) => this._addDevice(id),
-                'output-removed', (_control, id) => this._removeDevice(id),
-                'active-output-update', (_control, _id) => this._checkUsedSink(),
+                'output-added', (_control: Gvc.MixerControl, id: number) => this._addDevice(id),
+                'output-removed', (_control: Gvc.MixerControl, id: number) => this._removeDevice(id),
+                'active-output-update', (_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
                 this
             );
             // unfortunatly we don't have any signal to know that the active device changed
@@ -535,7 +584,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         label.style_class = "QSAP-application-volume-slider-label";
         stream.bind_property_full('description', label, 'text',
             GObject.BindingFlags.SYNC_CREATE,
-            (_binding, _value) => {
+            (_binding: GObject.Binding, _from: GObject.Value | any, _to: GObject.Value | any) => {
                 return [true, this._get_label_text(stream)];
             },
             null
@@ -545,7 +594,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         vbox.add_child(hbox);
     }
 
-    _get_label_text(stream) {
+    _get_label_text(stream: Gvc.MixerStream) {
         const { name, description } = stream;
         return name === null ? description : `${name} - ${description}`;
     }
@@ -556,7 +605,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
             base_stream: new GioUnix.InputStream({ fd: stdout })
         });
 
-        const readline_callback = (_, result) => {
+        const readline_callback = (_: Gio.DataInputStream | null, result: Gio.AsyncResult) => {
             // the command's result is one line, so we can stop here
             let [stdout,] = stdout_reader.read_upto_finish(result);
 
@@ -573,11 +622,11 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
     }
 
-    _lookupDevice(id) {
+    _lookupDevice(id: number) {
         return this._control.lookup_output_id(id);
     }
 
-    _activateDevice(device) {
+    _activateDevice(device: Gvc.MixerUIDevice) {
         GLib.spawn_command_line_async(`${this._pactl_path} move-sink-input ${this.stream.index} ${this._control.lookup_stream_id(device.stream_id).index}`);
         this._setActiveDevice(device.get_id());
     }

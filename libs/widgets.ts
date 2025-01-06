@@ -1,6 +1,5 @@
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
-import GioUnix from 'gi://GioUnix';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
@@ -12,7 +11,7 @@ import { Ornament, PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMen
 import { QuickMenuToggle, QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
-import { get_pactl_path } from "./utils.js";
+import { get_pactl_path, spawn } from "./utils.js";
 
 export function waitProperty<T extends { [x: string]: any; }, Name extends string>(object: T, name: Name): Promise<T[Name]> {
     if (!waitProperty.idle_ids) {
@@ -280,21 +279,11 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         this.stream = stream;
 
         // this command doesn't have a json output :(
-        const [, , , stdout,] = GLib.spawn_async_with_pipes(null, [this._pactl_path, "get-sink-volume", stream.name], null, GLib.SpawnFlags.SEARCH_PATH, null);
-        const stdout_reader = new Gio.DataInputStream({
-            base_stream: new GioUnix.InputStream({ fd: stdout })
-        });
-
-        const readline_callback = (_: Gio.DataInputStream | null, result: Gio.AsyncResult) => {
-            const [stdout, length] = stdout_reader.read_upto_finish(result);
+        spawn([this._pactl_path, "get-sink-volume", stream.name]).then(stdout => {
             // let's hope this regex don't break
             const balance_index = stdout.search(/balance (-?\d+.\d+)/);
 
-            if (balance_index === -1) {
-                if (length > 0) {
-                    stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
-                }
-            } else {
+            if (balance_index !== -1) {
                 const balance_str = stdout.substring(balance_index + 8).trim();
                 const balance = parseFloat(balance_str);
 
@@ -302,8 +291,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
                 this.slider.value = (balance + 1.) / 2.;
                 this.slider.unblock_signal_handler(this._sliderChangedId);
             }
-        };
-        stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
+        });
     }
 
     _sliderChanged() {
@@ -600,16 +588,8 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     }
 
     _checkUsedSink() {
-        const [, , , stdout,] = GLib.spawn_async_with_pipes(null, [this._pactl_path, "-f", "json", "list", "sink-inputs"], null, GLib.SpawnFlags.SEARCH_PATH, null);
-        const stdout_reader = new Gio.DataInputStream({
-            base_stream: new GioUnix.InputStream({ fd: stdout })
-        });
-
-        const readline_callback = (_: Gio.DataInputStream | null, result: Gio.AsyncResult) => {
-            // the command's result is one line, so we can stop here
-            let [stdout,] = stdout_reader.read_upto_finish(result);
-
-            stdout = JSON.parse(stdout);
+        spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {    
+            const stdout = JSON.parse(stdout_str);
             for (const sink_input of stdout) {
                 if (sink_input.index === this.stream.index) {
                     const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink))?.get_id();
@@ -618,8 +598,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
                     }
                 }
             }
-        };
-        stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
+        });
     }
 
     _lookupDevice(id: number) {

@@ -47,7 +47,7 @@ const StreamSlider = Object.getPrototypeOf(OutputStreamSlider) as (typeof Volume
 
 export class SinkMixer {
     panel;
-    
+
     private _sliders: Map<number, SinkVolumeSlider>;
     private _sliders_ordered: Clutter.Actor[];
     private _filter_mode: string
@@ -416,33 +416,28 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
     }
 });
 
-export class ApplicationsMixer {
-    panel;
-
+class ApplicationsMixerManager {
     private _settings: Gio.Settings;
+    private _mixer_control: Gvc.MixerControl;
+
     private _sliders: Map<number, ApplicationVolumeSlider>;
-    private _sliders_ordered: Clutter.Actor[];
     private _filter_mode: string;
     private _filters: RegExp[];
 
-    private _mixer_control: Gvc.MixerControl;
     private _sa_event_id: number;
     private _sr_event_id: number;
 
-    constructor(panel, index: number, filter_mode: string, filters: string[], settings: Gio.Settings) {
-        this.panel = panel;
+    public on_slider_added?: (slider: ApplicationVolumeSlider) => void;
+    public on_slider_removed?: (slider: ApplicationVolumeSlider) => void;
 
-        // Empty actor used to know where to place sliders
-        const placeholder = new Clutter.Actor({ visible: false });
-        panel._grid.insert_child_at_index(placeholder, index);
+    constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
+        this._settings = settings;
+        this._mixer_control = Volume.getMixerControl();
 
         this._sliders = new Map();
-        this._sliders_ordered = [placeholder];
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
-        this._settings = settings;
 
-        this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
         this._sr_event_id = this._mixer_control.connect("stream-removed", this._stream_removed.bind(this));
 
@@ -451,7 +446,7 @@ export class ApplicationsMixer {
         }
     }
 
-    _stream_added(control: Gvc.MixerControl, id: number) {
+    private _stream_added(control: Gvc.MixerControl, id: number) {
         if (this._sliders.has(id)) return;
 
         const stream = control.lookup_stream_id(id);
@@ -475,34 +470,74 @@ export class ApplicationsMixer {
         );
         this._sliders.set(id, slider);
 
+        this.on_slider_added?.(slider);
+    }
+
+    private _stream_removed(_control: Gvc.MixerControl, id: number) {
+        if (!this._sliders.has(id)) return;
+
+        const slider = this._sliders.get(id);
+        this.on_slider_removed?.(slider);
+
+        this._sliders.delete(id);
+        slider.destroy();
+    }
+
+    get sliders(): Iterable<ApplicationVolumeSlider> {
+        return this._sliders.values();
+    }
+
+    destroy() {
+        for (const slider of this._sliders.values()) {
+            slider.destroy();
+        }
+        this._sliders.clear();
+
+        this._mixer_control.disconnect(this._sa_event_id);
+        this._mixer_control.disconnect(this._sr_event_id);
+    }
+}
+
+export class ApplicationsMixer {
+    panel;
+
+    private _slider_manager: ApplicationsMixerManager;
+    private _sliders_ordered: Clutter.Actor[];
+
+    constructor(panel, index: number, filter_mode: string, filters: string[], settings: Gio.Settings) {
+        this.panel = panel;
+
+        // Empty actor used to know where to place sliders
+        const placeholder = new Clutter.Actor({ visible: false });
+        panel._grid.insert_child_at_index(placeholder, index);
+
+        this._sliders_ordered = [placeholder];
+
+        this._slider_manager = new ApplicationsMixerManager(settings, filter_mode, filters);
+        this._slider_manager.on_slider_added = this._slider_added.bind(this);
+        this._slider_manager.on_slider_removed = this._slider_removed.bind(this);
+    }
+
+    _slider_added(slider: ApplicationVolumeSlider) {
         this.panel.addItem(slider, 2);
         this.panel._grid.set_child_above_sibling(slider, this._sliders_ordered.at(-1));
 
         this._sliders_ordered.push(slider);
     }
 
-    _stream_removed(_control: Gvc.MixerControl, id: number) {
-        if (!this._sliders.has(id)) return;
-
-        const slider = this._sliders.get(id);
+    _slider_removed(slider: ApplicationVolumeSlider) {
         this.panel.removeItem(slider);
         this._sliders_ordered.splice(this._sliders_ordered.indexOf(slider), 1);
-        slider.destroy();
-        this._sliders.delete(id);
     }
 
     destroy() {
-        for (const slider of this._sliders.values()) {
+        for (const slider of this._slider_manager.sliders) {
             this.panel.removeItem(slider);
-            slider.destroy();
         }
-        this._sliders = null;
+        this._slider_manager.destroy();
 
         this._sliders_ordered[0].destroy();
         this._sliders_ordered = null;
-
-        this._mixer_control.disconnect(this._sa_event_id);
-        this._mixer_control.disconnect(this._sr_event_id);
     }
 };
 

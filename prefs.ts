@@ -57,11 +57,32 @@ export default class QSAPPreferences extends ExtensionPreferences {
             }
         );
 
-        const mixer_slier_switch = main_group.add_switch(settings, "create-mixer-sliders",
+        const mixer_slider_switch = main_group.add_switch(settings, "create-mixer-sliders",
             {
                 title: _("Create applications mixer"),
             }
         );
+        const mixer_slider_mode = main_group.add_combobox(settings, "mixer-sliders-type",
+            {
+                title: _("Mixer sliders type"),
+                fields: [
+                    ["normal", _("Normal")],
+                    ["combined", _("Combined in one menu")],
+                ],
+                // I guess ComboRow have different defaults than SwitchRow,
+                // because SwitchRows don't need this argument
+                use_markup: true
+            }
+        );
+        const mixer_slider_mode_callback = () => {
+            if (mixer_slider_mode.selected === 1) {
+                mixer_slider_mode.subtitle = _(`<span color="darkorange" weight="bold">This mode will disable the ability to change the output device per application</span>`);
+            } else {
+                mixer_slider_mode.subtitle = "";
+            }
+        };
+        mixer_slider_mode.connect("notify::selected", mixer_slider_mode_callback);
+        mixer_slider_mode_callback();
         main_group.add_switch(settings, "ignore-css",
             {
                 title: _("Do not apply custom CSS"),
@@ -131,7 +152,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 if (!found) {
                     subtitle += "\n" + _(`<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>`);
                 }
-                mixer_slier_switch.subtitle = subtitle;
+                mixer_slider_switch.subtitle = subtitle;
             },
             (found: boolean) => {
                 let subtitle = _("This slider allows you to change the balance of the current output");
@@ -191,7 +212,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 placeholder: _("Device name"),
             }
         );
-        
+
         page.add(main_group);
         page.add(widgets_order_group);
         page.add(mixer_filter_group);

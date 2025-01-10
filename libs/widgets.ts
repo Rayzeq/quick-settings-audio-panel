@@ -7,8 +7,8 @@ import St from 'gi://St';
 
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { Ornament, PopupMenuItem } from 'resource:///org/gnome/shell/ui/popupMenu.js';
-import { QuickMenuToggle, QuickSlider } from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import { Ornament, PopupBaseMenuItem, PopupMenuItem, PopupMenuSection } from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import { QuickMenuToggle, QuickSlider, QuickToggle } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 import { get_pactl_path, spawn } from "./utils.js";
@@ -427,12 +427,20 @@ class ApplicationsMixerManager {
     private _sa_event_id: number;
     private _sr_event_id: number;
 
-    public on_slider_added?: (slider: ApplicationVolumeSlider) => void;
-    public on_slider_removed?: (slider: ApplicationVolumeSlider) => void;
+    public on_slider_added: (slider: ApplicationVolumeSlider) => void;
+    public on_slider_removed: (slider: ApplicationVolumeSlider) => void;
 
-    constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
+    constructor(
+        settings: Gio.Settings,
+        filter_mode: string,
+        filters: string[],
+        on_slider_added: (slider: ApplicationVolumeSlider) => void,
+        on_slider_removed: (slider: ApplicationVolumeSlider) => void
+    ) {
         this._settings = settings;
         this._mixer_control = Volume.getMixerControl();
+        this.on_slider_added = on_slider_added;
+        this.on_slider_removed = on_slider_removed;
 
         this._sliders = new Map();
         this._filter_mode = filter_mode;
@@ -470,14 +478,14 @@ class ApplicationsMixerManager {
         );
         this._sliders.set(id, slider);
 
-        this.on_slider_added?.(slider);
+        this.on_slider_added(slider);
     }
 
     private _stream_removed(_control: Gvc.MixerControl, id: number) {
         if (!this._sliders.has(id)) return;
 
         const slider = this._sliders.get(id);
-        this.on_slider_removed?.(slider);
+        this.on_slider_removed(slider);
 
         this._sliders.delete(id);
         slider.destroy();
@@ -513,9 +521,13 @@ export class ApplicationsMixer {
 
         this._sliders_ordered = [placeholder];
 
-        this._slider_manager = new ApplicationsMixerManager(settings, filter_mode, filters);
-        this._slider_manager.on_slider_added = this._slider_added.bind(this);
-        this._slider_manager.on_slider_removed = this._slider_removed.bind(this);
+        this._slider_manager = new ApplicationsMixerManager(
+            settings,
+            filter_mode,
+            filters,
+            this._slider_added.bind(this),
+            this._slider_removed.bind(this)
+        );
     }
 
     _slider_added(slider: ApplicationVolumeSlider) {
@@ -540,6 +552,75 @@ export class ApplicationsMixer {
         this._sliders_ordered = null;
     }
 };
+
+// Note: lot of code taken from https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/status/backgroundApps.js?ref_type=heads#L137
+export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsMixerToggle extends QuickToggle {
+    private _slider_manager: ApplicationsMixerManager;
+    private _slidersSection: PopupMenuSection;
+
+    constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
+        super({
+            visible: false, hasMenu: true,
+            // The background apps toggle looks like a flat menu, but doesn't
+            // have a separate menu button. Fake it with an arrow icon.
+            iconName: "go-next-symbolic",
+            title: "Applications emitting sound"
+        });
+
+        this.add_style_class_name("background-apps-quick-toggle");
+        this._box.set_child_above_sibling(this._icon, null);
+
+        this.menu.setHeader("audio-volume-high-symbolic", _("Applications volumes"));
+        this._slidersSection = new PopupMenuSection();
+        this.menu.addMenuItem(this._slidersSection);
+
+        this.connect("popup-menu", () => this.menu.open(false));
+
+        this.menu.connect("open-state-changed", () => this._syncVisibility());
+        Main.sessionMode.connect("updated", () => this._syncVisibility());
+
+        this._slider_manager = new ApplicationsMixerManager(
+            settings,
+            filter_mode,
+            filters,
+            this._slider_added.bind(this),
+            this._slider_removed.bind(this)
+        );
+    }
+
+    _syncVisibility() {
+        const { isLocked } = Main.sessionMode;
+        const nSliders = this._slidersSection.numMenuItems;
+        // We cannot hide the quick toggle while the menu is open, otherwise
+        // the menu position goes bogus. We can't show it in locked sessions
+        // either
+        this.visible = !isLocked && (this.menu.isOpen || nSliders > 0);
+    }
+
+    _slider_added(slider: ApplicationVolumeSlider) {
+        let slider_item = new ApplicationVolumeSliderItem(slider);
+        slider._item = slider_item;
+        this._slidersSection.addMenuItem(slider_item);
+
+        this._syncVisibility();
+    }
+
+    _slider_removed(slider: ApplicationVolumeSlider) {
+        this._slidersSection.box.remove_child(slider._item);
+        this._slidersSection.disconnect_object(slider._item);
+        this._syncVisibility();
+    }
+
+    vfunc_clicked() {
+        this.menu.open(true);
+    }
+
+    destroy() {
+        this._slider_manager.destroy();
+
+        super.destroy();
+    }
+});
 
 const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSlider extends StreamSlider {
     private _pactl_path: string | null;
@@ -643,5 +724,16 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     _activateDevice(device: Gvc.MixerUIDevice) {
         GLib.spawn_command_line_async(`${this._pactl_path} move-sink-input ${this.stream.index} ${this._control.lookup_stream_id(device.stream_id).index}`);
         this._setActiveDevice(device.get_id());
+    }
+});
+
+const ApplicationVolumeSliderItem = GObject.registerClass(class ApplicationVolumeSliderItem extends PopupBaseMenuItem {
+    constructor(slider: ApplicationVolumeSlider) {
+        super();
+        slider.x_expand = true;
+        // since it uses a quick settings menu it will be broken if opened in
+        // another menu
+        slider._menuButton.get_parent().remove_child(slider._menuButton);
+        this.add_child(slider);
     }
 });

@@ -19,6 +19,13 @@
     <key name="create-mixer-sliders" type="b">
       <default>true</default>
     </key>
+    <key name="mixer-sliders-type" type="s">
+      <choices>
+        <choice value="normal" />
+        <choice value="combined" />
+      </choices>
+      <default>"normal"</default>
+    </key>
     <key name="ignore-css" type="b">
       <default>false</default>
     </key>

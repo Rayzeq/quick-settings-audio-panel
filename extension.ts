@@ -25,7 +25,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
-import { ApplicationsMixer, AudioProfileSwitcher, BalanceSlider, SinkMixer, waitProperty } from './libs/widgets.js';
+import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, SinkMixer, waitProperty } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
@@ -98,6 +98,7 @@ export default class QSAP extends Extension {
         const move_master_volume = this.settings.get_boolean('move-master-volume');
         const media_control_action = this.settings.get_string('media-control');
         const create_mixer_sliders = this.settings.get_boolean('create-mixer-sliders');
+        const mixer_sliders_type = this.settings.get_string("mixer-sliders-type");
         const create_sink_mixer = this.settings.get_boolean('create-sink-mixer');
         const remove_output_slider = this.settings.get_boolean('remove-output-slider');
         const create_balance_slider = this.settings.get_boolean('create-balance-slider');
@@ -185,7 +186,7 @@ export default class QSAP extends Extension {
                 } else if (widget === 'media' && media_control_action === 'duplicate') {
                     this._create_media_controls(index);
                 } else if (widget === 'mixer' && create_mixer_sliders) {
-                    this._create_app_mixer(index, filter_mode, filters);
+                    this._create_app_mixer(index, mixer_sliders_type, filter_mode, filters);
                 } else if (widget === "sink-mixer" && create_sink_mixer) {
                     this._create_sink_mixer(index, sink_filter_mode, sink_filters);
                 } else if (widget === "balance-slider" && create_balance_slider) {
@@ -226,6 +227,12 @@ export default class QSAP extends Extension {
         if (this._applications_mixer) {
             this._applications_mixer.destroy();
             this._applications_mixer = null;
+        }
+
+        if (this._applications_mixer_combined) {
+            this._panel.removeItem(this._applications_mixer_combined);
+            this._applications_mixer_combined.destroy();
+            this._applications_mixer_combined = null;
         }
 
         if (this._media_section) {
@@ -294,8 +301,14 @@ export default class QSAP extends Extension {
         this._panel._grid.set_child_at_index(this._media_section, index);
     }
 
-    _create_app_mixer(index, filter_mode, filters) {
-        this._applications_mixer = new ApplicationsMixer(this._panel, index, filter_mode, filters, this.settings);
+    _create_app_mixer(index, type, filter_mode, filters) {
+        if (type === "combined") {
+            this._applications_mixer_combined = new ApplicationsMixerToggle(this.settings, filter_mode, filters);
+            this._panel.addItem(this._applications_mixer_combined, 2);
+            this._panel._grid.set_child_at_index(this._applications_mixer_combined, index);
+        } else {
+            this._applications_mixer = new ApplicationsMixer(this._panel, index, filter_mode, filters, this.settings);
+        }
     }
 
     _create_sink_mixer(index, filter_mode, filters) {

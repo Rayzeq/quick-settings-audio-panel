@@ -557,6 +557,8 @@ export class ApplicationsMixer {
 export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsMixerToggle extends QuickToggle {
     private _slider_manager: ApplicationsMixerManager;
     private _slidersSection: PopupMenuSection;
+    private _mosc_signal: number;
+    private _sm_updated_signal: number;
 
     constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
         super({
@@ -576,8 +578,8 @@ export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsM
 
         this.connect("popup-menu", () => this.menu.open(false));
 
-        this.menu.connect("open-state-changed", () => this._syncVisibility());
-        Main.sessionMode.connect("updated", () => this._syncVisibility());
+        this._mosc_signal = this.menu.connect("open-state-changed", () => this._syncVisibility());
+        this._sm_updated_signal = Main.sessionMode.connect("updated", () => this._syncVisibility());
 
         this._slider_manager = new ApplicationsMixerManager(
             settings,
@@ -617,6 +619,8 @@ export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsM
 
     destroy() {
         this._slider_manager.destroy();
+        this.menu.disconnect(this._mosc_signal);
+        Main.sessionMode.disconnect(this._sm_updated_signal);
 
         super.destroy();
     }

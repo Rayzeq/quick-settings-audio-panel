@@ -1,4 +1,5 @@
 import Adw from 'gi://Adw';
+import type GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
@@ -7,18 +8,13 @@ import Gtk from 'gi://Gtk';
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import { get_settings, get_stack, rsplit, split } from './libs/libpanel/utils.js';
-import { get_pactl_path } from "./libs/utils.js";
+import { update_settings } from "./libs/preferences.js";
+import { get_pactl_path, type Constructor } from "./libs/utils.js";
 
 export default class QSAPPreferences extends ExtensionPreferences {
     async fillPreferencesWindow(window: Adw.PreferencesWindow) {
         const settings = this.getSettings();
-
-        // Update ordering from older versions
-        let ordering = settings.get_strv("ordering");
-        if (ordering.length < 5) ordering = ["volume-output", "sink-mixer", "volume-input", "media", "mixer"];
-        if (ordering.length < 6) ordering.push("balance-slider");
-        if (ordering.length < 7) ordering.push("profile-switcher");
-        settings.set_strv("ordering", ordering);
+        update_settings(settings);
 
         window.add(this.makeExtensionSettingsPage(settings));
 
@@ -32,103 +28,19 @@ export default class QSAPPreferences extends ExtensionPreferences {
         const page = new Adw.PreferencesPage({ title: "Extension settings", icon_name: "preferences-system-symbolic" });
 
         // ====================================== Main group ======================================
-        const main_group = new PreferencesGroup();
-        main_group.add_switch(settings, "move-master-volume",
+        const main_group = new PreferencesGroup(settings);
+        main_group.add_combobox("panel-type",
             {
-                title: _("Move master volume sliders"),
-                subtitle: _("Thoses are the speaker / headphone and microphone volume sliders")
-            }
-        );
-        main_group.add_switch(settings, "always-show-input-slider",
-            {
-                title: _("Always show microphone volume slider"),
-                subtitle: _("Show even when there is no application recording audio")
-            }
-        );
-        main_group.add_combobox(settings, "media-control",
-            {
-                title: _("Media controls"),
-                subtitle: _("What should we do with media controls ?"),
+                title: _("Where the panel should be"),
                 fields: [
-                    ["none", _("Leave as is")],
-                    ["move", _("Move into new panel")],
-                    ["duplicate", _("Duplicate into new panel")]
-                ]
-            }
-        );
-
-        const mixer_slider_switch = main_group.add_switch(settings, "create-mixer-sliders",
-            {
-                title: _("Create applications mixer"),
-            }
-        );
-        const mixer_slider_mode = main_group.add_combobox(settings, "mixer-sliders-type",
-            {
-                title: _("Mixer sliders type"),
-                fields: [
-                    ["normal", _("Normal")],
-                    ["combined", _("Combined in one menu")],
+                    ["independent-panel", _("Independant panel")],
+                    ["merged-panel", _("In the main panel")],
+                    ["separate-indicator", _("In a separate indicator")],
                 ],
-                // I guess ComboRow have different defaults than SwitchRow,
-                // because SwitchRows don't need this argument
                 use_markup: true
             }
         );
-        const mixer_slider_mode_callback = () => {
-            if (mixer_slider_mode.selected === 1) {
-                mixer_slider_mode.subtitle = _(`<span color="darkorange" weight="bold">This mode will disable the ability to change the output device per application</span>`);
-            } else {
-                mixer_slider_mode.subtitle = "";
-            }
-        };
-        mixer_slider_mode.connect("notify::selected", mixer_slider_mode_callback);
-        mixer_slider_mode_callback();
-        main_group.add_switch(settings, "ignore-css",
-            {
-                title: _("Do not apply custom CSS"),
-                subtitle: _("Disable the CSS in this extension that could override your theme")
-            }
-        );
-        main_group.add_switch(settings, "create-sink-mixer",
-            {
-                title: _("Create per-device volume sliders"),
-            }
-        );
-        main_group.add_switch(settings, "show-current-device",
-            {
-                title: _("Show the currently selected device for the master sliders"),
-            }
-        );
-        main_group.add_switch(settings, "remove-output-slider",
-            {
-                title: _("Remove the output slider"),
-                subtitle: _("This is useful if you enabled the per-device volume sliders")
-            }
-        );
-        const balance_slider_switch = main_group.add_switch(settings, "create-balance-slider",
-            {
-                title: _("Add a balance slider"),
-            }
-        );
-        main_group.add_switch(settings, "create-profile-switcher",
-            {
-                title: _("Add a profile switcher"),
-                subtitle: _("Allows you to quickly change the audio profile of the current device")
-            }
-        );
-        main_group.add_switch(settings, "autohide-profile-switcher",
-            {
-                title: _("Auto-hide the profile switcher"),
-                subtitle: _("Hide the profile switcher when the current device only have one profile")
-            }
-        );
-        main_group.add_switch(settings, "merge-panel",
-            {
-                title: _("Merge the new panel into the main one"),
-                subtitle: _("The new panel will not be separated from the main one")
-            }
-        );
-        const position_dropdown = main_group.add_combobox(settings, "panel-position",
+        const merged_panel_position = main_group.add_combobox("merged-panel-position",
             {
                 title: _("Panel position"),
                 subtitle: _("Where the new panel should be located relative to the main panel"),
@@ -138,35 +50,120 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 ]
             }
         );
-        settings.bind("merge-panel", position_dropdown, "visible", Gio.SettingsBindFlags.GET);
+        settings.connect("changed::panel-type", (_self, _key) => {
+            merged_panel_position.visible = settings.get_string("panel-type") === "merged-panel";
+        });
+        settings.emit("changed::panel-type", "panel-type");
 
-        main_group.add_switch(settings, "separate-indicator",
+        main_group.add_switch("always-show-input-volume-slider",
             {
-                title: _("Put the panel in a separate indicator"),
+                title: _("Always show microphone volume slider"),
+                subtitle: _("Show even when there is no application recording audio")
+            }
+        );
+        main_group.add_switch("remove-output-volume-slider",
+            {
+                title: _("Remove the main output volume slider"),
+                subtitle: _("This is useful if you enabled the per-device volume sliders")
+            }
+        );
+        main_group.add_switch("master-volume-sliders-show-current-device",
+            {
+                title: _("Show the currently selected device for the main volume sliders"),
             }
         );
 
-        const pactl_callbacks = [
-            (found: boolean) => {
-                let subtitle = _("Thoses sliders are the same you can find in pavucontrol or in the sound settings");
-                if (!found) {
-                    subtitle += "\n" + _(`<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>`);
-                }
-                mixer_slider_switch.subtitle = subtitle;
-            },
-            (found: boolean) => {
-                let subtitle = _("This slider allows you to change the balance of the current output");
-                if (!found) {
-                    subtitle += "\n" + _(`<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, the slider won't work</span>`);
-                }
-                balance_slider_switch.subtitle = subtitle;
+        main_group.add_switch("ignore-css",
+            {
+                title: _("Do not apply custom CSS"),
+                subtitle: _("Disable the CSS in this extension that could override your theme")
             }
-        ];
-        const pactl_path_entry = main_group.add_file_chooser(settings, "pactl-path",
+        );
+        const pactl_path = main_group.add_file_chooser("pactl-path",
             {
                 title: _("Path to the <tt>pactl</tt> executable"),
             }
         );
+
+        // =============================== Widget ordering subgroups ==============================
+        const profile_switcher_group = new ListBox(settings);
+        profile_switcher_group.add_switch("autohide-profile-switcher",
+            {
+                title: _("Auto-hide"),
+                subtitle: _("Hide the profile switcher when the current device only have one profile")
+            }
+        );
+
+        const mpris_controllers_group = new ListBox(settings);
+        mpris_controllers_group.add_switch("mpris-controllers-are-moved",
+            {
+                title: _("Move media controls"),
+                subtitle: _("Move the media controls from the notifications panel instead of creating a new one")
+            }
+        );
+
+        const applications_volume_sliders_group = new ListBox(settings);
+        applications_volume_sliders_group.add_switch("group-applications-volume-sliders",
+            {
+                title: _("Put the sliders in submenu"),
+                subtitle: _('<span color="darkorange" weight="bold">This will disable the ability to change the output device per application</span>')
+            }
+        );
+
+        // ================================= Widget ordering group ================================
+        const widgets_order_group = new ReorderablePreferencesGroup(settings, "widgets-order", {
+            title: _("Elements order"),
+            description: _("Reorder elements in the new panel")
+        });
+
+        widgets_order_group
+            .add_reorderable("profile-switcher", {
+                title: _("Profile switcher"),
+                subtitle: _("Allows you to quickly change the audio profile of the current device")
+            })
+            .add_switch("create-profile-switcher")
+            .add_subgroup(profile_switcher_group);
+        widgets_order_group
+            .add_reorderable("output-volume-slider", { title: _("Speaker / Headphone volume slider") })
+            .add_switch("move-output-volume-slider");
+        widgets_order_group
+            .add_reorderable("perdevice-volume-sliders", { title: _("Per-device volume sliders") })
+            .add_switch("create-perdevice-volume-sliders");
+        const balance_slider = widgets_order_group
+            .add_reorderable("balance-slider", { title: _("Audio balance slider") })
+            .add_switch("create-balance-slider");
+        widgets_order_group
+            .add_reorderable("input-volume-slider", { title: _("Microphone volume slider") })
+            .add_switch("move-input-volume-slider");
+        widgets_order_group
+            .add_reorderable("mpris-controllers", { title: _("Media controls") })
+            .add_switch("create-mpris-controllers")
+            .add_subgroup(mpris_controllers_group);
+        const applications_volume_sliders = widgets_order_group
+            .add_reorderable("applications-volume-sliders", { title: _("Applications mixer") })
+            .add_switch("create-applications-volume-sliders")
+            .add_subgroup(applications_volume_sliders_group);
+
+        // ==================================== patcl checking ====================================
+        const pactl_callbacks = [
+            (found: boolean) => {
+                let subtitle = _("The same sliders you can find in pavucontrol or in the sound settings");
+                if (!found) {
+                    subtitle += "\n" + _('<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, you won\'t be able to change the output device per application</span>');
+                }
+                applications_volume_sliders.subtitle = subtitle;
+            },
+            (found: boolean) => {
+                let subtitle = _("This slider allows you to change the balance of the current audio output");
+                if (found) {
+                    balance_slider.switch!.sensitive = true;
+                } else {
+                    subtitle += "\n" + _('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>');
+                    balance_slider.switch!.sensitive = false;
+                }
+                balance_slider.subtitle = subtitle;
+            }
+        ];
 
         const update_pactl_status = (): [boolean, boolean] => {
             let [pactl_path, found_using_custom_path] = get_pactl_path(settings);
@@ -179,44 +176,30 @@ export default class QSAPPreferences extends ExtensionPreferences {
         };
         const [found_pactl, found_pactl_using_path] = update_pactl_status();
         settings.connect("changed::pactl-path", () => update_pactl_status());
-        pactl_path_entry.visible = found_pactl_using_path || !found_pactl;
+        pactl_path.visible = found_pactl_using_path || !found_pactl;
 
-        // ================================= Widget ordering group ================================
-        const widgets_order_group = new ReorderablePreferencesGroup(settings, "ordering", {
-            title: _("Elements order"),
-            description: _("Reorder elements in the new panel (disabled elments will just be ignored)")
-        });
-
-        widgets_order_group.add(new DraggableRow("profile-switcher", { title: _("Profile switcher") }));
-        widgets_order_group.add(new DraggableRow("volume-output", { title: _("Speaker / Headphone volume slider") }));
-        widgets_order_group.add(new DraggableRow("sink-mixer", { title: _("Per-device volume sliders") }));
-        widgets_order_group.add(new DraggableRow("balance-slider", { title: _("Output balance slider") }));
-        widgets_order_group.add(new DraggableRow("volume-input", { title: _("Microphone volume slider") }));
-        widgets_order_group.add(new DraggableRow("media", { title: _("Media controls") }));
-        widgets_order_group.add(new DraggableRow("mixer", { title: _("Applications mixer") }));
-
-        // ================================== Mixer filter group ==================================
-        const mixer_filter_group = new FilterPreferencesGroup(settings, "filters", "filter-mode",
+        // ======================== Perdevice volume sliders filters group ========================
+        const perdevice_volume_sliders_filters_group = new FilterPreferencesGroup(settings, "perdevice-volume-sliders-filters", "perdevice-volume-sliders-filter-mode",
             {
-                title: _("Mixer filtering"),
-                description: _("Allow you to filter the streams that show up in the application mixer **using regexes**"),
-                placeholder: _("Stream name"),
+                title: _("Per-device sliders filtering"),
+                description: _("Allow you to filter the per-device volume sliders. The content of the filters are <b>regexes</b> and are applied to the device's display name and pulseaudio name."),
+                placeholder: _("Device name"),
             }
         );
 
-        // ================================ Sink mixer filter group ===============================
-        const sink_mixer_filter_group = new FilterPreferencesGroup(settings, "sink-filters", "sink-filter-mode",
+        // ======================= Applications volume sliders filters group ======================
+        const applications_volume_sliders_filters_group = new FilterPreferencesGroup(settings, "applications-volume-sliders-filters", "applications-volume-sliders-filter-mode",
             {
-                title: _("Output sliders filtering"),
-                description: _("Allow you to filter the per-device volume sliders. The content of the filters are regexes and are applied to the device's display name and pulseaudio name."),
-                placeholder: _("Device name"),
+                title: _("Application mixer filtering"),
+                description: _("Allow you to filter the applications that show up in the application mixer <b>using regexes</b>"),
+                placeholder: _("Application name"),
             }
         );
 
         page.add(main_group);
         page.add(widgets_order_group);
-        page.add(mixer_filter_group);
-        page.add(sink_mixer_filter_group);
+        page.add(perdevice_volume_sliders_filters_group);
+        page.add(applications_volume_sliders_filters_group);
         return page;
     }
 
@@ -225,19 +208,18 @@ export default class QSAPPreferences extends ExtensionPreferences {
             title: "Libpanel settings",
             icon_name: "view-grid-symbolic"
         });
-        const group = new PreferencesGroup({
+        const group = new PreferencesGroup(settings, {
             title: _("LibPanel settings"),
             description: _("Those settings are not specific to this extension, they apply to every panels"),
         });
 
-        group.add_switch(settings, "single-column",
+        group.add_switch("single-column",
             {
                 title: _("Single-column mode"),
                 subtitle: _("Only one column of panels will be allowed. Also prevents the panel from being put at the left/right of the screen by libpanel.")
             }
         );
-        group.add_combobox(
-            settings, "alignment",
+        group.add_combobox("alignment",
             {
                 title: _("Panel alignment"),
                 fields: [
@@ -246,19 +228,19 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 ]
             }
         );
-        group.add_switch_spin(settings, "padding-enabled", "padding",
+        group.add_switch_spin("padding-enabled", "padding",
             {
                 title: _("Padding"),
                 subtitle: _("Use this to override the default padding of the panels")
             }, 0, 100
         );
-        group.add_switch_spin(settings, "row-spacing-enabled", "row-spacing",
+        group.add_switch_spin("row-spacing-enabled", "row-spacing",
             {
                 title: _("Row spacing"),
                 subtitle: _("Use this to override the default row spacing of the panels")
             }, 0, 100
         );
-        group.add_switch_spin(settings, "column-spacing-enabled", "column-spacing",
+        group.add_switch_spin("column-spacing-enabled", "column-spacing",
             {
                 title: _("Column spacing"),
                 subtitle: _("Use this to override the default column spacing of the panels")
@@ -270,111 +252,136 @@ export default class QSAPPreferences extends ExtensionPreferences {
     }
 }
 
-const PreferencesGroup = GObject.registerClass(class PreferencesGroup extends Adw.PreferencesGroup {
-    add_switch(
-        settings: Gio.Settings,
-        key: string,
-        properties: Partial<Adw.SwitchRow.ConstructorProps>
-    ): Adw.SwitchRow {
-        const row = new Adw.SwitchRow(properties);
-        settings.bind(
-            key,
-            row,
-            "active",
-            Gio.SettingsBindFlags.DEFAULT
-        );
+interface BasePreferencesRowList {
+    settings: Gio.Settings;
+    add: (row: Adw.PreferencesRow) => void;
+}
 
-        this.add(row);
-        return row;
-    }
+function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObject.Object>>(Base: T) {
+    return GObject.registerClass({ GTypeName: `PreferencesRowList_${Base.name}` }, class extends Base {
+        add_switch(
+            key: string,
+            properties: Partial<Adw.SwitchRow.ConstructorProps>
+        ): Adw.SwitchRow {
+            const row = new Adw.SwitchRow(properties);
+            this.settings.bind(
+                key,
+                row,
+                "active",
+                Gio.SettingsBindFlags.DEFAULT
+            );
 
-    add_combobox(
-        settings: Gio.Settings,
-        key: string,
-        properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][] }
-    ): Adw.ComboRow {
-        const { fields, ...props } = properties;
+            this.add(row);
+            return row;
+        }
 
-        const model = Gtk.StringList.new(fields.map(x => x[1]));
-        const row = new Adw.ComboRow({
-            model: model,
-            selected: fields.map(x => x[0]).indexOf(settings.get_string(key)),
-            ...props
-        });
+        add_combobox(
+            key: string,
+            properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][] }
+        ): Adw.ComboRow {
+            const { fields, ...props } = properties;
 
-        row.connect("notify::selected", () => {
-            settings.set_string(key, fields[row.selected][0]);
-        });
-
-        this.add(row);
-        return row;
-    }
-
-    add_switch_spin(
-        settings: Gio.Settings,
-        switch_key: string,
-        spin_key: string,
-        properties: { title: string, subtitle: string },
-        lower: number = 0,
-        higher: number = 0
-    ): Adw.SpinRow {
-        const row = Adw.SpinRow.new_with_range(lower, higher, 1);
-        row.title = properties.title;
-        row.subtitle = properties.subtitle;
-
-        const switch_ = new Gtk.Switch({ valign: Gtk.Align.CENTER });
-        settings.bind(
-            switch_key,
-            switch_,
-            'active',
-            Gio.SettingsBindFlags.DEFAULT
-        );
-        row.add_prefix(switch_);
-        row.activatable_widget = switch_;
-
-        settings.bind(
-            spin_key,
-            row,
-            'value',
-            Gio.SettingsBindFlags.DEFAULT
-        );
-
-        this.add(row);
-        return row;
-    }
-
-    add_file_chooser(
-        settings: Gio.Settings,
-        key: string,
-        properties: Partial<Adw.EntryRow.ConstructorProps>
-    ): Adw.EntryRow {
-        const row = new Adw.EntryRow({ ...properties, show_apply_button: false });
-        settings.bind(
-            key,
-            row,
-            "text",
-            Gio.SettingsBindFlags.DEFAULT
-        );
-
-        const chooser_button = new Gtk.Button({ label: "Choose file...", has_frame: false });
-        chooser_button.connect("clicked", () => {
-            const dialog = new Gtk.FileDialog();
-            dialog.set_initial_file(Gio.File.new_for_path(row.text));
-            dialog.open(null, null, (_, result) => {
-                let path = dialog.open_finish(result)?.get_path();
-                if (path !== null && path !== undefined)
-                    row.text = path;
+            const model = Gtk.StringList.new(fields.map(x => x[1]));
+            const row = new Adw.ComboRow({
+                model: model,
+                selected: fields.map(x => x[0]).indexOf(this.settings.get_string(key)),
+                ...props
             });
-        });
-        row.add_suffix(chooser_button);
 
-        this.add(row);
-        return row;
+            row.connect("notify::selected", () => {
+                this.settings.set_string(key, fields[row.selected][0]);
+            });
+
+            this.add(row);
+            return row;
+        }
+
+        add_switch_spin(
+            switch_key: string,
+            spin_key: string,
+            properties: { title: string, subtitle: string },
+            lower: number = 0,
+            higher: number = 0
+        ): Adw.SpinRow {
+            const row = Adw.SpinRow.new_with_range(lower, higher, 1);
+            row.title = properties.title;
+            row.subtitle = properties.subtitle;
+
+            const switch_ = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+            this.settings.bind(
+                switch_key,
+                switch_,
+                'active',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+            row.add_prefix(switch_);
+            row.activatable_widget = switch_;
+
+            this.settings.bind(
+                spin_key,
+                row,
+                'value',
+                Gio.SettingsBindFlags.DEFAULT
+            );
+
+            this.add(row);
+            return row;
+        }
+
+        add_file_chooser(
+            key: string,
+            properties: Partial<Adw.EntryRow.ConstructorProps>
+        ): Adw.EntryRow {
+            const row = new Adw.EntryRow({ ...properties, show_apply_button: false });
+            this.settings.bind(
+                key,
+                row,
+                "text",
+                Gio.SettingsBindFlags.DEFAULT
+            );
+
+            const chooser_button = new Gtk.Button({ label: "Choose file...", has_frame: false });
+            chooser_button.connect("clicked", () => {
+                const dialog = new Gtk.FileDialog();
+                dialog.set_initial_file(Gio.File.new_for_path(row.text));
+                dialog.open(null, null, (_, result) => {
+                    let path = dialog.open_finish(result)?.get_path();
+                    if (path !== null && path !== undefined)
+                        row.text = path;
+                });
+            });
+            row.add_suffix(chooser_button);
+
+            this.add(row);
+            return row;
+        }
+    });
+}
+
+const PreferencesGroup = PreferencesRowList(GObject.registerClass(class PreferencesGroup extends Adw.PreferencesGroup {
+    settings: Gio.Settings;
+
+    constructor(settings: Gio.Settings, properties?: Partial<Adw.PreferencesGroup.ConstructorProps>) {
+        super(properties);
+        this.settings = settings;
     }
-});
+}));
+
+const ListBox = PreferencesRowList(GObject.registerClass(class ListBox extends Gtk.ListBox {
+    settings: Gio.Settings;
+
+    constructor(settings: Gio.Settings, properties?: Partial<Gtk.ListBox.ConstructorProps>) {
+        super(properties);
+        this.settings = settings;
+    }
+
+    add(row: Adw.PreferencesRow) {
+        this.append(row);
+    }
+}));
+type ListBox = InstanceType<typeof ListBox>;
 
 const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGroup extends PreferencesGroup {
-    private _settings: Gio.Settings;
     private _key: string;
     private _placeholder: string;
     private _rows: Adw.EntryRow[];
@@ -383,9 +390,9 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
         const { placeholder, ...props } = properties;
 
         const add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
-        super({ ...props, header_suffix: add_filter_button });
+        super(settings, { ...props, header_suffix: add_filter_button });
 
-        this.add_combobox(settings, mode_key,
+        this.add_combobox(mode_key,
             {
                 title: _("Filtering mode"),
                 subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
@@ -395,7 +402,6 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
                 ]
             }
         );
-        this._settings = settings;
         this._key = key;
         this._placeholder = placeholder;
         this._rows = [];
@@ -434,12 +440,13 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
     }
 
     private _save() {
-        this._settings.set_strv(this._key, this._rows.map(row => row.text));
+        this.settings.set_strv(this._key, this._rows.map(row => row.text));
     }
 });
 
-// From this point onwards, the code is mostly a reimplementation of this:
+// From this point onwards, the code is mostly a reimplementation of those:
 // https://gitlab.gnome.org/GNOME/gnome-control-center/-/tree/main/panels/search
+// https://gitlab.gnome.org/GNOME/libadwaita/-/blob/main/src/adw-expander-row.c
 
 const ReorderablePreferencesGroup = GObject.registerClass(class ReorderablePreferencesGroup extends Adw.PreferencesGroup {
     private _settings: Gio.Settings;
@@ -471,7 +478,9 @@ const ReorderablePreferencesGroup = GObject.registerClass(class ReorderablePrefe
         super.add(this._list_box);
     }
 
-    add(row: DraggableRowClass) {
+    add_reorderable(key: string, properties: Partial<Adw.ActionRow.ConstructorProps>): DraggableRowClass {
+        const row = new DraggableRow(this._settings, key, properties);
+
         this._list_box.set_valign(Gtk.Align.FILL);
         row.connect('move-row', (source: DraggableRowClass, target: DraggableRowClass) => {
             const data = this._settings.get_strv(this._key);
@@ -488,24 +497,42 @@ const ReorderablePreferencesGroup = GObject.registerClass(class ReorderablePrefe
             this._list_box.invalidate_sort();
         });
         this._list_box.append(row);
+
+        return row;
     }
 });
 
-class DraggableRowClass extends Adw.ActionRow {
+class DraggableRowClass extends Adw.PreferencesRow {
     key: string
+    private _settings: Gio.Settings;
+    private _expanded: boolean;
+
+    switch?: Gtk.Switch;
+    private _box: Gtk.Box;
+    private _header: Adw.ActionRow;
 
     private _drag_x?: number;
     private _drag_y?: number;
     private _drag_widget?: Gtk.ListBox;
 
-    constructor(key: string, properties: Partial<Adw.ActionRow.ConstructorProps>) {
-        super(properties);
+    constructor(settings: Gio.Settings, key: string, properties: Partial<Adw.ActionRow.ConstructorProps>) {
+        super({ css_classes: ["expander", "empty"], activatable: false });
         this.key = key;
+        this._settings = settings;
+        this._expanded = false;
+
+        this._box = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL });
+        this.set_child(this._box);
+
+        this._header = new Adw.ActionRow(properties);
+        const list = new Gtk.ListBox({ selection_mode: Gtk.SelectionMode.NONE });
+        this._box.append(list);
+        list.append(this._header);
 
         const drag_handle = new Gtk.Image({ icon_name: "list-drag-handle-symbolic" });
         // css don't work
         drag_handle.add_css_class("drag-handle");
-        this.add_prefix(drag_handle);
+        this._header.add_prefix(drag_handle);
 
         const drag_source = new Gtk.DragSource({ actions: Gdk.DragAction.MOVE });
         drag_source.connect("prepare", (_source, x, y) => {
@@ -515,9 +542,9 @@ class DraggableRowClass extends Adw.ActionRow {
         });
         drag_source.connect("drag-begin", (_source, drag) => {
             this._drag_widget = new Gtk.ListBox();
-            this._drag_widget.set_size_request(this.get_allocated_width(), this.get_allocated_height());
+            this._drag_widget.set_size_request(this._header.get_allocated_width(), this._header.get_allocated_height());
 
-            const row_copy = new DraggableRow("", properties);
+            const row_copy = new DraggableRow(settings, "", { ...properties, title: this._header.title, subtitle: this._header.subtitle });
             this._drag_widget.append(row_copy);
             this._drag_widget.drag_highlight_row(row_copy);
 
@@ -538,6 +565,54 @@ class DraggableRowClass extends Adw.ActionRow {
             return false;
         });
         this.add_controller(drop_target);
+    }
+
+    get subtitle(): string {
+        return this._header.subtitle;
+    }
+
+    set subtitle(value: string) {
+        this._header.subtitle = value;
+    }
+
+    add_switch(key: string): DraggableRowClass {
+        this.switch = new Gtk.Switch({ valign: Gtk.Align.CENTER });
+        this._settings.bind(
+            key,
+            this.switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        this._header.add_suffix(this.switch);
+        this._header.activatable_widget = this.switch;
+
+        return this;
+    }
+
+    add_subgroup(group: ListBox): DraggableRowClass {
+        group.add_css_class("nested");
+        group.selection_mode = Gtk.SelectionMode.NONE;
+
+        const revealer = new Gtk.Revealer({ child: group, transition_type: Gtk.RevealerTransitionType.SLIDE_UP, reveal_child: false });
+        this._box.append(revealer);
+
+        const toggle_expand = () => {
+            this._expanded = !this._expanded;
+            revealer.reveal_child = this._expanded;
+            if (this._expanded) {
+                this.set_state_flags(Gtk.StateFlags.CHECKED, false);
+            } else {
+                this.unset_state_flags(Gtk.StateFlags.CHECKED);
+            }
+        };
+
+        this._header.add_suffix(new Gtk.Image({ icon_name: "adw-expander-arrow-symbolic", css_classes: ["expander-row-arrow"] }));
+        // @ts-expect-error: the typscript type likely is wrong, as the documentation says "The argument can be NULL."
+        // https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.3/method.ActionRow.set_activatable_widget.html
+        this._header.activatable_widget = null;
+        this._header.connect("activated", toggle_expand);
+
+        return this;
     }
 }
 

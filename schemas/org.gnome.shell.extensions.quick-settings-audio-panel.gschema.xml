@@ -1,92 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.quick-settings-audio-panel" path="/org/gnome/shell/extensions/quick-settings-audio-panel/">
-    <!-- See also: https://docs.gtk.org/glib/gvariant-format-strings.html -->
-    <key name="move-master-volume" type="b">
-      <default>true</default>
+    <key name="version" type="i">
+      <default>1</default>
     </key>
-    <key name="always-show-input-slider" type="b">
-      <default>false</default>
-    </key>
-    <key name="media-control" type="s">
+
+    <key name="panel-type" type="s">
       <choices>
-        <choice value="none" />
-        <choice value="move" />
-        <choice value="duplicate" />
+        <choice value="independent-panel" />
+        <choice value="merged-panel" />
+        <choice value="separate-indicator" />
       </choices>
-      <default>"move"</default>
+      <default>"independent-panel"</default>
     </key>
-    <key name="create-mixer-sliders" type="b">
-      <default>true</default>
-    </key>
-    <key name="mixer-sliders-type" type="s">
-      <choices>
-        <choice value="normal" />
-        <choice value="combined" />
-      </choices>
-      <default>"normal"</default>
-    </key>
-    <key name="ignore-css" type="b">
-      <default>false</default>
-    </key>
-    <key name="create-sink-mixer" type="b">
-      <default>false</default>
-    </key>
-    <key name="pactl-path" type="s">
-      <default>""</default>
-    </key>
-    <key name="show-current-device" type="b">
-      <default>false</default>
-    </key>
-    <key name="remove-output-slider" type="b">
-      <default>false</default>
-    </key>
-    <key name="create-balance-slider" type="b">
-      <default>false</default>
-    </key>
-    <key name="create-profile-switcher" type="b">
-      <default>false</default>
-    </key>
-    <key name="autohide-profile-switcher" type="b">
-      <default>false</default>
-    </key>
-    <key name="merge-panel" type="b">
-      <default>false</default>
-    </key>
-    <key name="panel-position" type="s">
+    <key name="merged-panel-position" type="s">
       <choices>
         <choice value="top" />
         <choice value="bottom" />
       </choices>
       <default>"bottom"</default>
     </key>
-    <key name="separate-indicator" type="b">
+
+    <key name="always-show-input-volume-slider" type="b">
+      <default>false</default>
+    </key>
+    <key name="remove-output-volume-slider" type="b">
+      <default>false</default>
+    </key>
+    <key name="master-volume-sliders-show-current-device" type="b">
       <default>false</default>
     </key>
 
-    <key name="ordering" type="as">
-      <default>["profile-switcher", "volume-output", "sink-mixer", "balance-slider", "volume-input", "media", "mixer"]</default>
+    <key name="ignore-css" type="b">
+      <default>false</default>
+    </key>
+    <key name="pactl-path" type="s">
+      <default>""</default>
     </key>
 
-    <key name="filter-mode" type="s">
+    <key name="widgets-order" type="as">
+      <default>["profile-switcher", "output-volume-slider", "perdevice-volume-sliders", "balance-slider", "input-volume-slider", "mpris-controllers", "applications-volume-sliders"]</default>
+    </key>
+
+    <!-- Widgets options -->
+    <key name="create-profile-switcher" type="b">
+      <default>false</default>
+    </key>
+    <key name="autohide-profile-switcher" type="b">
+      <default>false</default>
+    </key>
+
+    <key name="move-output-volume-slider" type="b">
+      <default>true</default>
+    </key>
+    <key name="move-input-volume-slider" type="b">
+      <default>true</default>
+    </key>
+
+    <key name="create-perdevice-volume-sliders" type="b">
+      <default>false</default>
+    </key>
+    <key name="perdevice-volume-sliders-filter-mode" type="s">
       <choices>
         <choice value="blacklist" />
         <choice value="whitelist" />
       </choices>
       <default>"blacklist"</default>
     </key>
-    <key name="filters" type="as">
+    <key name="perdevice-volume-sliders-filters" type="as">
       <default>[]</default>
     </key>
 
-    <key name="sink-filter-mode" type="s">
+    <key name="create-balance-slider" type="b">
+      <default>false</default>
+    </key>
+
+    <key name="create-mpris-controllers" type="b">
+      <default>true</default>
+    </key>
+    <key name="mpris-controllers-are-moved" type="b">
+      <default>true</default>
+    </key>
+
+    <key name="create-applications-volume-sliders" type="b">
+      <default>true</default>
+    </key>
+    <key name="group-applications-volume-sliders" type="b">
+      <default>false</default>
+    </key>
+    <key name="applications-volume-sliders-filter-mode" type="s">
       <choices>
         <choice value="blacklist" />
         <choice value="whitelist" />
       </choices>
       <default>"blacklist"</default>
     </key>
-    <key name="sink-filters" type="as">
+    <key name="applications-volume-sliders-filters" type="as">
       <default>[]</default>
     </key>
   </schema>

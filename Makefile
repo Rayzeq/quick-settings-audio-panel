@@ -42,5 +42,10 @@ test: install
 	clear
 	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --nested --wayland
 
+prefs: install
+	clear
+	gnome-extensions prefs quick-settings-audio-panel@rayzeq.github.io
+	journalctl -f -o cat /usr/bin/gjs
+
 clean:
 	rm -r $(OUTPUT_DIR) node_modules

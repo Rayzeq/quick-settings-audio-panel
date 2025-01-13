@@ -1,15 +1,15 @@
 # Quick Settings Audio Panel.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Jozef Gaal <preklady@mayday.sk>, 2024.
+# Jozef Gaal <preklady@mayday.sk>, 2024,2025.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Quick Settings Audio Panel v64\n"
+"Project-Id-Version: Quick Settings Audio Panel v75\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-16 23:00+0100\n"
-"PO-Revision-Date: 2024-11-17 10:52+0100\n"
+"POT-Creation-Date: 2025-01-13 15:34+0100\n"
+"PO-Revision-Date: 2025-01-13 18:26+0100\n"
 "Last-Translator: Jozef Gaal <preklady@mayday.sk>\n"
 "Language-Team: Jozef Gaal <preklady@mayday.sk>\n"
 "Language: sk_SK\n"
@@ -18,55 +18,148 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.4.2\n"
 
-#: prefs.js:27
-msgid "Move master volume sliders"
-msgstr "Presunúť posuvníky hlavnej hlasitosti"
+#: dist/prefs.js:25
+msgid "Where the panel should be"
+msgstr "Kde má byť panel umiestnený"
 
-#: prefs.js:28
-msgid "Thoses are the speaker / headphone and microphone volume sliders"
-msgstr "Toto sú posuvníky hlasitosti reproduktorov / slúchadiel a mikrofónu"
+#: dist/prefs.js:27
+msgid "Independant panel"
+msgstr "Nezávislý panel"
 
-#: prefs.js:34
+#: dist/prefs.js:28
+msgid "In the main panel"
+msgstr "V hlavnom paneli"
+
+#: dist/prefs.js:29
+msgid "In a separate indicator"
+msgstr "Do samostatného indikátora"
+
+#: dist/prefs.js:34
+msgid "Panel position"
+msgstr "Poloha panela"
+
+#: dist/prefs.js:35
+msgid "Where the new panel should be located relative to the main panel"
+msgstr "Kde by mal byť nový panel umiestnený vzhľadom na hlavný panel"
+
+#: dist/prefs.js:37
+msgid "Top"
+msgstr "Hore"
+
+#: dist/prefs.js:38
+msgid "Bottom"
+msgstr "Dole"
+
+#: dist/prefs.js:46
 msgid "Always show microphone volume slider"
 msgstr "Vždy zobraziť posuvník hlasitosti mikrofónu"
 
-#: prefs.js:35
+#: dist/prefs.js:47
 msgid "Show even when there is no application recording audio"
 msgstr "Zobraziť aj vtedy, keď žiadna aplikácia nenahráva zvuk"
 
-#: prefs.js:41 prefs.js:196
+#: dist/prefs.js:50
+msgid "Remove the main output volume slider"
+msgstr "Odstrániť hlavný posuvník výstupnej hlasitosti"
+
+#: dist/prefs.js:51
+msgid "This is useful if you enabled the per-device volume sliders"
+msgstr ""
+"Toto je užitočné, ak ste povolili posuvníky hlasitosti pre jednotlivé "
+"zariadenia"
+
+#: dist/prefs.js:54
+msgid "Show the currently selected device for the main volume sliders"
+msgstr "Zobraziť aktuálne vybrané zariadenie pre hlavné posuvníky hlasitosti"
+
+#: dist/prefs.js:57
+msgid "Do not apply custom CSS"
+msgstr "Nepoužiť vlastné CSS"
+
+#: dist/prefs.js:58
+msgid "Disable the CSS in this extension that could override your theme"
+msgstr "Zakáže CSS tohto rozšírenia, ktoré by mohlo prepísať vašu tému"
+
+#: dist/prefs.js:61
+msgid "Path to the <tt>pactl</tt> executable"
+msgstr "Cesta k spustiteľnému súboru <tt>pactl</tt>"
+
+#: dist/prefs.js:66
+msgid "Auto-hide"
+msgstr "Automatické skrývanie"
+
+#: dist/prefs.js:67
+msgid "Hide the profile switcher when the current device only have one profile"
+msgstr "Skryje prepínač profilov, keď má aktuálne zariadenie len jeden profil"
+
+#: dist/prefs.js:71
+msgid "Move media controls"
+msgstr "Presunúť ovládacie prvky médií"
+
+#: dist/prefs.js:72
+msgid ""
+"Move the media controls from the notifications panel instead of creating a "
+"new one"
+msgstr ""
+"Presunúť ovládacie prvky médií z panela oznámení namiesto vytvorenia nového"
+
+#: dist/prefs.js:76
+msgid "Put the sliders in submenu"
+msgstr "Umiestniť posuvníky do podponuky"
+
+#: dist/prefs.js:77
+msgid ""
+"<span color=\"darkorange\" weight=\"bold\">This will disable the ability to "
+"change the output device per application</span>"
+msgstr ""
+"<span color=\"darkorange\" weight=\"bold\">Tento režim zakáže možnosť zmeny "
+"výstupného zariadenia podľa aplikácie</span>"
+
+#: dist/prefs.js:81
+msgid "Elements order"
+msgstr "Poradie prvkov"
+
+#: dist/prefs.js:82
+msgid "Reorder elements in the new panel"
+msgstr "Zmeniť poradie prvkov na novom paneli"
+
+#: dist/prefs.js:86
+msgid "Profile switcher"
+msgstr "Prepínač profilov"
+
+#: dist/prefs.js:87
+msgid "Allows you to quickly change the audio profile of the current device"
+msgstr "Umožňuje rýchlo zmeniť zvukový profil aktuálneho zariadenia"
+
+#: dist/prefs.js:92
+msgid "Speaker / Headphone volume slider"
+msgstr "Posuvník hlasitosti reproduktora/slúchadiel"
+
+#: dist/prefs.js:95
+msgid "Per-device volume sliders"
+msgstr "Posuvníky hlasitosti pre jednotlivé zariadenia"
+
+#: dist/prefs.js:98
+msgid "Audio balance slider"
+msgstr "Posuvník vyváženia zvuku"
+
+#: dist/prefs.js:101
+msgid "Microphone volume slider"
+msgstr "Posuvník hlasitosti mikrofónu"
+
+#: dist/prefs.js:104
 msgid "Media controls"
 msgstr "Ovládacie prvky médií"
 
-#: prefs.js:42
-msgid "What should we do with media controls ?"
-msgstr "Čo sa má urobiť s ovládacími prvkami médií?"
+#: dist/prefs.js:108
+msgid "Applications mixer"
+msgstr "Mixér aplikácií"
 
-#: prefs.js:44
-msgid "Leave as is"
-msgstr "Ponechať tak, ako je"
+#: dist/prefs.js:114
+msgid "The same sliders you can find in pavucontrol or in the sound settings"
+msgstr "Rovnaké posuvníky nájdete v pavucontrol alebo v nastaveniach zvuku"
 
-#: prefs.js:45
-msgid "Move into new panel"
-msgstr "Presunúť do nového panela"
-
-#: prefs.js:46
-msgid "Duplicate into new panel"
-msgstr "Duplikovať do nového panela"
-
-#: prefs.js:67
-msgid "Create applications mixer"
-msgstr "Vytvoriť mixér aplikácií"
-
-#: prefs.js:73
-msgid ""
-"Thoses sliders are the same you can find in pavucontrol or in the sound "
-"settings"
-msgstr ""
-"Tieto posuvníky sú rovnaké, aké nájdete v pavucontrol alebo v nastaveniach "
-"zvuku"
-
-#: prefs.js:93
+#: dist/prefs.js:116
 msgid ""
 "<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you "
 "won't be able to change the output device per application</span>"
@@ -74,191 +167,68 @@ msgstr ""
 "<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> nebol nájdený, "
 "nebudete môcť zmeniť výstupné zariadenie na aplikáciu</span>"
 
-#: prefs.js:106
-msgid "<tt>pactl</tt> path"
-msgstr "<tt>pactl</tt> cesta"
-
-#: prefs.js:113
-msgid "Do not apply custom CSS"
-msgstr "Nepoužiť vlastné CSS"
-
-#: prefs.js:114
-msgid "Disable the CSS in this extension that could override your theme"
-msgstr "Zakáže CSS tohto rozšírenia, ktoré by mohlo prepísať vašu tému"
-
-#: prefs.js:120
-msgid "Create per-device volume sliders"
-msgstr "Vytvoriť posuvníky hlasitosti pre jednotlivé zariadenia"
-
-#: prefs.js:126
-msgid "Show the currently selected device for the master sliders"
-msgstr "Zobraziť aktuálne vybrané zariadenie pre hlavné posuvníky"
-
-#: prefs.js:132
-msgid "Remove the output slider"
-msgstr "Odstrániť posuvník výstupu"
-
-#: prefs.js:133
-msgid "This is useful if you enabled the per-device volume sliders"
-msgstr ""
-"Toto je užitočné, ak ste povolili posuvníky hlasitosti pre jednotlivé "
-"zariadenia"
-
-#: prefs.js:139
-msgid "Add a balance slider"
-msgstr "Pridať posuvník vyváženia"
-
-#: prefs.js:140
-msgid "This slider allows you to change the balance of the current output"
-msgstr "Tento posuvník umožňuje zmeniť vyváženie aktuálneho výstupu"
-
-#: prefs.js:146
-msgid "Add a profile switcher"
-msgstr "Pridať prepínač profilov"
-
-#: prefs.js:147
-msgid "Allows you to quickly change the audio profile of the current device"
-msgstr "Umožňuje rýchlo zmeniť zvukový profil aktuálneho zariadenia"
-
-#: prefs.js:153
-msgid "Auto-hide the profile switcher"
-msgstr "Automaticky skryť prepínač profilov"
-
-#: prefs.js:154
-msgid "Hide the profile switcher when the current device only have one profile"
-msgstr "Skryje prepínač profilov, keď má aktuálne zariadenie len jeden profil"
-
-#: prefs.js:160
-msgid "Merge the new panel into the main one"
-msgstr "Zlúčiť nový panel s hlavným panelom"
-
-#: prefs.js:161
-msgid "The new panel will not be separated from the main one"
-msgstr "Nový panel nebude oddelený od hlavného panelu"
-
-#: prefs.js:167
-msgid "Panel position"
-msgstr "Poloha panela"
-
-#: prefs.js:168
-msgid "Where the new panel should be located relative to the main panel"
-msgstr "Kde by mal byť nový panel umiestnený vzhľadom na hlavný panel"
-
-#: prefs.js:170
-msgid "Top"
-msgstr "Hore"
-
-#: prefs.js:171
-msgid "Bottom"
-msgstr "Dole"
-
-#: prefs.js:180
-msgid "Put the panel in a separate indicator"
-msgstr "Umiestniť panel do samostatného indikátora"
-
-#: prefs.js:186
-msgid "Elements order"
-msgstr "Poradie prvkov"
-
-#: prefs.js:187
+#: dist/prefs.js:121
 msgid ""
-"Reorder elements in the new panel (disabled elments will just be ignored)"
-msgstr "Zmení poradie prvkov v novom paneli (vypnuté prvky budú ignorované)"
+"This slider allows you to change the balance of the current audio output"
+msgstr "Tento posuvník umožňuje zmeniť vyváženie aktuálneho zvukového výstupu"
 
-#: prefs.js:191
-msgid "Profile switcher"
-msgstr "Prepínač profilov"
-
-#: prefs.js:192
-msgid "Speaker / Headphone volume slider"
-msgstr "Posuvník hlasitosti reproduktora/slúchadiel"
-
-#: prefs.js:193
-msgid "Per-device volume sliders"
-msgstr "Posuvníky hlasitosti pre jednotlivé zariadenia"
-
-#: prefs.js:194
-msgid "Output balance slider"
-msgstr "Posuvník vyváženia výstupu"
-
-#: prefs.js:195
-msgid "Microphone volume slider"
-msgstr "Posuvník hlasitosti mikrofónu"
-
-#: prefs.js:197
-msgid "Applications mixer"
-msgstr "Mixér aplikácií"
-
-#: prefs.js:202
-msgid "Mixer filtering"
-msgstr "Filtrovanie mixéra"
-
-#: prefs.js:203
+#: dist/prefs.js:126
 msgid ""
-"Allow you to filter the streams that show up in the application mixer "
-"**using regexes**"
+"<span color=\"red\" weight=\"bold\">This feature needs <tt>pactl</tt></span>"
 msgstr ""
-"Umožňuje filtrovať signály, ktoré sa zobrazia v mixéri aplikácií pomocou "
-"regulárnych výrazov **regex**"
+"<span color=\"red\" weight=\"bold\">Táto funkcia potrebuje <tt>pactl</tt></"
+"span>"
 
-#: prefs.js:209 prefs.js:255
-msgid "Filtering mode"
-msgstr "Režim filtrovania"
+#: dist/prefs.js:144
+msgid "Per-device sliders filtering"
+msgstr "Filtrovanie posuvníkov podľa zariadenia"
 
-#: prefs.js:210 prefs.js:256
-msgid ""
-"On blacklist mode, matching elements are removed from the list. On whitelist "
-"mode, only matching elements will be shown"
-msgstr ""
-"V režime vylúčených sa vyhovujúce prvky zo zoznamu odstránia. V režime "
-"zahrnutých sa zobrazia len vyhovujúce prvky"
-
-#: prefs.js:212 prefs.js:258
-msgid "Blacklist"
-msgstr "Vylúčené"
-
-#: prefs.js:213 prefs.js:259
-msgid "Whitelist"
-msgstr "Zahrnuté"
-
-#: prefs.js:221
-msgid "Stream name"
-msgstr "Názov signálu"
-
-#: prefs.js:248
-msgid "Output sliders filtering"
-msgstr "Filtrovanie posuvníkov výstupu"
-
-#: prefs.js:249
+#: dist/prefs.js:145
 msgid ""
 "Allow you to filter the per-device volume sliders. The content of the "
-"filters are regexes and are applied to the device's display name and "
+"filters are <b>regexes</b> and are applied to the device's display name and "
 "pulseaudio name."
 msgstr ""
 "Umožňuje filtrovať posuvníky hlasitosti pre jednotlivé zariadenia. Obsahom "
-"filtrov sú regulárne výrazy (regex) a aplikujú sa na zobrazovaný názov "
-"zariadenia a názov pulseaudio."
+"filtrov sú <b>regulárne výrazy (regex)</b> a aplikujú sa na zobrazovaný "
+"názov zariadenia a názov pulseaudio."
 
-#: prefs.js:267
+#: dist/prefs.js:146
 msgid "Device name"
 msgstr "Názov zariadenia"
 
-#: prefs.js:296
+#: dist/prefs.js:150
+msgid "Application mixer filtering"
+msgstr "Filtrovanie mixéra aplikácie"
+
+#: dist/prefs.js:151
+msgid ""
+"Allow you to filter the applications that show up in the application mixer "
+"<b>using regexes</b>"
+msgstr ""
+"Umožňuje filtrovať aplikácie, ktoré sa zobrazujú v mixéri aplikácií "
+"<b>pomocou regulárnych výrazov</b>"
+
+#: dist/prefs.js:152
+msgid "Application name"
+msgstr "Názov aplikácie"
+
+#: dist/prefs.js:166
 msgid "LibPanel settings"
 msgstr "Nastavenia LibPanel"
 
-#: prefs.js:297
+#: dist/prefs.js:167
 msgid ""
 "Those settings are not specific to this extension, they apply to every panels"
 msgstr ""
 "Tieto nastavenia nie sú špecifické pre toto rozšírenie, ale platia pre "
 "všetky panely"
 
-#: prefs.js:304
+#: dist/prefs.js:170
 msgid "Single-column mode"
 msgstr "Režim jedného stĺpca"
 
-#: prefs.js:305
+#: dist/prefs.js:171
 msgid ""
 "Only one column of panels will be allowed. Also prevents the panel from "
 "being put at the left/right of the screen by libpanel."
@@ -266,40 +236,117 @@ msgstr ""
 "Povolený bude len jeden stĺpec panelov. Zabráni tiež tomu, aby bol panel "
 "umiestnený v ľavej/pravej časti obrazovky pomocou libpanel."
 
-#: prefs.js:311
+#: dist/prefs.js:174
 msgid "Panel alignment"
 msgstr "Zarovnanie panelu"
 
-#: prefs.js:313
+#: dist/prefs.js:176
 msgid "Left"
 msgstr "Vľavo"
 
-#: prefs.js:314
+#: dist/prefs.js:177
 msgid "Right"
 msgstr "Vpravo"
 
-#: prefs.js:321
+#: dist/prefs.js:181
 msgid "Padding"
 msgstr "Odsadenie"
 
-#: prefs.js:322
+#: dist/prefs.js:182
 msgid "Use this to override the default padding of the panels"
 msgstr "Toto nastavenie použite na prepísanie predvoleného odsadenia panelov"
 
-#: prefs.js:328
+#: dist/prefs.js:185
 msgid "Row spacing"
 msgstr "Rozstup riadkov"
 
-#: prefs.js:329
+#: dist/prefs.js:186
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 "Toto nastavenie použite na prepísanie predvoleného rozstupu riadkov panelov"
 
-#: prefs.js:335
+#: dist/prefs.js:189
 msgid "Column spacing"
 msgstr "Rozstup stĺpcov"
 
-#: prefs.js:336
+#: dist/prefs.js:190
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""
 "Toto nastavenie použite na prepísanie predvoleného rozstupu stĺpcov panelov"
+
+#: dist/prefs.js:275
+msgid "Filtering mode"
+msgstr "Režim filtrovania"
+
+#: dist/prefs.js:276
+msgid ""
+"On blacklist mode, matching elements are removed from the list. On whitelist "
+"mode, only matching elements will be shown"
+msgstr ""
+"V režime vylúčených sa vyhovujúce prvky zo zoznamu odstránia. V režime "
+"zahrnutých sa zobrazia len vyhovujúce prvky"
+
+#: dist/prefs.js:278
+msgid "Blacklist"
+msgstr "Vylúčené"
+
+#: dist/prefs.js:279
+msgid "Whitelist"
+msgstr "Zahrnuté"
+
+#~ msgid "Move master volume sliders"
+#~ msgstr "Presunúť posuvníky hlavnej hlasitosti"
+
+#~ msgid "Thoses are the speaker / headphone and microphone volume sliders"
+#~ msgstr "Toto sú posuvníky hlasitosti reproduktorov / slúchadiel a mikrofónu"
+
+#~ msgid "What should we do with media controls ?"
+#~ msgstr "Čo sa má urobiť s ovládacími prvkami médií?"
+
+#~ msgid "Leave as is"
+#~ msgstr "Ponechať tak, ako je"
+
+#~ msgid "Move into new panel"
+#~ msgstr "Presunúť do nového panela"
+
+#~ msgid "Duplicate into new panel"
+#~ msgstr "Duplikovať do nového panela"
+
+#~ msgid "Create applications mixer"
+#~ msgstr "Vytvoriť mixér aplikácií"
+
+#~ msgid "Mixer sliders type"
+#~ msgstr "Typ posuvníkov mixéra"
+
+#~ msgid "Normal"
+#~ msgstr "Normálne"
+
+#~ msgid "Combined in one menu"
+#~ msgstr "Združené do jednej ponuky"
+
+#~ msgid "Create per-device volume sliders"
+#~ msgstr "Vytvoriť posuvníky hlasitosti pre jednotlivé zariadenia"
+
+#~ msgid "Add a profile switcher"
+#~ msgstr "Pridať prepínač profilov"
+
+#~ msgid "Auto-hide the profile switcher"
+#~ msgstr "Automaticky skryť prepínač profilov"
+
+#~ msgid "Merge the new panel into the main one"
+#~ msgstr "Zlúčiť nový panel s hlavným panelom"
+
+#~ msgid "The new panel will not be separated from the main one"
+#~ msgstr "Nový panel nebude oddelený od hlavného panelu"
+
+#~ msgid "Output balance slider"
+#~ msgstr "Posuvník vyváženia výstupu"
+
+#~ msgid "Mixer filtering"
+#~ msgstr "Filtrovanie mixéra"
+
+#~ msgid "Stream name"
+#~ msgstr "Názov signálu"
+
+#~ msgid "<tt>pactl</tt> path"
+#~ msgstr "<tt>pactl</tt> cesta"

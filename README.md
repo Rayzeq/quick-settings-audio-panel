@@ -48,4 +48,6 @@ Instructions:
  * Download the [latest version](https://github.com/Rayzeq/quick-settings-audio-panel/releases)
  * Extract the zip archive you just downloaded in `~/.local/share/gnome-shell/extensions`
  * Rename the extracted folder to `quick-settings-audio-panel@rayzeq.github.io`
+ * The two preceding instructions can also be done with this command: `gnome-extensions install path/to/
+quick-settings-audio-panel@rayzeq.github.io.shell-extension.zip --force`
  * Restart gnome shell (the easiest way is to log out and log back in)

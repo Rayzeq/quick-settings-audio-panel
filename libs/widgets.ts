@@ -13,24 +13,21 @@ import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 import { get_pactl_path, spawn } from "./utils.js";
 
-export function waitProperty<T extends { [x: string]: any; }, Name extends string>(object: T, name: Name): Promise<T[Name]> {
-    if (!waitProperty.idle_ids) {
-        waitProperty.idle_ids = [];
-    }
-
+export const idle_ids: number[] = [];
+export function wait_property<T extends { [x: string]: any; }, Name extends string>(object: T, name: Name): Promise<Exclude<T[Name], undefined>> {
     return new Promise((resolve, _reject) => {
         // very ugly hack
-        const id_pointer = {};
-        const id = GLib.idle_add(GLib.PRIORITY_DEFAULT, waitPropertyLoop.bind(this, resolve, id_pointer));
+        const id_pointer = {} as { id: number };
+        const id = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, wait_property_loop.bind(null, resolve, id_pointer));
         id_pointer.id = id;
-        waitProperty.idle_ids.push(id);
+        idle_ids.push(id);
     });
 
-    function waitPropertyLoop(resolve, pointer) {
-        if (object[name]) {
-            const index = waitProperty.idle_ids.indexOf(pointer.id);
+    function wait_property_loop(resolve: (value: Exclude<T[Name], undefined>) => void, pointer: { id: number }) {
+        if (object[name] !== undefined) {
+            const index = idle_ids.indexOf(pointer.id);
             if (index !== -1) {
-                waitProperty.idle_ids.splice(index, 1);
+                idle_ids.splice(index, 1);
             }
 
             resolve(object[name]);
@@ -42,7 +39,7 @@ export function waitProperty<T extends { [x: string]: any; }, Name extends strin
 
 const { MixerSinkInput, MixerSink } = Gvc;
 // `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined
-const OutputStreamSlider = (await waitProperty(Main.panel.statusArea.quickSettings, '_volumeOutput'))._output.constructor as (typeof Volume.OutputStreamSlider);
+const OutputStreamSlider = (await wait_property(Main.panel.statusArea.quickSettings, "_volumeOutput"))._output.constructor as (typeof Volume.OutputStreamSlider);
 const StreamSlider = Object.getPrototypeOf(OutputStreamSlider) as (typeof Volume.StreamSlider);
 
 export class SinkMixer {

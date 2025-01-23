@@ -27,7 +27,7 @@ import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
 import { update_settings } from './libs/preferences.js';
-import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, SinkMixer, waitProperty } from './libs/widgets.js';
+import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, idle_ids, SinkMixer, wait_property } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
@@ -43,7 +43,7 @@ export default class QSAP extends Extension {
     settings!: Gio.Settings;
 
     async enable() {
-        this.InputVolumeIndicator = await waitProperty(QuickSettings, '_volumeInput');
+        this.InputVolumeIndicator = await wait_property(QuickSettings, '_volumeInput');
         this.InputVolumeSlider = this.InputVolumeIndicator._input;
 
         this.settings = this.getSettings();
@@ -86,10 +86,11 @@ export default class QSAP extends Extension {
 
         this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
-        for (const id of waitProperty.idle_ids) {
+        for (const id of idle_ids) {
             GLib.Source.remove(id);
+            console.warn(`[QSAP] Needed to clear an idle loop, this is likely a bug (id: ${id})`);
         }
-        waitProperty.idle_ids = null;
+        idle_ids.length = 0;
 
         this._set_always_show_input(false);
         this._cleanup_panel();

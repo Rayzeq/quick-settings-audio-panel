@@ -480,11 +480,10 @@ class ApplicationsMixerManager {
     }
 
     private _stream_removed(_control: Gvc.MixerControl, id: number) {
-        if (!this._sliders.has(id)) return;
-
         const slider = this._sliders.get(id);
-        this.on_slider_removed(slider);
+        if (slider === undefined) return;
 
+        this.on_slider_removed(slider);
         this._sliders.delete(id);
         slider.destroy();
     }

@@ -206,6 +206,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         super.destroy();
     }
 });
+type SinkVolumeSlider = InstanceType<typeof SinkVolumeSlider>;
 
 export const BalanceSlider = GObject.registerClass(class BalanceSlider extends QuickSlider {
     stream?: Gvc.MixerStream;
@@ -727,6 +728,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         this._setActiveDevice(device.get_id());
     }
 });
+type ApplicationVolumeSlider = InstanceType<typeof ApplicationVolumeSlider>;
 
 const ApplicationVolumeSliderItem = GObject.registerClass(class ApplicationVolumeSliderItem extends PopupBaseMenuItem {
     constructor(slider: ApplicationVolumeSlider) {

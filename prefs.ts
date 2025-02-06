@@ -33,7 +33,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
             {
                 title: _("Where the panel should be"),
                 fields: [
-                    ["independent-panel", _("Independant panel")],
+                    ["independent-panel", _("Independent panel")],
                     ["merged-panel", _("In the main panel")],
                     ["separate-indicator", _("In a separate indicator")],
                 ],
@@ -90,7 +90,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         profile_switcher_group.add_switch("autohide-profile-switcher",
             {
                 title: _("Auto-hide"),
-                subtitle: _("Hide the profile switcher when the current device only have one profile")
+                subtitle: _("Hide the profile switcher when the current device only has one profile")
             }
         );
 
@@ -182,7 +182,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         const perdevice_volume_sliders_filters_group = new FilterPreferencesGroup(settings, "perdevice-volume-sliders-filters", "perdevice-volume-sliders-filter-mode",
             {
                 title: _("Per-device sliders filtering"),
-                description: _("Allow you to filter the per-device volume sliders. The content of the filters are <b>regexes</b> and are applied to the device's display name and pulseaudio name."),
+                description: _("Allows you to filter the per-device volume sliders. The content of the filters are <b>regexes</b> and are applied to the device's display name and pulseaudio name."),
                 placeholder: _("Device name"),
             }
         );
@@ -191,7 +191,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         const applications_volume_sliders_filters_group = new FilterPreferencesGroup(settings, "applications-volume-sliders-filters", "applications-volume-sliders-filter-mode",
             {
                 title: _("Application mixer filtering"),
-                description: _("Allow you to filter the applications that show up in the application mixer <b>using regexes</b>"),
+                description: _("Allows you to filter the applications that show up in the application mixer <b>using regexes</b>"),
                 placeholder: _("Application name"),
             }
         );
@@ -210,7 +210,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
         });
         const group = new PreferencesGroup(settings, {
             title: _("LibPanel settings"),
-            description: _("Those settings are not specific to this extension, they apply to every panels"),
+            description: _("These settings are not specific to this extension, they apply to every panel"),
         });
 
         group.add_switch("single-column",

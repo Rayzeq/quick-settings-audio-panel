@@ -395,10 +395,10 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
         this.add_combobox(mode_key,
             {
                 title: _("Filtering mode"),
-                subtitle: _("On blacklist mode, matching elements are removed from the list. On whitelist mode, only matching elements will be shown"),
+                subtitle: _("On blocklist mode, matching elements are removed from the list. On allowlist mode, only matching elements will be shown"),
                 fields: [
-                    ['blacklist', _("Blacklist")],
-                    ['whitelist', _("Whitelist")],
+                    ['blacklist', _("Blocklist")],
+                    ['whitelist', _("Allowlist")],
                 ]
             }
         );

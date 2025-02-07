@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-13 15:34+0100\n"
+"POT-Creation-Date: 2025-02-07 10:56+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -259,14 +259,14 @@ msgstr ""
 
 #: dist/prefs.js:276
 msgid ""
-"On blacklist mode, matching elements are removed from the list. On whitelist "
+"On blocklist mode, matching elements are removed from the list. On whitelist "
 "mode, only matching elements will be shown"
 msgstr ""
 
 #: dist/prefs.js:278
-msgid "Blacklist"
+msgid "Blocklist"
 msgstr ""
 
 #: dist/prefs.js:279
-msgid "Whitelist"
+msgid "Allowlist"
 msgstr ""

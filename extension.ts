@@ -30,8 +30,8 @@ import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
 import { update_settings } from './libs/preferences.js';
-import { get_pactl_path } from './libs/utils.js';
-import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, idle_ids, SinkMixer, wait_property } from './libs/widgets.js';
+import { cleanup_idle_ids, get_pactl_path, wait_property } from './libs/utils.js';
+import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, SinkMixer } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
@@ -105,11 +105,7 @@ export default class QSAP extends Extension {
 
         this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
-        for (const id of idle_ids) {
-            GLib.Source.remove(id);
-            console.warn(`[QSAP] Needed to clear an idle loop, this is likely a bug (id: ${id})`);
-        }
-        idle_ids.length = 0;
+        cleanup_idle_ids();
 
         this._set_always_show_input(false);
         this._cleanup_panel();

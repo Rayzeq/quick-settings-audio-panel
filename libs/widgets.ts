@@ -11,31 +11,7 @@ import { Ornament, PopupBaseMenuItem, PopupImageMenuItem, PopupMenuItem, PopupMe
 import { QuickMenuToggle, QuickSlider, QuickToggle } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
-import { get_pactl_path, spawn } from "./utils.js";
-
-export const idle_ids: number[] = [];
-export function wait_property<T extends { [x: string]: any; }, Name extends string>(object: T, name: Name): Promise<Exclude<T[Name], undefined>> {
-    return new Promise((resolve, _reject) => {
-        // very ugly hack
-        const id_pointer = {} as { id: number };
-        const id = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, wait_property_loop.bind(null, resolve, id_pointer));
-        id_pointer.id = id;
-        idle_ids.push(id);
-    });
-
-    function wait_property_loop(resolve: (value: Exclude<T[Name], undefined>) => void, pointer: { id: number }) {
-        if (object[name] !== undefined) {
-            const index = idle_ids.indexOf(pointer.id);
-            if (index !== -1) {
-                idle_ids.splice(index, 1);
-            }
-
-            resolve(object[name]);
-            return GLib.SOURCE_REMOVE;
-        }
-        return GLib.SOURCE_CONTINUE;
-    }
-}
+import { get_pactl_path, spawn, wait_property } from "./utils.js";
 
 const { MixerSinkInput, MixerSink } = Gvc;
 // `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined

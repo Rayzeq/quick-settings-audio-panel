@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-07 10:56+0000\n"
+"POT-Creation-Date: 2025-02-22 11:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,7 +22,7 @@ msgid "Where the panel should be"
 msgstr ""
 
 #: dist/prefs.js:27
-msgid "Independant panel"
+msgid "Independent panel"
 msgstr ""
 
 #: dist/prefs.js:28
@@ -86,7 +86,7 @@ msgid "Auto-hide"
 msgstr ""
 
 #: dist/prefs.js:67
-msgid "Hide the profile switcher when the current device only have one profile"
+msgid "Hide the profile switcher when the current device only has one profile"
 msgstr ""
 
 #: dist/prefs.js:71
@@ -175,7 +175,7 @@ msgstr ""
 
 #: dist/prefs.js:145
 msgid ""
-"Allow you to filter the per-device volume sliders. The content of the "
+"Allows you to filter the per-device volume sliders. The content of the "
 "filters are <b>regexes</b> and are applied to the device's display name and "
 "pulseaudio name."
 msgstr ""
@@ -190,7 +190,7 @@ msgstr ""
 
 #: dist/prefs.js:151
 msgid ""
-"Allow you to filter the applications that show up in the application mixer "
+"Allows you to filter the applications that show up in the application mixer "
 "<b>using regexes</b>"
 msgstr ""
 
@@ -204,7 +204,7 @@ msgstr ""
 
 #: dist/prefs.js:167
 msgid ""
-"Those settings are not specific to this extension, they apply to every panels"
+"These settings are not specific to this extension, they apply to every panel"
 msgstr ""
 
 #: dist/prefs.js:170
@@ -259,7 +259,7 @@ msgstr ""
 
 #: dist/prefs.js:276
 msgid ""
-"On blocklist mode, matching elements are removed from the list. On whitelist "
+"On blocklist mode, matching elements are removed from the list. On allowlist "
 "mode, only matching elements will be shown"
 msgstr ""
 

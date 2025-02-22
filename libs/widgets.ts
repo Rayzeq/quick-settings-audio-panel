@@ -7,7 +7,7 @@ import St from 'gi://St';
 
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { Ornament, PopupBaseMenuItem, PopupMenuItem, PopupMenuSection } from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import { Ornament, PopupBaseMenuItem, PopupImageMenuItem, PopupMenuItem, PopupMenuSection } from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { QuickMenuToggle, QuickSlider, QuickToggle } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
@@ -716,6 +716,33 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
                 }
             }
         });
+    }
+
+    _addDevice(id: number) {
+        if (this._deviceItems.has(id))
+            return;
+
+        const device = this._lookupDevice(id);
+        if (!device)
+            return;
+
+        const item = new PopupImageMenuItem("", device.get_gicon());
+        // using the text from the output switcher of the master slider to allow compatibility with extensions
+        // that changes it (like Quick Settings Audio Device Renamer)
+        Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id()).label.bind_property('text', item.label, 'text', GObject.BindingFlags.SYNC_CREATE);
+        item.connect('activate', () => {
+            const dev = this._lookupDevice(id);
+            if (dev)
+                this._activateDevice(dev);
+            else
+                console.warn(`Trying to activate invalid device ${id}`);
+        });
+
+
+        this._deviceSection.addMenuItem(item);
+        this._deviceItems.set(id, item);
+
+        this._sync();
     }
 
     _lookupDevice(id: number) {

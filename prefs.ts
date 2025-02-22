@@ -72,6 +72,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 title: _("Show the currently selected device for the main volume sliders"),
             }
         );
+        main_group.add_switch("add-button-applications-output-reset-to-default",
+            {
+                title: _("Add a button to reset all applications to the default output"),
+                subtitle: _("This button can be found in the device chooser of the main output slider")
+            }
+        );
 
         main_group.add_switch("ignore-css",
             {

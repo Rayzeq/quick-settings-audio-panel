@@ -16,17 +16,21 @@
 
 import Clutter from 'gi://Clutter';
 import type Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
+import Gvc from 'gi://Gvc';
 import St from 'gi://St';
 
-import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { gettext as _, Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MediaSection } from 'resource:///org/gnome/shell/ui/mpris.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
 import { update_settings } from './libs/preferences.js';
+import { get_pactl_path } from './libs/utils.js';
 import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, idle_ids, SinkMixer, wait_property } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
@@ -70,6 +74,18 @@ export default class QSAP extends Extension {
         );
         this.settings.emit('changed::master-volume-sliders-show-current-device', 'master-volume-sliders-show-current-device');
 
+        this._scabaortd_callback = this.settings.connect(
+            'changed::add-button-applications-output-reset-to-default',
+            () => {
+                if (this.settings.get_boolean('add-button-applications-output-reset-to-default')) {
+                    this._add_reset_applications_output();
+                } else {
+                    this._remove_reset_applications_output();
+                }
+            }
+        );
+        this.settings.emit('changed::add-button-applications-output-reset-to-default', 'add-button-applications-output-reset-to-default');
+
         this._master_volumes = [];
         this._sc_callback = this.settings.connect('changed', (_, name) => {
             if (name !== "autohide-profile-switcher") {
@@ -83,6 +99,9 @@ export default class QSAP extends Extension {
         this.settings.disconnect(this._scscd_callback);
         this._unpatch_show_current_device(OutputVolumeSlider);
         this._unpatch_show_current_device(this.InputVolumeSlider);
+
+        this.settings.disconnect(this._scabaortd_callback);
+        this._remove_reset_applications_output();
 
         this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
@@ -453,5 +472,32 @@ export default class QSAP extends Extension {
         delete slider._iconButton._qsap_y_expand;
         delete slider._iconButton._qsap_y_align;
         delete slider._menuButton._qsap_y_expand;
+    }
+
+    _add_reset_applications_output() {
+        this._action_application_reset_output = OutputVolumeSlider.menu.addAction(_("Reset all applications to default output"), () => {
+            const control = Volume.getMixerControl();
+
+            for (const stream of control.get_streams()) {
+                if (stream.is_event_stream || !(stream instanceof Gvc.MixerSinkInput)) {
+                    continue;
+                }
+
+                GLib.spawn_command_line_async(`${get_pactl_path(this.settings)[0]} move-sink-input ${stream.index} @DEFAULT_SINK@`);
+            }
+
+            if (this._applications_mixer) {
+                for (const slider of this._applications_mixer._slider_manager._sliders.values()) {
+                    slider._checkUsedSink()
+                }
+            }
+        });
+    }
+
+    _remove_reset_applications_output() {
+        if (this._action_application_reset_output) {
+            this._action_application_reset_output.destroy();
+        }
+        delete this._action_application_reset_output;
     }
 }

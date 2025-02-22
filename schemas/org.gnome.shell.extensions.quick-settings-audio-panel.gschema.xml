@@ -30,6 +30,9 @@
     <key name="master-volume-sliders-show-current-device" type="b">
       <default>false</default>
     </key>
+    <key name="add-button-applications-output-reset-to-default" type="b">
+      <default>false</default>
+    </key>
 
     <key name="ignore-css" type="b">
       <default>false</default>

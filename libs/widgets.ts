@@ -148,7 +148,8 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
                     if (this._name_binding) this._name_binding.unbind();
                     // using the text from the output switcher of the master slider to allow compatibility with extensions
                     // that changes it (like Quick Settings Audio Device Renamer)
-                    this._name_binding = Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id()).label.bind_property('text', label, 'text', GObject.BindingFlags.SYNC_CREATE);
+                    const deviceItem = Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id());
+                    if (deviceItem) this._name_binding = deviceItem.label.bind_property('text', label, 'text', GObject.BindingFlags.SYNC_CREATE);
                 };
                 let signal = stream.connect("notify::port", updater);
                 updater();
@@ -705,7 +706,8 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         const item = new PopupImageMenuItem("", device.get_gicon());
         // using the text from the output switcher of the master slider to allow compatibility with extensions
         // that changes it (like Quick Settings Audio Device Renamer)
-        Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id()).label.bind_property('text', item.label, 'text', GObject.BindingFlags.SYNC_CREATE);
+        const deviceItem = Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id());
+        if (deviceItem) deviceItem.label.bind_property('text', item.label, 'text', GObject.BindingFlags.SYNC_CREATE);
         item.connect('activate', () => {
             const dev = this._lookupDevice(id);
             if (dev)

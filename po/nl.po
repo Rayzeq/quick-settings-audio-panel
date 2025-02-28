@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-23 22:43+0200\n"
-"PO-Revision-Date: 2023-05-26 11:14+0200\n"
+"POT-Creation-Date: 2025-02-22 13:19+0100\n"
+"PO-Revision-Date: 2025-02-28 11:11+0100\n"
 "Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
 "Language-Team: Dutch\n"
 "Language: nl\n"
@@ -15,152 +15,335 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.3.1\n"
+"X-Generator: Poedit 3.5\n"
 
-#: prefs.js:25
-msgid "Move master volume sliders"
-msgstr "Hoofdvolumeknoppen verplaatsen"
+#: dist/extension.js:407
+msgid "Reset all applications to default output"
+msgstr "Alle toepassingen op standaarduitvoer zetten"
 
-#: prefs.js:26
-msgid "Thoses are the speaker / headphone and microphone volume sliders"
-msgstr ""
-"Dit zijn de schuifknoppen van luidsprekers, hoofdtelefoons en microfoons"
+#: dist/prefs.js:25
+msgid "Where the panel should be"
+msgstr "Waar de balk zou moeten zijn"
 
-#: prefs.js:32
+#: dist/prefs.js:27
+msgid "Independent panel"
+msgstr "Op een losse balk"
+
+#: dist/prefs.js:28
+msgid "In the main panel"
+msgstr "Op de hoofdbalk"
+
+#: dist/prefs.js:29
+msgid "In a separate indicator"
+msgstr "In een losse indicator"
+
+#: dist/prefs.js:34
+msgid "Panel position"
+msgstr "Balklocatie"
+
+#: dist/prefs.js:35
+msgid "Where the new panel should be located relative to the main panel"
+msgstr "Waar de balk dient te worden getoond ten opzichte van de hoofdbalk"
+
+#: dist/prefs.js:37
+msgid "Top"
+msgstr "Bovenaan"
+
+#: dist/prefs.js:38
+msgid "Bottom"
+msgstr "Onderaan"
+
+#: dist/prefs.js:46
 msgid "Always show microphone volume slider"
 msgstr "Microfoonvolumeknop altijd tonen"
 
-#: prefs.js:33
+#: dist/prefs.js:47
 msgid "Show even when there is no application recording audio"
 msgstr "Toon de schuifknop ook als er geen opnametoepassing actief is"
 
-#: prefs.js:39 prefs.js:92
+#: dist/prefs.js:50
+msgid "Remove the main output volume slider"
+msgstr "Hoofdvolumeknoppen verwijderen"
+
+#: dist/prefs.js:51
+msgid "This is useful if you enabled the per-device volume sliders"
+msgstr "Gebruik deze optie als u per apparaat knoppen wilt tonen"
+
+#: dist/prefs.js:54
+msgid "Show the currently selected device for the main volume sliders"
+msgstr "Huidig gekozen apparaat op hoofdvolumeregelaar tonen"
+
+#: dist/prefs.js:57
+msgid "Add a button to reset all applications to the default output"
+msgstr "Toont een knop die alle toepassingen op de standaarduitvoer zet"
+
+#: dist/prefs.js:58
+msgid ""
+"This button can be found in the device chooser of the main output slider"
+msgstr "Deze knop is te vinden in de apparaatkiezer van de hoofdvolumeregelaar"
+
+#: dist/prefs.js:61
+msgid "Do not apply custom CSS"
+msgstr "Geen aangepaste css toepassen"
+
+#: dist/prefs.js:62
+msgid "Disable the CSS in this extension that could override your theme"
+msgstr "Schakel de css van deze uitbreiding uit die uw thema aanpast"
+
+#: dist/prefs.js:65
+msgid "Path to the <tt>pactl</tt> executable"
+msgstr "Locatie van het <tt>pactl</tt>-bestand"
+
+#: dist/prefs.js:70
+msgid "Auto-hide"
+msgstr "Automatisch verbergen"
+
+#: dist/prefs.js:71
+msgid "Hide the profile switcher when the current device only has one profile"
+msgstr ""
+"Verberg de profielkeuze als het huidige apparaat maar één profiel heeft"
+
+#: dist/prefs.js:75
+msgid "Move media controls"
+msgstr "Mediabediening verplaatsen"
+
+#: dist/prefs.js:76
+msgid ""
+"Move the media controls from the notifications panel instead of creating a "
+"new one"
+msgstr ""
+"Verplaats de mediabediening naar het meldingenpaneel in plaats van een nieuw "
+"paneel te maken"
+
+#: dist/prefs.js:80
+msgid "Put the sliders in submenu"
+msgstr "Regelaars in onderliggend menu tonen"
+
+#: dist/prefs.js:81
+msgid ""
+"<span color=\"darkorange\" weight=\"bold\">This will disable the ability to "
+"change the output device per application</span>"
+msgstr ""
+"<span color=\"darkorange\" weight=\"bold\">Let op: hierdoor vervalt de "
+"mogelijkheid om de uitvoer per toepassing te wĳzigen</span>"
+
+#: dist/prefs.js:85
+msgid "Elements order"
+msgstr "Itemvolgorde"
+
+#: dist/prefs.js:86
+msgid "Reorder elements in the new panel"
+msgstr "Herschik items op de nieuwe balk"
+
+#: dist/prefs.js:90
+msgid "Profile switcher"
+msgstr "Profielkeuze"
+
+#: dist/prefs.js:91
+msgid "Allows you to quickly change the audio profile of the current device"
+msgstr "Hiermee kunt u snel een ander profiel voor het huidige apparaat kiezen"
+
+#: dist/prefs.js:96
+msgid "Speaker / Headphone volume slider"
+msgstr "Luidspreker-/Hoofdtelefoonvolumeknop tonen"
+
+#: dist/prefs.js:99
+msgid "Per-device volume sliders"
+msgstr "Volume per apparaat tonen"
+
+#: dist/prefs.js:102
+msgid "Audio balance slider"
+msgstr "Geluidsbalans tonen"
+
+#: dist/prefs.js:105
+msgid "Microphone volume slider"
+msgstr "Microfoonvolumeknop tonen"
+
+#: dist/prefs.js:108
 msgid "Media controls"
 msgstr "Mediabediening"
 
-#: prefs.js:40
-msgid "What should we do with media controls ?"
-msgstr "Wat moet er gebeuren met de mediabediening?"
+#: dist/prefs.js:112
+msgid "Applications mixer"
+msgstr "Toepassingsmengpaneel"
 
-#: prefs.js:42
-msgid "Leave as is"
-msgstr "Op huidige plek laten staan"
-
-#: prefs.js:43
-msgid "Move into new panel"
-msgstr "Verplaatsen naar nieuwe balk"
-
-#: prefs.js:44
-msgid "Duplicate into new panel"
-msgstr "Klonen naar nieuwe balk"
-
-#: prefs.js:54
-msgid "Create applications mixer"
-msgstr "Toepassingsmengpaneel samenstellen"
-
-#: prefs.js:55
-msgid ""
-"Thoses sliders are the same you can find in pavucontrol or in the sound "
-"settings"
+#: dist/prefs.js:118
+msgid "The same sliders you can find in pavucontrol or in the sound settings"
 msgstr ""
 "Dit zijn de schuifknoppen uit pavucontrol en de geluidsvoorkeuren van het "
 "systeem"
 
-#: prefs.js:61
-msgid "Merge the new panel into the main one"
-msgstr "Nieuwe balk in samenvoegen met hoofdbalk"
+#: dist/prefs.js:120
+msgid ""
+"<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you "
+"won't be able to change the output device per application</span>"
+msgstr ""
+"<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> is niet "
+"aangetroffen. Hierdoor kunt u niet per toepassing een ander uitvoerapparaat "
+"kiezen.</span>"
 
-#: prefs.js:62
-msgid "The new panel will not be separated from the main one"
-msgstr "De nieuwe balk wordt hierdoor niet los van de hoofdbalk getoond"
+#: dist/prefs.js:125
+msgid ""
+"This slider allows you to change the balance of the current audio output"
+msgstr ""
+"Met behulp van deze schuifregelaar kunt u de balans van de huidige "
+"geluidsuitvoer regelen"
 
-#: prefs.js:68
-msgid "Panel position"
-msgstr "Balklocatie"
+#: dist/prefs.js:130
+msgid ""
+"<span color=\"red\" weight=\"bold\">This feature needs <tt>pactl</tt></span>"
+msgstr ""
+"<span color=\"red\" weight=\"bold\">Voor het gebruik van deze functie is "
+"<tt>pactl</tt> vereist</span>"
 
-#: prefs.js:69
-msgid "Where the new panel should be located relative to the main panel"
-msgstr "Waar de balk dient te worden getoond ten opzichte van de hoofdbalk"
+#: dist/prefs.js:148
+msgid "Per-device sliders filtering"
+msgstr "Filteren op regelaars per apparaat"
 
-#: prefs.js:71
+#: dist/prefs.js:149
+msgid ""
+"Allows you to filter the per-device volume sliders. The content of the "
+"filters are <b>regexes</b> and are applied to the device's display name and "
+"pulseaudio name."
+msgstr ""
+"Hiermee kunt u filteren op de regelaars per apparaat. De inhoud van de "
+"filters bestaat uit <b>reguliere uitdrukkingen</b> en worden toegepast op "
+"zowel de weergave- als PulseAudio-naam."
+
+#: dist/prefs.js:150
+msgid "Device name"
+msgstr "Apparaatnaam"
+
+#: dist/prefs.js:154
+msgid "Application mixer filtering"
+msgstr "Toepassingsmengpaneelfilter"
+
+#: dist/prefs.js:155
+msgid ""
+"Allows you to filter the applications that show up in the application mixer "
+"<b>using regexes</b>"
+msgstr ""
+"Hiermee kunt u het toepassingsmengpaneel filteren met behulp van "
+"<b>reguliere uitdrukkingen</b>"
+
+#: dist/prefs.js:156
+msgid "Application name"
+msgstr "Toepassingsnaam"
+
+#: dist/prefs.js:170
+msgid "LibPanel settings"
+msgstr "LibPanel-voorkeuren"
+
+#: dist/prefs.js:171
+msgid ""
+"These settings are not specific to this extension, they apply to every panel"
+msgstr ""
+"Deze voorkeuren zijn van toepassing op iedere balk, dus niet alleen op deze "
+"uitbreiding"
+
+#: dist/prefs.js:174
+msgid "Single-column mode"
+msgstr "Eenkolommodus"
+
+#: dist/prefs.js:175
+msgid ""
+"Only one column of panels will be allowed. Also prevents the panel from "
+"being put at the left/right of the screen by libpanel."
+msgstr ""
+"Toon slechts één kolom met panelen. Hiermee voorkomt u tevens dat het paneel "
+"aan de linker- of rechterkant wordt geplaatst."
+
+#: dist/prefs.js:178
+msgid "Panel alignment"
+msgstr "Paneeluitlijning"
+
+#: dist/prefs.js:180
 msgid "Left"
 msgstr "Links"
 
-#: prefs.js:72
+#: dist/prefs.js:181
 msgid "Right"
 msgstr "Rechts"
 
-#: prefs.js:73
-msgid "Top"
-msgstr "Bovenaan"
+#: dist/prefs.js:185
+msgid "Padding"
+msgstr "Opvulling"
 
-#: prefs.js:74
-msgid "Bottom"
-msgstr "Onderaan"
+#: dist/prefs.js:186
+msgid "Use this to override the default padding of the panels"
+msgstr "Hiermee kunt u de standaardopvulling aanpassen"
 
-#: prefs.js:81
-msgid "Overlay popups"
-msgstr "Zwevende pop-ups"
+#: dist/prefs.js:189
+msgid "Row spacing"
+msgstr "Ruimte tussen rijen"
 
-#: prefs.js:82
-msgid ""
-"This feature will prevent the main panel from expanding when a popup is "
-"opened. It's mainly aimed at fixing a bug with popups in the new panel"
-msgstr ""
-"Met behulp van deze functie wordt de bovenbalk niet vergroot als er een pop-"
-"up wordt geopend. Deze functie is vooral gericht op een bug met betrekking "
-"tot pop-ups op de nieuwe bovenbalk."
+#: dist/prefs.js:190
+msgid "Use this to override the default row spacing of the panels"
+msgstr "Hiermee kunt u de ruimte tussen de rijen aanpassen"
 
-#: prefs.js:87
-msgid "Elements order"
-msgstr "Itemvolgorde"
+#: dist/prefs.js:193
+msgid "Column spacing"
+msgstr "Ruimte tussen kolommen"
 
-#: prefs.js:88
-msgid ""
-"Reorder elements in the new panel (disabled elments will just be ignored)"
-msgstr ""
-"Herschik items op de nieuwe balk (uitgeschakelde items worden genegeerd)"
+#: dist/prefs.js:194
+msgid "Use this to override the default column spacing of the panels"
+msgstr "Hiermee kunt u de ruimte tussen de kolommen aanpassen"
 
-#: prefs.js:90
-msgid "Speaker / Headphone volume slider"
-msgstr "Luidspreker-/Hoofdtelefoonvolumeknop"
-
-#: prefs.js:91
-msgid "Microphone volume slider"
-msgstr "Microfoonvolumeknop"
-
-#: prefs.js:93
-msgid "Applications mixer"
-msgstr "Toepassingsmengpaneel"
-
-#: prefs.js:97
-msgid "Mixer filtering"
-msgstr "Mengpaneelfilter"
-
-#: prefs.js:98
-msgid ""
-"Allow you to filter the streams that show up in the application mixer "
-"**using regexes**"
-msgstr ""
-"Hiermee kunt u het toepassingsmengpaneel filteren met behulp van **reguliere "
-"uitdrukkingen**"
-
-#: prefs.js:104
+#: dist/prefs.js:279
 msgid "Filtering mode"
 msgstr "Filtermodus"
 
-#: prefs.js:105
+#: dist/prefs.js:280
 msgid ""
-"On blacklist mode, matching elements are removed from the list. On whitelist "
+"On blocklist mode, matching elements are removed from the list. On allowlist "
 "mode, only matching elements will be shown"
 msgstr ""
 "In de zwartelijstmodus worden items die overeenkomen verwijderd van de "
 "lijst. In de wittelijstmodus worden alleen overeenkomende elementen getoond."
 
-#: prefs.js:107
-msgid "Blacklist"
+#: dist/prefs.js:282
+msgid "Blocklist"
 msgstr "Zwarte lijst"
 
-#: prefs.js:108
-msgid "Whitelist"
+#: dist/prefs.js:283
+msgid "Allowlist"
 msgstr "Witte lijst"
+
+#~ msgid "Thoses are the speaker / headphone and microphone volume sliders"
+#~ msgstr ""
+#~ "Dit zijn de schuifknoppen van luidsprekers, hoofdtelefoons en microfoons"
+
+#~ msgid "What should we do with media controls ?"
+#~ msgstr "Wat moet er gebeuren met de mediabediening?"
+
+#~ msgid "Leave as is"
+#~ msgstr "Op huidige plek laten staan"
+
+#~ msgid "Move into new panel"
+#~ msgstr "Verplaatsen naar nieuwe balk"
+
+#~ msgid "Duplicate into new panel"
+#~ msgstr "Klonen naar nieuwe balk"
+
+#~ msgid "Create applications mixer"
+#~ msgstr "Toepassingsmengpaneel samenstellen"
+
+#~ msgid "Merge the new panel into the main one"
+#~ msgstr "Nieuwe balk in samenvoegen met hoofdbalk"
+
+#~ msgid "The new panel will not be separated from the main one"
+#~ msgstr "De nieuwe balk wordt hierdoor niet los van de hoofdbalk getoond"
+
+#~ msgid "Overlay popups"
+#~ msgstr "Zwevende pop-ups"
+
+#~ msgid ""
+#~ "This feature will prevent the main panel from expanding when a popup is "
+#~ "opened. It's mainly aimed at fixing a bug with popups in the new panel"
+#~ msgstr ""
+#~ "Met behulp van deze functie wordt de bovenbalk niet vergroot als er een "
+#~ "pop-up wordt geopend. Deze functie is vooral gericht op een bug met "
+#~ "betrekking tot pop-ups op de nieuwe bovenbalk."
+
+#~ msgid "Whitelist"
+#~ msgstr "Witte lijst"

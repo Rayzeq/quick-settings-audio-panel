@@ -284,7 +284,7 @@ export default class QSAP extends Extension {
         LibPanel.disable();
     }
 
-    _move_slider(index, slider) {
+    _move_slider(index: number, slider) {
         const old_index = slider.get_parent().get_children().indexOf(slider);
 
         LibPanel.main_panel.removeItem(slider);
@@ -294,7 +294,7 @@ export default class QSAP extends Extension {
         this._master_volumes.push([slider, old_index]);
     }
 
-    _move_media_controls(index) {
+    _move_media_controls(index: number) {
         CalendarMessageList._sectionList.remove_child(MediaSection_DateMenu);
 
         this._panel.addItem(MediaSection_DateMenu, 2);
@@ -307,7 +307,7 @@ export default class QSAP extends Extension {
         }
     }
 
-    _create_media_controls(index) {
+    _create_media_controls(index: number) {
         this._media_section = new MediaSection();
         this._media_section.add_style_class_name('QSAP-media-section');
         if (!this.settings.get_boolean('ignore-css')) {
@@ -318,7 +318,7 @@ export default class QSAP extends Extension {
         this._panel._grid.set_child_at_index(this._media_section, index);
     }
 
-    _create_app_mixer(index, type, filter_mode, filters) {
+    _create_app_mixer(index: number, type, filter_mode, filters) {
         if (type === "combined") {
             this._applications_mixer_combined = new ApplicationsMixerToggle(this.settings, filter_mode, filters);
             this._panel.addItem(this._applications_mixer_combined, 2);
@@ -328,25 +328,25 @@ export default class QSAP extends Extension {
         }
     }
 
-    _create_sink_mixer(index, filter_mode, filters) {
+    _create_sink_mixer(index: number, filter_mode, filters) {
         this._sink_mixer = new SinkMixer(this._panel, index, filter_mode, filters);
     }
 
-    _create_balance_slider(index) {
+    _create_balance_slider(index: number) {
         this._balance_slider = new BalanceSlider(this.settings);
 
         this._panel.addItem(this._balance_slider, 2);
         this._panel._grid.set_child_at_index(this._balance_slider, index);
     }
 
-    _create_profile_switcher(index) {
+    _create_profile_switcher(index: number) {
         this._profile_switcher = new AudioProfileSwitcher(this.settings);
 
         this._panel.addItem(this._profile_switcher, 1);
         this._panel._grid.set_child_at_index(this._profile_switcher, index);
     }
 
-    _set_always_show_input(enabled) {
+    _set_always_show_input(enabled: boolean) {
         if (enabled) {
             this._ivs_vis_callback = this.InputVolumeSlider.connect("notify::visible", this._reset_input_slider_vis.bind(this));
             // make sure to check if the icon should be shown when some events are fired.

@@ -42,6 +42,10 @@ test: install
 	clear
 	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --nested --wayland
 
+test2: install
+	clear
+	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_NUM_DUMMY_MONITORS=2 MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --nested --wayland
+
 prefs: install
 	clear
 	gnome-extensions prefs quick-settings-audio-panel@rayzeq.github.io

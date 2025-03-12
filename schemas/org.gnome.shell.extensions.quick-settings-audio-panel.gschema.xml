@@ -50,7 +50,7 @@
       <default>false</default>
     </key>
     <key name="autohide-profile-switcher" type="b">
-      <default>false</default>
+      <default>true</default>
     </key>
 
     <key name="move-output-volume-slider" type="b">

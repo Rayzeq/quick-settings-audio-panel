@@ -198,9 +198,9 @@ export default class QSAP extends Extension {
                     this._move_slider(index, OutputVolumeSlider);
                 } else if (widget === 'input-volume-slider' && move_input_volume_slider) {
                     this._move_slider(index, this.InputVolumeSlider);
-                } else if (widget === 'mpris-controllers' && create_mpris_controllers && this.settings.get_boolean("mpris-controllers-are-moved")) {
+                } else if (false && widget === 'mpris-controllers' && create_mpris_controllers && this.settings.get_boolean("mpris-controllers-are-moved")) {
                     this._move_media_controls(index);
-                } else if (widget === 'mpris-controllers' && create_mpris_controllers && !this.settings.get_boolean("mpris-controllers-are-moved")) {
+                } else if (false && widget === 'mpris-controllers' && create_mpris_controllers && !this.settings.get_boolean("mpris-controllers-are-moved")) {
                     this._create_media_controls(index);
                 } else if (widget === 'applications-volume-sliders' && create_applications_volume_sliders) {
                     this._create_app_mixer(index, this.settings.get_boolean("group-applications-volume-sliders"), this.settings.get_string("applications-volume-sliders-filter-mode"), this.settings.get_strv("applications-volume-sliders-filters"));

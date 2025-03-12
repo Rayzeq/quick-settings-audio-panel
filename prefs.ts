@@ -141,10 +141,11 @@ export default class QSAPPreferences extends ExtensionPreferences {
         widgets_order_group
             .add_reorderable("input-volume-slider", { title: _("Microphone volume slider") })
             .add_switch("move-input-volume-slider");
-        widgets_order_group
-            .add_reorderable("mpris-controllers", { title: _("Media controls") })
+        const mpris = widgets_order_group
+            .add_reorderable("mpris-controllers", { title: _("Media controls"), subtitle: `<span color="red" weight="bold">Disabled in gnome 48 until it works again</span>` })
             .add_switch("create-mpris-controllers")
             .add_subgroup(mpris_controllers_group);
+        mpris.switch?.set_sensitive(false);
         const applications_volume_sliders = widgets_order_group
             .add_reorderable("applications-volume-sliders", { title: _("Applications mixer") })
             .add_switch("create-applications-volume-sliders")

@@ -3,7 +3,7 @@
   "name": "Quick Settings Audio Panel",
   "description": "Create a new panel containing volumes and media control in the quick settings",
   "shell-version": [
-    "47"
+    "48"
   ],
   "url": "https://github.com/Rayzeq/quick-settings-audio-panel",
   "settings-schema": "org.gnome.shell.extensions.quick-settings-audio-panel",

@@ -23,7 +23,7 @@ import St from 'gi://St';
 
 import { gettext as _, Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { MediaSection } from 'resource:///org/gnome/shell/ui/mpris.js';
+import { MprisSource } from 'resource:///org/gnome/shell/ui/mpris.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
@@ -37,7 +37,7 @@ const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
 
 const CalendarMessageList = DateMenu._messageList;
-const MediaSection_DateMenu = CalendarMessageList._mediaSection;
+const MediaSection_DateMenu = CalendarMessageList._messageView._mediaSource;
 
 const SystemItem = QuickSettings._system._systemItem;
 // _volumeOutput is always defined here because `./libs/widgets.js` wait on it
@@ -308,7 +308,7 @@ export default class QSAP extends Extension {
     }
 
     _create_media_controls(index: number) {
-        this._media_section = new MediaSection();
+        this._media_section = new MprisSource();
         this._media_section.add_style_class_name('QSAP-media-section');
         if (!this.settings.get_boolean('ignore-css')) {
             this._media_section.add_style_class_name('QSAP-media-section-optional');
@@ -409,7 +409,7 @@ export default class QSAP extends Extension {
         const menu_button_visible = slider._menuButton.visible;
         box.remove_child(slider._menuButton);
 
-        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        const vbox = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
         box.insert_child_at_index(vbox, 1);
 
         const hbox = new St.BoxLayout();

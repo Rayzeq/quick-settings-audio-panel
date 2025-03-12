@@ -131,7 +131,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         box.remove_child(sliderBin);
         box.remove_child(this._menuButton);
 
-        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        const vbox = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
         box.insert_child_at_index(vbox, 1);
 
         const label = new St.Label({ natural_width: 0 });
@@ -241,7 +241,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         // creating an additional vbox instead of setting `box` as vertical is necessary
         // because the second solution will add some spacing between the title and the slider
         // and I don't know how to remove it
-        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        const vbox = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
         vbox.add_child(title);
         vbox.add_child(hbox);
 
@@ -652,7 +652,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         const menu_button_visible = this._menuButton.visible;
         box.remove_child(this._menuButton);
 
-        const vbox = new St.BoxLayout({ vertical: true, x_expand: true });
+        const vbox = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
         box.insert_child_at_index(vbox, 1);
 
         const hbox = new St.BoxLayout();

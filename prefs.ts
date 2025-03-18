@@ -1,5 +1,4 @@
 import Adw from 'gi://Adw';
-import type GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
@@ -101,12 +100,13 @@ export default class QSAPPreferences extends ExtensionPreferences {
         );
 
         const mpris_controllers_group = new ListBox(settings);
-        mpris_controllers_group.add_switch("mpris-controllers-are-moved",
+        const switch_ = mpris_controllers_group.add_switch("mpris-controllers-are-moved",
             {
                 title: _("Move media controls"),
-                subtitle: _("Move the media controls from the notifications panel instead of creating a new one")
+                subtitle: _(`Move the media controls from the notifications panel instead of creating a new one\n<span color="red" weight="bold">Disabled in gnome 48 until it works again</span>`)
             }
         );
+        switch_.set_sensitive(false);
 
         const applications_volume_sliders_group = new ListBox(settings);
         applications_volume_sliders_group.add_switch("group-applications-volume-sliders",
@@ -141,11 +141,10 @@ export default class QSAPPreferences extends ExtensionPreferences {
         widgets_order_group
             .add_reorderable("input-volume-slider", { title: _("Microphone volume slider") })
             .add_switch("move-input-volume-slider");
-        const mpris = widgets_order_group
-            .add_reorderable("mpris-controllers", { title: _("Media controls"), subtitle: `<span color="red" weight="bold">Disabled in gnome 48 until it works again</span>` })
+        widgets_order_group
+            .add_reorderable("mpris-controllers", { title: _("Media controls") })
             .add_switch("create-mpris-controllers")
             .add_subgroup(mpris_controllers_group);
-        mpris.switch?.set_sensitive(false);
         const applications_volume_sliders = widgets_order_group
             .add_reorderable("applications-volume-sliders", { title: _("Applications mixer") })
             .add_switch("create-applications-volume-sliders")

@@ -7,6 +7,8 @@ import St from 'gi://St';
 
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import { type MediaMessage } from 'resource:///org/gnome/shell/ui/messageList.js';
+import { MprisSource, type MprisPlayer } from 'resource:///org/gnome/shell/ui/mpris.js';
 import { Ornament, PopupBaseMenuItem, PopupImageMenuItem, PopupMenuItem, PopupMenuSection } from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { QuickMenuToggle, QuickSlider, QuickToggle } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
@@ -742,5 +744,49 @@ const ApplicationVolumeSliderItem = GObject.registerClass(class ApplicationVolum
         // another menu
         slider._menuButton.get_parent().remove_child(slider._menuButton);
         this.add_child(slider);
+    }
+});
+
+export const MprisList = GObject.registerClass(class MprisList extends St.BoxLayout {
+    // MediaMessage isn't exported, gotta get creative
+    private static MediaMessage = GObject.type_from_name("Gjs_ui_messageList_MediaMessage");
+
+    private source: MprisSource;
+    private messages: Map<MprisPlayer, MediaMessage>;
+
+    constructor() {
+        super({
+            orientation: Clutter.Orientation.VERTICAL,
+            style: 'spacing: 12px;',
+        });
+
+        this.messages = new Map();
+        this.source = new MprisSource();
+
+        this.source.connectObject(
+            'player-added', (_, player) => this._add_player(player),
+            'player-removed', (_, player) => this._remove_player(player),
+            this
+        );
+
+        this.source.players.forEach(player => {
+            this._add_player(player);
+        });
+    }
+
+    _add_player(player: MprisPlayer) {
+        if (!this.messages.has(player)) {
+            const message = GObject.Object.new(MprisList.MediaMessage, player);
+            this.add_child(message);
+            this.messages.set(player, message);
+        }
+    }
+
+    _remove_player(player: MprisPlayer) {
+        const message = this.messages.get(player);
+        if (message) {
+            this.remove_child(message);
+            this.messages.delete(player);
+        }
     }
 });

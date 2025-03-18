@@ -31,7 +31,7 @@ import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 import { LibPanel, Panel } from './libs/libpanel/main.js';
 import { update_settings } from './libs/preferences.js';
 import { cleanup_idle_ids, get_pactl_path, wait_property } from './libs/utils.js';
-import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, SinkMixer } from './libs/widgets.js';
+import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, MprisList, SinkMixer } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
@@ -200,7 +200,7 @@ export default class QSAP extends Extension {
                     this._move_slider(index, this.InputVolumeSlider);
                 } else if (false && widget === 'mpris-controllers' && create_mpris_controllers && this.settings.get_boolean("mpris-controllers-are-moved")) {
                     this._move_media_controls(index);
-                } else if (false && widget === 'mpris-controllers' && create_mpris_controllers && !this.settings.get_boolean("mpris-controllers-are-moved")) {
+                } else if (widget === 'mpris-controllers' && create_mpris_controllers && !this.settings.get_boolean("mpris-controllers-are-moved")) {
                     this._create_media_controls(index);
                 } else if (widget === 'applications-volume-sliders' && create_applications_volume_sliders) {
                     this._create_app_mixer(index, this.settings.get_boolean("group-applications-volume-sliders"), this.settings.get_string("applications-volume-sliders-filter-mode"), this.settings.get_strv("applications-volume-sliders-filters"));
@@ -308,7 +308,7 @@ export default class QSAP extends Extension {
     }
 
     _create_media_controls(index: number) {
-        this._media_section = new MprisSource();
+        this._media_section = new MprisList();
         this._media_section.add_style_class_name('QSAP-media-section');
         if (!this.settings.get_boolean('ignore-css')) {
             this._media_section.add_style_class_name('QSAP-media-section-optional');

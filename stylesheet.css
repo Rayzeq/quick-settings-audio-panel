@@ -24,8 +24,11 @@
 
 .QSAP-media-section-optional {
 	/* Add margins because it's too close to sliders */
-	margin-top: 5px;
 	margin-bottom: 8px;
+}
+
+.QSAP-media-section-optional:last-child {
+	margin-bottom: 0px;
 }
 
 .QSAP-media-section-optional .message {

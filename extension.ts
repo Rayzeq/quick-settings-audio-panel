@@ -37,7 +37,7 @@ const DateMenu = Main.panel.statusArea.dateMenu;
 const QuickSettings = Main.panel.statusArea.quickSettings;
 
 const CalendarMessageList = DateMenu._messageList;
-const MediaSection_DateMenu = CalendarMessageList._messageView._mediaSource;
+const MessageView_DateMenu = CalendarMessageList._messageView;
 
 const SystemItem = QuickSettings._system._systemItem;
 // _volumeOutput is always defined here because `./libs/widgets.js` wait on it
@@ -198,10 +198,11 @@ export default class QSAP extends Extension {
                     this._move_slider(index, OutputVolumeSlider);
                 } else if (widget === 'input-volume-slider' && move_input_volume_slider) {
                     this._move_slider(index, this.InputVolumeSlider);
-                } else if (false && widget === 'mpris-controllers' && create_mpris_controllers && this.settings.get_boolean("mpris-controllers-are-moved")) {
-                    this._move_media_controls(index);
-                } else if (widget === 'mpris-controllers' && create_mpris_controllers && !this.settings.get_boolean("mpris-controllers-are-moved")) {
+                } else if (widget === 'mpris-controllers' && create_mpris_controllers) {
                     this._create_media_controls(index);
+                    if (this.settings.get_boolean("mpris-controllers-are-moved")) {
+                        this._remove_base_media_controls();
+                    }
                 } else if (widget === 'applications-volume-sliders' && create_applications_volume_sliders) {
                     this._create_app_mixer(index, this.settings.get_boolean("group-applications-volume-sliders"), this.settings.get_string("applications-volume-sliders-filter-mode"), this.settings.get_strv("applications-volume-sliders-filters"));
                 } else if (widget === "perdevice-volume-sliders" && create_perdevice_volume_sliders) {
@@ -256,12 +257,9 @@ export default class QSAP extends Extension {
             this._panel.removeItem(this._media_section);
             this._media_section = null;
         }
-        if (MediaSection_DateMenu._qsap_moved) {
-            this._panel.removeItem(MediaSection_DateMenu);
-            CalendarMessageList._sectionList.insert_child_at_index(MediaSection_DateMenu, 0);
-            MediaSection_DateMenu.remove_style_class_name('QSAP-media-section');
-            MediaSection_DateMenu.remove_style_class_name('QSAP-media-section-optional');
-            delete MediaSection_DateMenu._qsap_moved;
+        if (MessageView_DateMenu._qsap_media_removed) {
+            MessageView_DateMenu._setupMpris();
+            delete MessageView_DateMenu._qsap_media_removed;
         }
 
         this._master_volumes.reverse();
@@ -294,19 +292,6 @@ export default class QSAP extends Extension {
         this._master_volumes.push([slider, old_index]);
     }
 
-    _move_media_controls(index: number) {
-        CalendarMessageList._sectionList.remove_child(MediaSection_DateMenu);
-
-        this._panel.addItem(MediaSection_DateMenu, 2);
-        this._panel._grid.set_child_at_index(MediaSection_DateMenu, index);
-
-        MediaSection_DateMenu._qsap_moved = true;
-        MediaSection_DateMenu.add_style_class_name('QSAP-media-section');
-        if (!this.settings.get_boolean('ignore-css')) {
-            MediaSection_DateMenu.add_style_class_name('QSAP-media-section-optional');
-        }
-    }
-
     _create_media_controls(index: number) {
         this._media_section = new MprisList();
         this._media_section.add_style_class_name('QSAP-media-section');
@@ -316,6 +301,14 @@ export default class QSAP extends Extension {
 
         this._panel.addItem(this._media_section, 2);
         this._panel._grid.set_child_at_index(this._media_section, index);
+    }
+
+    _remove_base_media_controls() {
+        MessageView_DateMenu._mediaSource.disconnectObject(MessageView_DateMenu);
+        for (const player of MessageView_DateMenu._mediaSource.players) {
+            MessageView_DateMenu._removePlayer(player);
+        }
+        MessageView_DateMenu._qsap_media_removed = true;
     }
 
     _create_app_mixer(index: number, type, filter_mode, filters) {

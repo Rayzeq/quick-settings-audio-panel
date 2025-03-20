@@ -100,13 +100,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
         );
 
         const mpris_controllers_group = new ListBox(settings);
-        const switch_ = mpris_controllers_group.add_switch("mpris-controllers-are-moved",
+        mpris_controllers_group.add_switch("mpris-controllers-are-moved",
             {
                 title: _("Move media controls"),
-                subtitle: _(`Move the media controls from the notifications panel instead of creating a new one\n<span color="red" weight="bold">Disabled in gnome 48 until it works again</span>`)
+                subtitle: _(`Move the media controls from the notifications panel instead of creating a new one`)
             }
         );
-        switch_.set_sensitive(false);
 
         const applications_volume_sliders_group = new ListBox(settings);
         applications_volume_sliders_group.add_switch("group-applications-volume-sliders",

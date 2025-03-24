@@ -22,7 +22,6 @@ import Gvc from 'gi://Gvc';
 import St from 'gi://St';
 
 import { gettext as _, Extension, InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
-import { type Console } from "resource:///org/gnome/shell/extensions/sharedInternals.js";
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MediaSection } from 'resource:///org/gnome/shell/ui/mpris.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -54,7 +53,7 @@ export default class QSAP extends Extension {
         this.settings = this.getSettings();
         update_settings(this.settings);
 
-        this._extension_controller = new ExtensionController(this.settings, this.getLogger(), this.InputVolumeIndicator);
+        this._extension_controller = new ExtensionController(this.settings, console, this.InputVolumeIndicator);
 
         this._scscd_callback = this.settings.connect(
             'changed::master-volume-sliders-show-current-device',

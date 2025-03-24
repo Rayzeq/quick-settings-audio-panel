@@ -21,7 +21,8 @@ import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
 import St from 'gi://St';
 
-import { gettext as _, Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { gettext as _, Extension, InjectionManager } from 'resource:///org/gnome/shell/extensions/extension.js';
+import { type Console } from "resource:///org/gnome/shell/extensions/sharedInternals.js";
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { MediaSection } from 'resource:///org/gnome/shell/ui/mpris.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -30,7 +31,7 @@ import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
 import { LibPanel, Panel } from './libs/libpanel/main.js';
 import { update_settings } from './libs/preferences.js';
-import { cleanup_idle_ids, get_pactl_path, wait_property } from './libs/utils.js';
+import { cleanup_idle_ids, get_pactl_path, spawn, wait_property } from './libs/utils.js';
 import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, SinkMixer } from './libs/widgets.js';
 
 const DateMenu = Main.panel.statusArea.dateMenu;
@@ -53,11 +54,7 @@ export default class QSAP extends Extension {
         this.settings = this.getSettings();
         update_settings(this.settings);
 
-        this._scasis_callback = this.settings.connect(
-            'changed::always-show-input-volume-slider',
-            () => this._set_always_show_input(this.settings.get_boolean('always-show-input-volume-slider'))
-        );
-        this.settings.emit('changed::always-show-input-volume-slider', 'always-show-input-volume-slider');
+        this._extension_controller = new ExtensionController(this.settings, this.getLogger(), this.InputVolumeIndicator);
 
         this._scscd_callback = this.settings.connect(
             'changed::master-volume-sliders-show-current-device',
@@ -88,7 +85,11 @@ export default class QSAP extends Extension {
 
         this._master_volumes = [];
         this._sc_callback = this.settings.connect('changed', (_, name) => {
-            if (name !== "autohide-profile-switcher") {
+            if (
+                name !== "autohide-profile-switcher" &&
+                name !== "ignore-virtual-capture-streams" &&
+                name !== "always-show-input-volume-slider"
+            ) {
                 this._refresh_panel();
             }
         });
@@ -109,6 +110,9 @@ export default class QSAP extends Extension {
 
         this._set_always_show_input(false);
         this._cleanup_panel();
+
+        this._extension_controller.destroy();
+        this._extension_controller = undefined;
 
         this.settings = null;
     }
@@ -346,37 +350,6 @@ export default class QSAP extends Extension {
         this._panel._grid.set_child_at_index(this._profile_switcher, index);
     }
 
-    _set_always_show_input(enabled: boolean) {
-        if (enabled) {
-            this._ivs_vis_callback = this.InputVolumeSlider.connect("notify::visible", this._reset_input_slider_vis.bind(this));
-            // make sure to check if the icon should be shown when some events are fired.
-            // we need this because we make the slider always visible, so notify::visible isn't
-            // fired when gnome-shell tries to show it (because it was already visible)
-            this._ivsc_sa_callback = this.InputVolumeSlider._control.connect("stream-added", this._reset_input_slider_vis.bind(this));
-            this._ivsc_sr_callback = this.InputVolumeSlider._control.connect("stream-removed", this._reset_input_slider_vis.bind(this));
-            this._ivsc_dsc_callback = this.InputVolumeSlider._control.connect("default-source-changed", this._reset_input_slider_vis.bind(this));
-            this.InputVolumeSlider.visible = true;
-        } else {
-            if (this._ivs_vis_callback) this.InputVolumeSlider.disconnect(this._ivs_vis_callback);
-            this._ivs_vis_callback = null;
-            if (this._ivsc_sa_callback) this.InputVolumeSlider._control.disconnect(this._ivsc_sa_callback);
-            this._ivsc_sa_callback = null;
-            if (this._ivsc_sr_callback) this.InputVolumeSlider._control.disconnect(this._ivsc_sr_callback);
-            this._ivsc_sr_callback = null;
-            if (this._ivsc_dsc_callback) this.InputVolumeSlider._control.disconnect(this._ivsc_dsc_callback);
-            this._ivsc_dsc_callback = null;
-
-            this.InputVolumeSlider.visible = this.InputVolumeSlider._shouldBeVisible();
-            this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
-        }
-    }
-
-    _reset_input_slider_vis() {
-        if (!this.InputVolumeSlider.visible) {
-            this.InputVolumeSlider.visible = true;
-        }
-        this.InputVolumeIndicator.visible = this.InputVolumeSlider._shouldBeVisible();
-    }
 
     // Base slider
     // slider: OutputStreamSlider
@@ -495,5 +468,170 @@ export default class QSAP extends Extension {
             this._action_application_reset_output.destroy();
         }
         delete this._action_application_reset_output;
+    }
+}
+
+class ExtensionController {
+    private settings: Gio.Settings;
+    private logger: Console;
+    private injection_manager: InjectionManager;
+    private handler_ids: Map<GObject.Object, Map<string, number>>;
+
+    private pactl_path?: string;
+
+    private input_volume_indicator: Volume.InputIndicator;
+    private input_volume_slider: Volume.InputStreamSlider;
+    private input_visibility: boolean;
+    private input_is_recursing: boolean;
+
+    constructor(settings: Gio.Settings, logger: Console, input_volume_indicator: Volume.InputIndicator) {
+        this.settings = settings;
+        this.logger = logger;
+        this.injection_manager = new InjectionManager();
+        this.handler_ids = new Map();
+
+        this.pactl_path = get_pactl_path(settings)[0] || undefined;
+
+        this.input_volume_indicator = input_volume_indicator;
+        this.input_volume_slider = input_volume_indicator._input;
+        this.input_visibility = false;
+        this.input_is_recursing = false;
+
+        this.connect_setting("changed::pactl-path", () => {
+            this.pactl_path = get_pactl_path(settings)[0] || undefined;
+        });
+        this.connect_setting("changed::always-show-input-volume-slider", () => {
+            this.set_always_show_input_volume_slider(this.settings.get_boolean("always-show-input-volume-slider"));
+        });
+        this.connect_setting("changed::ignore-virtual-capture-streams", () => {
+            this.set_ignore_virtual_capture_streams(this.settings.get_boolean("ignore-virtual-capture-streams"));
+        });
+    }
+
+    private connect(object: GObject.Object, signal: string, callback: (...arg: any[]) => any) {
+        let object_map = this.handler_ids.get(object);
+        if (!object_map) {
+            object_map = new Map();
+            this.handler_ids.set(object, object_map);
+        }
+
+        if (object_map.has(signal)) {
+            this.logger.error(`[BUG] Tried to connect ${signal} on ${object} two times`);
+            return;
+        }
+        const handler_id = object.connect(signal, callback);
+        object_map.set(signal, handler_id);
+    }
+
+    private connect_setting(signal: string, callback: (...arg: any[]) => any) {
+        this.connect(this.settings, signal, callback);
+        callback();
+    }
+
+    private disconnect(object: GObject.Object, signal: string) {
+        const object_map = this.handler_ids.get(object);
+        const handler_id = object_map?.get(signal);
+        if (handler_id) {
+            object_map!.delete(signal);
+            object.disconnect(handler_id);
+        }
+    }
+
+    private set_ignore_virtual_capture_streams(enable: boolean) {
+        if (enable) {
+            const self = this;
+            this.injection_manager.overrideMethod(
+                this.input_volume_slider.constructor.prototype,
+                "_shouldBeVisible",
+                wrapped => function (this: Volume.InputStreamSlider): boolean {
+                    // early return, so we check for virtual stream only if we would show
+                    if (!wrapped.call(this)) return false;
+
+                    if (self.pactl_path) {
+                        spawn([self.pactl_path, "-f", "json", "list", "source-outputs"]).then(result => {
+                            const data = JSON.parse(result);
+                            for (const source_output of data) {
+                                if (source_output["properties"]["node.virtual"] !== "true") {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }).then(should_show => {
+                            const old_value = this.visible;
+                            this.visible = should_show;
+                            if (should_show === old_value) {
+                                // emit even when values are equal because in some cases (when
+                                // both always-show-input-volume-slider and ignore-virtual-capture-streams
+                                // are enabled), the indicator is hidden (and needs to be shown), while
+                                // the slider is visible.
+                                this.notify("visible");
+                            }
+                        }).catch(reason => self.logger.error(reason));
+
+                        // dangerous ! if the virtual stream check crashes for some reason,
+                        // the user as no way to know that the audio is being recorded.
+                        // but returning `true` causes the indicator to flash briefly, 
+                        // which is not very good
+                        return false;
+                    } 
+                    return true;
+                }
+            );
+        } else {
+            this.injection_manager.restoreMethod(this.input_volume_slider.constructor.prototype, "_shouldBeVisible");
+        }
+
+        const visibility = this.input_volume_slider._shouldBeVisible();
+        this.input_volume_slider.visible = visibility;
+        this.input_volume_indicator.visible = visibility;
+    }
+
+    private set_always_show_input_volume_slider(enabled: boolean) {
+        if (enabled) {
+            this.connect(this.input_volume_slider, "notify::visible", () => this.reset_input_volume_visibility());
+            // make sure to check if the indicator should be shown when some events are fired.
+            // we need this because we make the slider always visible, so notify::visible isn't
+            // fired when gnome-shell tries to show it (because it was already visible)
+            this.connect(this.input_volume_slider._control, "stream-added", () => this.reset_input_volume_visibility());
+            this.connect(this.input_volume_slider._control, "stream-removed", () => this.reset_input_volume_visibility());
+            this.connect(this.input_volume_slider._control, "default-source-changed", () => this.reset_input_volume_visibility());
+        } else {
+            this.disconnect(this.input_volume_slider, "notify::visible");
+            this.disconnect(this.input_volume_slider._control, "stream-added");
+            this.disconnect(this.input_volume_slider._control, "stream-removed");
+            this.disconnect(this.input_volume_slider._control, "default-source-changed");
+        }
+
+        const visibility = this.input_volume_slider._shouldBeVisible();
+        this.input_volume_slider.visible = visibility;
+        this.input_volume_indicator.visible = visibility;
+    }
+
+    private reset_input_volume_visibility() {
+        if (this.input_is_recursing) {
+            // ensure the indicator has the correct visibility
+            this.input_volume_indicator.visible = this.input_visibility;
+            this.input_is_recursing = false;
+        } else {
+            this.input_visibility = this.input_volume_slider.visible;
+            this.input_volume_indicator.visible = this.input_visibility;
+            if (this.settings.get_boolean("always-show-input-volume-slider") && !this.input_volume_slider.visible) {
+                this.input_is_recursing = true;
+                this.input_volume_slider.visible = true;
+            }
+        }
+    }
+
+    destroy() {
+        this.set_ignore_virtual_capture_streams(false);
+        this.set_always_show_input_volume_slider(false);
+
+        for (const [object, object_map] of this.handler_ids.entries()) {
+            for (const handler_id of object_map.values()) {
+                object.disconnect(handler_id);
+            }
+        }
+
+        this.injection_manager.clear();
     }
 }

@@ -61,6 +61,11 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 subtitle: _("Show even when there is no application recording audio")
             }
         );
+        const ignore_virtual_capture_streams = main_group.add_switch("ignore-virtual-capture-streams",
+            {
+                title: _("Don't show the microphone indicator when there is only virtual captures")
+            }
+        );
         main_group.add_switch("remove-output-volume-slider",
             {
                 title: _("Remove the main output volume slider"),
@@ -168,6 +173,16 @@ export default class QSAPPreferences extends ExtensionPreferences {
                     balance_slider.switch!.sensitive = false;
                 }
                 balance_slider.subtitle = subtitle;
+            },
+            (found: boolean) => {
+                let subtitle = _("This include for example the echo cancellation module");
+                if (found) {
+                    ignore_virtual_capture_streams.sensitive = true;
+                } else {
+                    subtitle += "\n" + _('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>');
+                    ignore_virtual_capture_streams.sensitive = false;
+                }
+                ignore_virtual_capture_streams.subtitle = subtitle;
             }
         ];
 

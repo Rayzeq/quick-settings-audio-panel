@@ -24,6 +24,9 @@
     <key name="always-show-input-volume-slider" type="b">
       <default>false</default>
     </key>
+    <key name="ignore-virtual-capture-streams" type="b">
+      <default>false</default>
+    </key>
     <key name="remove-output-volume-slider" type="b">
       <default>false</default>
     </key>

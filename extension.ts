@@ -598,11 +598,10 @@ class ExtensionController {
             this.disconnect(this.input_volume_slider._control, "stream-added");
             this.disconnect(this.input_volume_slider._control, "stream-removed");
             this.disconnect(this.input_volume_slider._control, "default-source-changed");
-        }
 
-        const visibility = this.input_volume_slider._shouldBeVisible();
-        this.input_volume_slider.visible = visibility;
-        this.input_volume_indicator.visible = visibility;
+            this.input_volume_slider.visible = this.input_volume_slider._shouldBeVisible();
+        }
+        this.reset_input_volume_visibility();
     }
 
     private reset_input_volume_visibility() {

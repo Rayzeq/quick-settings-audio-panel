@@ -107,7 +107,6 @@ export default class QSAP extends Extension {
         this.settings.disconnect(this._sc_callback);
         cleanup_idle_ids();
 
-        this._set_always_show_input(false);
         this._cleanup_panel();
 
         this._extension_controller.destroy();

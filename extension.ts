@@ -467,6 +467,7 @@ class ExtensionController {
     private logger: Console;
     private injection_manager: InjectionManager;
     private handler_ids: Map<GObject.Object, Map<string, number>>;
+    private active_patches: Map<string, boolean>;
 
     private pactl_path?: string;
 
@@ -480,6 +481,7 @@ class ExtensionController {
         this.logger = logger;
         this.injection_manager = new InjectionManager();
         this.handler_ids = new Map();
+        this.active_patches = new Map();
 
         this.pactl_path = get_pactl_path(settings)[0] || undefined;
 
@@ -529,7 +531,8 @@ class ExtensionController {
     }
 
     private set_ignore_virtual_capture_streams(enable: boolean) {
-        if (enable) {
+        const was_active = !!this.active_patches.get("ignore-virtual-capture-streams");
+        if (enable && !was_active) {
             const self = this;
             this.injection_manager.overrideMethod(
                 this.input_volume_slider.constructor.prototype,
@@ -568,8 +571,10 @@ class ExtensionController {
                     return true;
                 }
             );
-        } else {
+            this.active_patches.set("ignore-virtual-capture-streams", true);
+        } else if (was_active) {
             this.injection_manager.restoreMethod(this.input_volume_slider.constructor.prototype, "_shouldBeVisible");
+            this.active_patches.set("ignore-virtual-capture-streams", false);
         }
 
         const visibility = this.input_volume_slider._shouldBeVisible();
@@ -577,8 +582,9 @@ class ExtensionController {
         this.input_volume_indicator.visible = visibility;
     }
 
-    private set_always_show_input_volume_slider(enabled: boolean) {
-        if (enabled) {
+    private set_always_show_input_volume_slider(enable: boolean) {
+        const was_active = !!this.active_patches.get("always-show-input-volume-slider");
+        if (enable && !was_active) {
             this.connect(this.input_volume_slider, "notify::visible", () => this.reset_input_volume_visibility());
             // make sure to check if the indicator should be shown when some events are fired.
             // we need this because we make the slider always visible, so notify::visible isn't
@@ -586,11 +592,13 @@ class ExtensionController {
             this.connect(this.input_volume_slider._control, "stream-added", () => this.reset_input_volume_visibility());
             this.connect(this.input_volume_slider._control, "stream-removed", () => this.reset_input_volume_visibility());
             this.connect(this.input_volume_slider._control, "default-source-changed", () => this.reset_input_volume_visibility());
-        } else {
+            this.active_patches.set("always-show-input-volume-slider", true);
+        } else if (was_active) {
             this.disconnect(this.input_volume_slider, "notify::visible");
             this.disconnect(this.input_volume_slider._control, "stream-added");
             this.disconnect(this.input_volume_slider._control, "stream-removed");
             this.disconnect(this.input_volume_slider._control, "default-source-changed");
+            this.active_patches.set("always-show-input-volume-slider", false);
         }
 
         const visibility = this.input_volume_slider._shouldBeVisible();

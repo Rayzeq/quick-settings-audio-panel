@@ -666,16 +666,34 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
 
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
-        stream.bind_property_full('description', label, 'text',
-            GObject.BindingFlags.SYNC_CREATE,
-            (_binding: GObject.Binding, _from: GObject.Value | any, _to: GObject.Value | any) => {
-                return [true, this._get_label_text(stream)];
-            },
-            null
-        );
+        const wrLabel = new WeakRef(label);
+        this._bind_property(wrLabel, stream);
 
         vbox.add_child(label);
         vbox.add_child(hbox);
+    }
+
+    _bind_property(wrLabel, stream) {
+        const label = wrLabel.deref();
+        spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
+            const stdout = JSON.parse(stdout_str);
+            var customLabel = this._get_label_text(stream);
+            for (const sink_input of stdout) {
+                if (sink_input.index === this.stream.index) {
+                    if(stream.name && stream.name.startsWith("Chromium"))
+                    {
+                        customLabel = sink_input.properties["application.process.binary"] + ` - ${stream.description}`;
+                    }
+                }
+            }
+            stream.bind_property_full('description', label, 'text', GObject.BindingFlags.SYNC_CREATE, (_binding, _from, _to) => {
+                return [true, customLabel];
+            }, null);
+        }).catch((error) => {
+            stream.bind_property_full('description', label, 'text', GObject.BindingFlags.SYNC_CREATE, (_binding, _from, _to) => {
+                return [true, this._get_label_text(stream)];
+            }, null);
+        });
     }
 
     _get_label_text(stream: Gvc.MixerStream) {

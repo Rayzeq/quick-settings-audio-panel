@@ -103,7 +103,6 @@ export default class QSAP extends Extension {
         this.settings.disconnect(this._scabaortd_callback);
         this._remove_reset_applications_output();
 
-        this.settings.disconnect(this._scasis_callback);
         this.settings.disconnect(this._sc_callback);
         cleanup_idle_ids();
 

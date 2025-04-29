@@ -605,6 +605,7 @@ export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsM
 const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSlider extends StreamSlider {
     private _pactl_path: string | null;
     private _pactl_path_changed_id: number;
+    private _label: St.Label;
 
     constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
         super(control);
@@ -664,23 +665,31 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         // this prevent the tall panel bug when the button is shown
         this._menuButton.y_expand = false;
 
-        const label = new St.Label({ natural_width: 0 });
-        label.style_class = "QSAP-application-volume-slider-label";
-        stream.bind_property_full('description', label, 'text',
-            GObject.BindingFlags.SYNC_CREATE,
-            (_binding: GObject.Binding, _from: GObject.Value | any, _to: GObject.Value | any) => {
-                return [true, this._get_label_text(stream)];
-            },
-            null
-        );
+        this._label = new St.Label({ natural_width: 0 });
+        this._label.style_class = "QSAP-application-volume-slider-label";
+        const n_desc_handler_id = stream.connect("notify::description", stream => this._update_label(stream));
+        this.connect("destroy", () => stream.disconnect(n_desc_handler_id));
+        this._update_label(stream);
 
-        vbox.add_child(label);
+        vbox.add_child(this._label);
         vbox.add_child(hbox);
     }
 
-    _get_label_text(stream: Gvc.MixerStream) {
+    _update_label(stream: Gvc.MixerStream) {
         const { name, description } = stream;
-        return name === null ? description : `${name} - ${description}`;
+        this._label.text = name === null ? description : `${name} - ${description}`;
+
+        if (name && name.startsWith("Chromium") && this._pactl_path) {
+            spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
+                const stdout = JSON.parse(stdout_str);
+                for (const sink_input of stdout) {
+                    const binary_name = sink_input.properties["application.process.binary"];
+                    if (sink_input.index === this.stream.index && binary_name !== "chromium-browser") {
+                        this._label.text = `${binary_name} - ${description}`;
+                    }
+                }
+            });
+        }
     }
 
     _checkUsedSink() {

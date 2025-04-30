@@ -767,6 +767,7 @@ export const MprisList = GObject.registerClass(class MprisList extends St.BoxLay
         super({
             orientation: Clutter.Orientation.VERTICAL,
             style: 'spacing: 12px;',
+            visible: false
         });
 
         this.messages = new Map();
@@ -788,6 +789,8 @@ export const MprisList = GObject.registerClass(class MprisList extends St.BoxLay
             const message = GObject.Object.new(MprisList.MediaMessage, player);
             this.add_child(message);
             this.messages.set(player, message);
+
+            this.visible = true;
         }
     }
 
@@ -796,6 +799,8 @@ export const MprisList = GObject.registerClass(class MprisList extends St.BoxLay
         if (message) {
             this.remove_child(message);
             this.messages.delete(player);
+
+            if (this.messages.size === 0) this.visible = false;
         }
     }
 });

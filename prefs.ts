@@ -6,9 +6,9 @@ import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { get_settings, get_stack, rsplit, split } from './libs/libpanel/utils.js';
+import { get_settings, get_stack, rsplit, split, type Constructor } from './libs/libpanel/utils.js';
 import { update_settings } from "./libs/preferences.js";
-import { get_pactl_path, type Constructor } from "./libs/utils.js";
+import { get_pactl_path } from "./libs/utils.js";
 
 export default class QSAPPreferences extends ExtensionPreferences {
     async fillPreferencesWindow(window: Adw.PreferencesWindow) {

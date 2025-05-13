@@ -571,7 +571,7 @@ class ExtensionController {
                 }
             );
             this.active_patches.set("ignore-virtual-capture-streams", true);
-        } else if (was_active) {
+        } else if (!enable && was_active) {
             this.injection_manager.restoreMethod(this.input_volume_slider.constructor.prototype, "_shouldBeVisible");
             this.active_patches.set("ignore-virtual-capture-streams", false);
         }
@@ -592,7 +592,7 @@ class ExtensionController {
             this.connect(this.input_volume_slider._control, "stream-removed", () => this.reset_input_volume_visibility());
             this.connect(this.input_volume_slider._control, "default-source-changed", () => this.reset_input_volume_visibility());
             this.active_patches.set("always-show-input-volume-slider", true);
-        } else if (was_active) {
+        } else if (!enable && was_active) {
             this.disconnect(this.input_volume_slider, "notify::visible");
             this.disconnect(this.input_volume_slider._control, "stream-added");
             this.disconnect(this.input_volume_slider._control, "stream-removed");

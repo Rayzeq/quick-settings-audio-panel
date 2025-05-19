@@ -1,15 +1,17 @@
-import Adw from 'gi://Adw';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gdk from 'gi://Gdk';
-import Gio from 'gi://Gio';
-import Gtk from 'gi://Gtk';
+import Adw from "gi://Adw";
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
+import Gdk from "gi://Gdk";
+import Gio from "gi://Gio";
+import Gtk from "gi://Gtk";
 
-import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import { ExtensionPreferences, gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { get_settings, get_stack, rsplit, split, type Constructor } from './libs/libpanel/utils.js';
+import { get_settings, get_stack, rsplit, split } from "./libs/libpanel/utils.js";
 import { update_settings } from "./libs/preferences.js";
 import { get_pactl_path } from "./libs/utils.js";
+
+type Constructor<T> = new (...args: any[]) => T;
 
 export default class QSAPPreferences extends ExtensionPreferences {
     async fillPreferencesWindow(window: Adw.PreferencesWindow) {
@@ -18,8 +20,10 @@ export default class QSAPPreferences extends ExtensionPreferences {
 
         window.add(this.makeExtensionSettingsPage(settings));
 
-        // we remove the 'file://' and the filename at the end
-        const parent_folder = '/' + split(rsplit(get_stack()[0].file, '/', 1)[0], '/', 3)[3];
+        const stack = get_stack();
+        if (stack == undefined) return;
+        // we remove the "file://" and the filename at the end
+        const parent_folder = "/" + split(rsplit(stack[0].file, "/", 1)[0], "/", 3)[3];
         const libpanel_settings = get_settings(`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`);
         window.add(this.makeLibpanelSettingsPage(libpanel_settings));
     }
@@ -176,7 +180,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
             (found: boolean) => {
                 let subtitle = _("The same sliders you can find in pavucontrol or in the sound settings");
                 if (!found) {
-                    subtitle += "\n" + _('<span color="darkorange" weight="bold"><tt>pactl</tt> was not found, you won\'t be able to change the output device per application</span>');
+                    subtitle += "\n" + _("<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you won't be able to change the output device per application</span>");
                 }
                 applications_volume_sliders.subtitle = subtitle;
             },
@@ -185,7 +189,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 if (found) {
                     balance_slider.switch!.sensitive = true;
                 } else {
-                    subtitle += "\n" + _('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>');
+                    subtitle += "\n" + _("<span color=\"red\" weight=\"bold\">This feature needs <tt>pactl</tt></span>");
                     balance_slider.switch!.sensitive = false;
                 }
                 balance_slider.subtitle = subtitle;
@@ -195,7 +199,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 if (found) {
                     ignore_virtual_capture_streams.sensitive = true;
                 } else {
-                    subtitle += "\n" + _('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>');
+                    subtitle += "\n" + _("<span color=\"red\" weight=\"bold\">This feature needs <tt>pactl</tt></span>");
                     ignore_virtual_capture_streams.sensitive = false;
                 }
                 ignore_virtual_capture_streams.subtitle = subtitle;
@@ -390,7 +394,7 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
             this.settings.bind(
                 switch_key,
                 switch_,
-                'active',
+                "active",
                 Gio.SettingsBindFlags.DEFAULT
             );
             row.add_prefix(switch_);
@@ -399,7 +403,7 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
             this.settings.bind(
                 spin_key,
                 row,
-                'value',
+                "value",
                 Gio.SettingsBindFlags.DEFAULT
             );
 
@@ -477,8 +481,8 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
                 title: _("Filtering mode"),
                 subtitle: _("On blocklist mode, matching elements are removed from the list. On allowlist mode, only matching elements will be shown"),
                 fields: [
-                    ['blacklist', _("Blocklist")],
-                    ['whitelist', _("Allowlist")],
+                    ["blacklist", _("Blocklist")],
+                    ["whitelist", _("Allowlist")],
                 ]
             }
         );
@@ -660,7 +664,7 @@ class DraggableRowClass extends Adw.PreferencesRow {
         this._settings.bind(
             key,
             this.switch,
-            'active',
+            "active",
             Gio.SettingsBindFlags.DEFAULT
         );
         this._header.add_suffix(this.switch);

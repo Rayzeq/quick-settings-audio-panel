@@ -296,21 +296,6 @@ export default class QSAPPreferences extends ExtensionPreferences {
             description: _("These settings are not specific to this extension, they apply to every panel"),
         });
 
-        group.add_switch("single-column",
-            {
-                title: _("Single-column mode"),
-                subtitle: _("Only one column of panels will be allowed. Also prevents the panel from being put at the left/right of the screen by libpanel.")
-            }
-        );
-        group.add_combobox("alignment",
-            {
-                title: _("Panel alignment"),
-                fields: [
-                    ["left", _("Left")],
-                    ["right", _("Right")],
-                ]
-            }
-        );
         group.add_switch_spin("padding-enabled", "padding",
             {
                 title: _("Padding"),

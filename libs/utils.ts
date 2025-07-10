@@ -1,5 +1,5 @@
 import Gio from "gi://Gio";
-import GioUnix from 'gi://GioUnix';
+import GioUnix from "gi://GioUnix";
 import GLib from "gi://GLib";
 
 export function get_pactl_path(settings: Gio.Settings): [string | null, boolean] {
@@ -7,7 +7,7 @@ export function get_pactl_path(settings: Gio.Settings): [string | null, boolean]
 	let using_custom_path = true;
 
 	if (pactl_path == null) {
-		pactl_path = GLib.find_program_in_path('pactl');
+		pactl_path = GLib.find_program_in_path("pactl");
 		using_custom_path = false;
 	}
 

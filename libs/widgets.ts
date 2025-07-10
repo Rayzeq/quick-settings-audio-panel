@@ -1,17 +1,17 @@
-import Clutter from 'gi://Clutter';
-import Gio from 'gi://Gio';
-import GLib from 'gi://GLib';
-import GObject from 'gi://GObject';
-import Gvc from 'gi://Gvc';
-import St from 'gi://St';
+import Clutter from "gi://Clutter";
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
+import GObject from "gi://GObject";
+import Gvc from "gi://Gvc";
+import St from "gi://St";
 
-import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
-import { type MediaMessage } from 'resource:///org/gnome/shell/ui/messageList.js';
-import { MprisSource, type MprisPlayer } from 'resource:///org/gnome/shell/ui/mpris.js';
-import { Ornament, PopupBaseMenuItem, PopupImageMenuItem, PopupMenuItem, PopupMenuSection } from 'resource:///org/gnome/shell/ui/popupMenu.js';
-import { QuickMenuToggle, QuickSlider, QuickToggle } from 'resource:///org/gnome/shell/ui/quickSettings.js';
-import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
+import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
+import { type MediaMessage } from "resource:///org/gnome/shell/ui/messageList.js";
+import { MprisSource, type MprisPlayer } from "resource:///org/gnome/shell/ui/mpris.js";
+import { Ornament, PopupBaseMenuItem, PopupImageMenuItem, PopupMenuItem, PopupMenuSection } from "resource:///org/gnome/shell/ui/popupMenu.js";
+import { QuickMenuToggle, QuickSlider, QuickToggle } from "resource:///org/gnome/shell/ui/quickSettings.js";
+import * as Volume from "resource:///org/gnome/shell/ui/status/volume.js";
 
 import { get_pactl_path, spawn, wait_property } from "./utils.js";
 
@@ -68,11 +68,11 @@ export class SinkMixer {
         var matched = false;
         for (const filter of this._filters) {
             if ((stream.name?.search(filter) > -1) || (stream.description.search(filter) > -1)) {
-                if (this._filter_mode === 'blacklist') return;
+                if (this._filter_mode === "blacklist") return;
                 matched = true;
             }
         }
-        if (!matched && this._filter_mode === 'whitelist') return;
+        if (!matched && this._filter_mode === "whitelist") return;
 
         const slider = new SinkVolumeSlider(
             this._mixer_control,
@@ -123,11 +123,11 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         super(control);
 
         this._icons = [
-            'audio-volume-muted-symbolic',
-            'audio-volume-low-symbolic',
-            'audio-volume-medium-symbolic',
-            'audio-volume-high-symbolic',
-            'audio-volume-overamplified-symbolic',
+            "audio-volume-muted-symbolic",
+            "audio-volume-low-symbolic",
+            "audio-volume-medium-symbolic",
+            "audio-volume-high-symbolic",
+            "audio-volume-overamplified-symbolic",
         ];
         this._hasHeadphones = OutputStreamSlider.prototype._findHeadphones(stream);
         this.stream = stream;
@@ -214,7 +214,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
                     // using the text from the output switcher of the master slider to allow compatibility with extensions
                     // that changes it (like Quick Settings Audio Device Renamer)
                     const deviceItem = Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id());
-                    if (deviceItem) this._name_binding = deviceItem.label.bind_property('text', label, 'text', GObject.BindingFlags.SYNC_CREATE);
+                    if (deviceItem) this._name_binding = deviceItem.label.bind_property("text", label, "text", GObject.BindingFlags.SYNC_CREATE);
                 };
                 let signal = stream.connect("notify::port", updater);
                 updater();
@@ -237,7 +237,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
 
     _updateIcon() {
         this.iconName = this._hasHeadphones
-            ? 'audio-headphones-symbolic'
+            ? "audio-headphones-symbolic"
             : this.getIcon();
     }
 
@@ -271,8 +271,8 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         this.connect("destroy", () => settings.disconnect(this._pactl_path_changed_id));
         this._pactl_path = get_pactl_path(settings)[0];
 
-        this._sliderChangedId = this.slider.connect('notify::value', () => this._sliderChanged());
-        this.slider.connect('drag-end', () => {
+        this._sliderChangedId = this.slider.connect("notify::value", () => this._sliderChanged());
+        this.slider.connect("drag-end", () => {
             this._notifyVolumeChange();
         });
 
@@ -361,8 +361,8 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
 
         this._volumeCancellable = new Gio.Cancellable();
         let player = global.display.get_sound_player();
-        player.play_from_theme('audio-volume-change',
-            _('Volume changed'), this._volumeCancellable);
+        player.play_from_theme("audio-volume-change",
+            _("Volume changed"), this._volumeCancellable);
     }
 
     destroy() {
@@ -404,7 +404,7 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
         this._autohide_changed_signal = this._settings.connect("changed::autohide-profile-switcher", () => {
             this._change_visibility_if_neccesary();
         });
-        this._settings.emit('changed::autohide-profile-switcher', 'autohide-profile-switcher');
+        this._settings.emit("changed::autohide-profile-switcher", "autohide-profile-switcher");
     }
 
     _set_device(device: Gvc.MixerUIDevice) {
@@ -450,7 +450,7 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
     }
 
     _change_visibility_if_neccesary() {
-        const autohide = this._settings.get_boolean('autohide-profile-switcher');
+        const autohide = this._settings.get_boolean("autohide-profile-switcher");
 
         if (this.menu.numMenuItems <= 1 && autohide) {
             this.visible = false;
@@ -515,11 +515,11 @@ class ApplicationsMixerManager {
         var matched = false;
         for (const filter of this._filters) {
             if ((stream.name?.search(filter) > -1) || (stream.description.search(filter) > -1)) {
-                if (this._filter_mode === 'blacklist') return;
+                if (this._filter_mode === "blacklist") return;
                 matched = true;
             }
         }
-        if (!matched && this._filter_mode === 'whitelist') return;
+        if (!matched && this._filter_mode === "whitelist") return;
 
         const slider = new ApplicationVolumeSlider(
             this._mixer_control,
@@ -682,7 +682,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
 
     constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
         super(control);
-        this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
+        this.menu.setHeader("audio-headphones-symbolic", _("Output Device"));
 
         this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
             this._pactl_path = get_pactl_path(settings)[0];
@@ -692,13 +692,13 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
 
         if (this._pactl_path) {
             this._control.connectObject(
-                'output-added', (_control: Gvc.MixerControl, id: number) => this._addDevice(id),
-                'output-removed', (_control: Gvc.MixerControl, id: number) => this._removeDevice(id),
-                'active-output-update', (_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
+                "output-added", (_control: Gvc.MixerControl, id: number) => this._addDevice(id),
+                "output-removed", (_control: Gvc.MixerControl, id: number) => this._removeDevice(id),
+                "active-output-update", (_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
                 this
             );
             // unfortunatly we don't have any signal to know that the active device changed
-            //stream.connect('', () => this._setActiveDevice());
+            //stream.connect("", () => this._setActiveDevice());
         
             for (const sink of control.get_sinks()) {
                 // apparently it's possible that this function return null
@@ -791,8 +791,8 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         // using the text from the output switcher of the master slider to allow compatibility with extensions
         // that changes it (like Quick Settings Audio Device Renamer)
         const deviceItem = Main.panel.statusArea.quickSettings._volumeOutput._output._deviceItems.get(device.get_id());
-        if (deviceItem) deviceItem.label.bind_property('text', item.label, 'text', GObject.BindingFlags.SYNC_CREATE);
-        item.connect('activate', () => {
+        if (deviceItem) deviceItem.label.bind_property("text", item.label, "text", GObject.BindingFlags.SYNC_CREATE);
+        item.connect("activate", () => {
             const dev = this._lookupDevice(id);
             if (dev)
                 this._activateDevice(dev);
@@ -839,7 +839,7 @@ export const MprisList = GObject.registerClass(class MprisList extends St.BoxLay
     constructor() {
         super({
             orientation: Clutter.Orientation.VERTICAL,
-            style: 'spacing: 12px;',
+            style: "spacing: 12px;",
             visible: false
         });
 
@@ -847,8 +847,8 @@ export const MprisList = GObject.registerClass(class MprisList extends St.BoxLay
         this.source = new MprisSource();
 
         this.source.connectObject(
-            'player-added', (_, player) => this._add_player(player),
-            'player-removed', (_, player) => this._remove_player(player),
+            "player-added", (_, player) => this._add_player(player),
+            "player-removed", (_, player) => this._remove_player(player),
             this
         );
 

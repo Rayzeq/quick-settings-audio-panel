@@ -15,25 +15,25 @@ class RawSettings {
         return this.settings.backend.vfunc_read_user_value(this.settings.path + key, expected_type);
     }
 
-    pop_boolean(key: string): boolean | undefined {
+    public pop_boolean(key: string): boolean | undefined {
         const value = this.get_value(key, GLib.VariantType.new("b"))?.get_boolean();
         this.delete(key);
         return value;
     }
 
-    pop_string(key: string): string | undefined {
+    public pop_string(key: string): string | undefined {
         const value = this.get_value(key, GLib.VariantType.new("s"))?.get_string()[0];
         this.delete(key);
         return value;
     }
 
-    pop_strv(key: string): string[] | undefined {
+    public pop_strv(key: string): string[] | undefined {
         const value = this.get_value(key, GLib.VariantType.new("as"))?.get_strv();
         this.delete(key);
         return value;
     }
 
-    delete(_key: string) {
+    public delete(_key: string) {
         // don't work because it's apparently not implemented, except it is here:
         // https://gitlab.gnome.org/GNOME/dconf/-/blob/main/gsettings/dconfsettingsbackend.c#L113
         // this.settings.backend.vfunc_reset(key);

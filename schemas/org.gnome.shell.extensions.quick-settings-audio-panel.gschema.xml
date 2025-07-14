@@ -66,6 +66,12 @@
     <key name="create-perdevice-volume-sliders" type="b">
       <default>false</default>
     </key>
+    <key name="perdevice-volume-sliders-change-button" type="b">
+      <default>true</default>
+    </key>
+    <key name="perdevice-volume-sliders-change-menu" type="b">
+      <default>true</default>
+    </key>
     <key name="perdevice-volume-sliders-filter-mode" type="s">
       <choices>
         <choice value="blacklist" />

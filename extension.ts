@@ -207,7 +207,13 @@ export default class QSAP extends Extension {
                 } else if (widget === 'applications-volume-sliders' && create_applications_volume_sliders) {
                     this._create_app_mixer(index, this.settings.get_boolean("group-applications-volume-sliders"), this.settings.get_string("applications-volume-sliders-filter-mode"), this.settings.get_strv("applications-volume-sliders-filters"));
                 } else if (widget === "perdevice-volume-sliders" && create_perdevice_volume_sliders) {
-                    this._create_sink_mixer(index, this.settings.get_string("perdevice-volume-sliders-filter-mode"), this.settings.get_strv("perdevice-volume-sliders-filters"));
+                    this._create_sink_mixer(
+                        index,
+                        this.settings.get_string("perdevice-volume-sliders-filter-mode"),
+                        this.settings.get_strv("perdevice-volume-sliders-filters"),
+                        this.settings.get_boolean("perdevice-volume-sliders-change-button"),
+                        this.settings.get_boolean("perdevice-volume-sliders-change-menu")
+                    );
                 } else if (widget === "balance-slider" && create_balance_slider) {
                     this._create_balance_slider(index);
                 } else if (widget === "profile-switcher" && create_profile_switcher) {
@@ -322,8 +328,8 @@ export default class QSAP extends Extension {
         }
     }
 
-    _create_sink_mixer(index: number, filter_mode, filters) {
-        this._sink_mixer = new SinkMixer(this._panel, index, filter_mode, filters);
+    _create_sink_mixer(index: number, filter_mode, filters, change_button: boolean, change_menu: boolean) {
+        this._sink_mixer = new SinkMixer(this._panel, index, filter_mode, filters, change_button, change_menu);
     }
 
     _create_balance_slider(index: number) {

@@ -27,12 +27,14 @@ export class SinkMixer {
     private _sliders_ordered: Clutter.Actor[];
     private _filter_mode: string
     private _filters: RegExp[];
+    private _change_button: boolean;
+    private _change_menu: boolean;
 
     private _mixer_control: Gvc.MixerControl;
     private _sa_event_id: number;
     private _sr_event_id: number;
 
-    constructor(panel, index: number, filter_mode: string, filters: string[]) {
+    constructor(panel, index: number, filter_mode: string, filters: string[], change_button: boolean, change_menu: boolean) {
         this.panel = panel;
 
         // Empty actor used to know where to place sliders
@@ -43,6 +45,8 @@ export class SinkMixer {
         this._sliders_ordered = [placeholder];
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
+        this._change_button = change_button;
+        this._change_menu = change_menu;
 
         this._mixer_control = Volume.getMixerControl();
         this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
@@ -73,6 +77,8 @@ export class SinkMixer {
         const slider = new SinkVolumeSlider(
             this._mixer_control,
             stream,
+            this._change_button,
+            this._change_menu
         );
         this._sliders.set(id, slider);
 
@@ -111,8 +117,9 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
     private _hasHeadphones: boolean;
     private _setup_timeout?: GLib.Source;
     private _name_binding?: GObject.Binding;
+    private _change_button_update_handler_id?: number;
 
-    constructor(control: Gvc.MixerControl, stream: Gvc.MixerSink) {
+    constructor(control: Gvc.MixerControl, stream: Gvc.MixerSink, change_button: boolean, change_menu: boolean) {
         super(control);
 
         this._icons = [
@@ -131,13 +138,68 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         const box = this.child;
         const sliderBin = box.get_children()[1];
         box.remove_child(sliderBin);
-        box.remove_child(this._menuButton);
+        if (!(change_button && change_menu && stream.get_ports().length > 0)) {
+            box.remove_child(this._menuButton);
+        }
 
         const vbox = new St.BoxLayout({ orientation: Clutter.Orientation.VERTICAL, x_expand: true });
         box.insert_child_at_index(vbox, 1);
 
         const label = new St.Label({ natural_width: 0 });
         label.style_class = "QSAP-application-volume-slider-label";
+
+        let update_change_button = undefined;
+        if (change_button) {
+            if (change_menu && stream.get_ports().length > 0) {
+                this.menuEnabled = true;
+                this._menuButton.y_expand = false;
+                this._menuButton.y_align = Clutter.ActorAlign.CENTER;
+
+                for (const port of stream.get_ports()) {
+                    const item = new PopupMenuItem(port.human_port);
+                    this._deviceSection.addMenuItem(item);
+                    item.connect("activate", () => {
+                        stream.change_port(port.port);
+                        control.change_output(control.lookup_device_from_stream(stream));
+                    });
+                    this._deviceItems.set(port.port, item);
+                }
+
+                update_change_button = (_, output_id) => {
+                    const ui_device = control.lookup_output_id(output_id);
+                    if (ui_device.stream_id === stream.id)
+                        for (const [port, item] of this._deviceItems) {
+                            item.setOrnament(port === ui_device.port_name
+                                ? Ornament.CHECK
+                                : Ornament.NONE);
+                        }
+                    else this._setActiveDevice(-1);
+                };
+            } else {
+                const select_default_button = new St.Button({
+                    child: new St.Icon({ icon_name: "object-select-symbolic" }),
+                    toggle_mode: true,
+                    y_align: Clutter.ActorAlign.CENTER,
+                    style_class: "icon-button flat"
+                });
+
+                select_default_button.connect("clicked", () => {
+                    if (control.get_default_sink() === this.stream) {
+                        select_default_button.checked = true;
+                    } else {
+                        control.change_output(control.lookup_device_from_stream(stream));
+                        select_default_button.checked = false;
+                    }
+                });
+                box.add_child(select_default_button);
+
+                update_change_button = (_, output_id) => {
+                    const ui_device = control.lookup_output_id(output_id);
+                    select_default_button.checked = ui_device.stream_id === stream.id;
+                };
+            }
+            this._change_button_update_handler_id = control.connect("active-output-update", update_change_button);
+        }
 
         const setup = () => {
             clearTimeout(this._setup_timeout);
@@ -147,6 +209,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
                 this._setup_timeout = undefined;
                 const updater = () => {
                     const device = control.lookup_device_from_stream(stream);
+                    if (update_change_button) update_change_button(null, control.lookup_device_from_stream(control.get_default_sink()).get_id());
                     if (this._name_binding) this._name_binding.unbind();
                     // using the text from the output switcher of the master slider to allow compatibility with extensions
                     // that changes it (like Quick Settings Audio Device Renamer)
@@ -182,6 +245,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
         if (this._setup_timeout) {
             clearTimeout(this._setup_timeout);
         }
+        if (this._change_button_update_handler_id) this._control.disconnect(this._change_button_update_handler_id);
         super.destroy();
     }
 });

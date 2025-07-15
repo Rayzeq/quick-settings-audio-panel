@@ -6,19 +6,19 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Quick Settings Audio Panel v78\n"
+"Project-Id-Version: Quick Settings Audio Panel v93\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-22 13:19+0100\n"
-"PO-Revision-Date: 2025-02-23 13:00+0100\n"
+"POT-Creation-Date: 2025-07-15 01:15+0200\n"
+"PO-Revision-Date: 2025-07-15 13:16+0200\n"
 "Last-Translator: Jozef Gaal <preklady@mayday.sk>\n"
 "Language-Team: Jozef Gaal <preklady@mayday.sk>\n"
 "Language: sk_SK\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.5\n"
+"X-Generator: Poedit 3.6\n"
 
-#: dist/extension.js:407
+#: dist/extension.js:363
 msgid "Reset all applications to default output"
 msgstr "Nastaviť všetky aplikácie na predvolený výstup"
 
@@ -63,65 +63,95 @@ msgid "Show even when there is no application recording audio"
 msgstr "Zobraziť aj vtedy, keď žiadna aplikácia nenahráva zvuk"
 
 #: dist/prefs.js:50
+msgid "Don't show the microphone indicator when there is only virtual captures"
+msgstr ""
+"Nezobrazovať indikátor mikrofónu, keď je k dispozícii iba virtuálne "
+"zachytávanie"
+
+#: dist/prefs.js:53
 msgid "Remove the main output volume slider"
 msgstr "Odstrániť hlavný posuvník výstupnej hlasitosti"
 
-#: dist/prefs.js:51
+#: dist/prefs.js:54
 msgid "This is useful if you enabled the per-device volume sliders"
 msgstr ""
 "Toto je užitočné, ak ste povolili posuvníky hlasitosti pre jednotlivé "
 "zariadenia"
 
-#: dist/prefs.js:54
+#: dist/prefs.js:57
 msgid "Show the currently selected device for the main volume sliders"
 msgstr "Zobraziť aktuálne vybrané zariadenie pre hlavné posuvníky hlasitosti"
 
-#: dist/prefs.js:57
+#: dist/prefs.js:60
 msgid "Add a button to reset all applications to the default output"
 msgstr "Pridať tlačidlo na nastavenie všetkých aplikácií na predvolený výstup"
 
-#: dist/prefs.js:58
+#: dist/prefs.js:61
 msgid ""
 "This button can be found in the device chooser of the main output slider"
 msgstr ""
 "Toto tlačidlo sa nachádza vo výbere zariadenia v hlavnom posuvníku výstupu"
 
-#: dist/prefs.js:61
+#: dist/prefs.js:64
 msgid "Do not apply custom CSS"
 msgstr "Nepoužiť vlastné CSS"
 
-#: dist/prefs.js:62
+#: dist/prefs.js:65
 msgid "Disable the CSS in this extension that could override your theme"
 msgstr "Zakáže CSS tohto rozšírenia, ktoré by mohlo prepísať vašu tému"
 
-#: dist/prefs.js:65
+#: dist/prefs.js:68
 msgid "Path to the <tt>pactl</tt> executable"
 msgstr "Cesta k spustiteľnému súboru <tt>pactl</tt>"
 
-#: dist/prefs.js:70
+#: dist/prefs.js:73
 msgid "Auto-hide"
 msgstr "Automatické skrývanie"
 
-#: dist/prefs.js:71
+#: dist/prefs.js:74
 msgid "Hide the profile switcher when the current device only has one profile"
 msgstr "Skryje prepínač profilov, keď má aktuálne zariadenie len jeden profil"
 
-#: dist/prefs.js:75
+#: dist/prefs.js:78
+msgid "Add a 'set as active' button"
+msgstr "Pridať tlačidlo \"nastaviť ako aktívne\""
+
+#: dist/prefs.js:79
+msgid ""
+"This button, added on each device slider, has the same effect as clicking on "
+"that device in the main volume slider menu"
+msgstr ""
+"Toto tlačidlo, pridané na každom posuvníku zariadenia, má rovnaký účinok ako "
+"kliknutie na dané zariadenie v hlavnej ponuke posuvníka hlasitosti."
+
+#: dist/prefs.js:82
+msgid "Replace the 'set as active' button with a submenu"
+msgstr "Nahradiť tlačidlo „nastaviť ako aktívne“ podponukou"
+
+#: dist/prefs.js:83
+msgid ""
+"For devices which have multiple ports, the button will be replaced by a "
+"submenu to choose which port will be active"
+msgstr ""
+"V prípade zariadení, ktoré majú viacero portov, bude tlačidlo nahradené "
+"podponukou na výber aktívneho portu."
+
+#: dist/prefs.js:88
 msgid "Move media controls"
 msgstr "Presunúť ovládacie prvky médií"
 
-#: dist/prefs.js:76
+#: dist/prefs.js:89
 msgid ""
 "Move the media controls from the notifications panel instead of creating a "
 "new one"
 msgstr ""
 "Presunúť ovládacie prvky médií z panela oznámení namiesto vytvorenia nového"
 
-#: dist/prefs.js:80
+#: dist/prefs.js:93
 msgid "Put the sliders in submenu"
 msgstr "Umiestniť posuvníky do podponuky"
 
-#: dist/prefs.js:81
+#: dist/prefs.js:94
 msgid ""
 "<span color=\"darkorange\" weight=\"bold\">This will disable the ability to "
 "change the output device per application</span>"
@@ -129,51 +159,51 @@ msgstr ""
 "<span color=\"darkorange\" weight=\"bold\">Tento režim zakáže možnosť zmeny "
 "výstupného zariadenia podľa aplikácie</span>"
 
-#: dist/prefs.js:85
+#: dist/prefs.js:98
 msgid "Elements order"
 msgstr "Poradie prvkov"
 
-#: dist/prefs.js:86
+#: dist/prefs.js:99
 msgid "Reorder elements in the new panel"
 msgstr "Zmeniť poradie prvkov na novom paneli"
 
-#: dist/prefs.js:90
+#: dist/prefs.js:103
 msgid "Profile switcher"
 msgstr "Prepínač profilov"
 
-#: dist/prefs.js:91
+#: dist/prefs.js:104
 msgid "Allows you to quickly change the audio profile of the current device"
 msgstr "Umožňuje rýchlo zmeniť zvukový profil aktuálneho zariadenia"
 
-#: dist/prefs.js:96
+#: dist/prefs.js:109
 msgid "Speaker / Headphone volume slider"
 msgstr "Posuvník hlasitosti reproduktora/slúchadiel"
 
-#: dist/prefs.js:99
+#: dist/prefs.js:112
 msgid "Per-device volume sliders"
 msgstr "Posuvníky hlasitosti pre jednotlivé zariadenia"
 
-#: dist/prefs.js:102
+#: dist/prefs.js:116
 msgid "Audio balance slider"
 msgstr "Posuvník vyváženia zvuku"
 
-#: dist/prefs.js:105
+#: dist/prefs.js:119
 msgid "Microphone volume slider"
 msgstr "Posuvník hlasitosti mikrofónu"
 
-#: dist/prefs.js:108
+#: dist/prefs.js:122
 msgid "Media controls"
 msgstr "Ovládacie prvky médií"
 
-#: dist/prefs.js:112
+#: dist/prefs.js:126
 msgid "Applications mixer"
 msgstr "Mixér aplikácií"
 
-#: dist/prefs.js:118
+#: dist/prefs.js:132
 msgid "The same sliders you can find in pavucontrol or in the sound settings"
 msgstr "Rovnaké posuvníky nájdete v pavucontrol alebo v nastaveniach zvuku"
 
-#: dist/prefs.js:120
+#: dist/prefs.js:134
 msgid ""
 "<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> was not found, you "
 "won't be able to change the output device per application</span>"
@@ -181,23 +211,27 @@ msgstr ""
 "<span color=\"darkorange\" weight=\"bold\"><tt>pactl</tt> nebol nájdený, "
 "nebudete môcť zmeniť výstupné zariadenie na aplikáciu</span>"
 
-#: dist/prefs.js:125
+#: dist/prefs.js:139
 msgid ""
 "This slider allows you to change the balance of the current audio output"
 msgstr "Tento posuvník umožňuje zmeniť vyváženie aktuálneho zvukového výstupu"
 
-#: dist/prefs.js:130
+#: dist/prefs.js:144 dist/prefs.js:155
 msgid ""
 "<span color=\"red\" weight=\"bold\">This feature needs <tt>pactl</tt></span>"
 msgstr ""
 "<span color=\"red\" weight=\"bold\">Táto funkcia potrebuje <tt>pactl</tt></"
 "span>"
 
-#: dist/prefs.js:148
+#: dist/prefs.js:150
+msgid "This include for example the echo cancellation module"
+msgstr "Patrí sem napríklad modul potlačenia ozveny"
+
+#: dist/prefs.js:173
 msgid "Per-device sliders filtering"
 msgstr "Filtrovanie posuvníkov podľa zariadenia"
 
-#: dist/prefs.js:149
+#: dist/prefs.js:174
 msgid ""
 "Allows you to filter the per-device volume sliders. The content of the "
 "filters are <b>regexes</b> and are applied to the device's display name and "
@@ -207,15 +241,15 @@ msgstr ""
 "filtrov sú <b>regulárne výrazy (regex)</b> a aplikujú sa na zobrazovaný "
 "názov zariadenia a názov pulseaudio."
 
-#: dist/prefs.js:150
+#: dist/prefs.js:175
 msgid "Device name"
 msgstr "Názov zariadenia"
 
-#: dist/prefs.js:154
+#: dist/prefs.js:179
 msgid "Application mixer filtering"
 msgstr "Filtrovanie mixéra aplikácie"
 
-#: dist/prefs.js:155
+#: dist/prefs.js:180
 msgid ""
 "Allows you to filter the applications that show up in the application mixer "
 "<b>using regexes</b>"
@@ -223,26 +257,26 @@ msgstr ""
 "Umožňuje filtrovať aplikácie, ktoré sa zobrazujú v mixéri aplikácií "
 "<b>pomocou regulárnych výrazov</b>"
 
-#: dist/prefs.js:156
+#: dist/prefs.js:181
 msgid "Application name"
 msgstr "Názov aplikácie"
 
-#: dist/prefs.js:170
+#: dist/prefs.js:195
 msgid "LibPanel settings"
 msgstr "Nastavenia LibPanel"
 
-#: dist/prefs.js:171
+#: dist/prefs.js:196
 msgid ""
 "These settings are not specific to this extension, they apply to every panel"
 msgstr ""
 "Tieto nastavenia nie sú špecifické pre toto rozšírenie, ale platia pre "
 "všetky panely"
 
-#: dist/prefs.js:174
+#: dist/prefs.js:199
 msgid "Single-column mode"
 msgstr "Režim jedného stĺpca"
 
-#: dist/prefs.js:175
+#: dist/prefs.js:200
 msgid ""
 "Only one column of panels will be allowed. Also prevents the panel from "
 "being put at the left/right of the screen by libpanel."
@@ -250,49 +284,49 @@ msgstr ""
 "Povolený bude len jeden stĺpec panelov. Zabráni tiež tomu, aby bol panel "
 "umiestnený v ľavej/pravej časti obrazovky pomocou libpanel."
 
-#: dist/prefs.js:178
+#: dist/prefs.js:203
 msgid "Panel alignment"
 msgstr "Zarovnanie panelu"
 
-#: dist/prefs.js:180
+#: dist/prefs.js:205
 msgid "Left"
 msgstr "Vľavo"
 
-#: dist/prefs.js:181
+#: dist/prefs.js:206
 msgid "Right"
 msgstr "Vpravo"
 
-#: dist/prefs.js:185
+#: dist/prefs.js:210
 msgid "Padding"
 msgstr "Odsadenie"
 
-#: dist/prefs.js:186
+#: dist/prefs.js:211
 msgid "Use this to override the default padding of the panels"
 msgstr "Toto nastavenie použite na prepísanie predvoleného odsadenia panelov"
 
-#: dist/prefs.js:189
+#: dist/prefs.js:214
 msgid "Row spacing"
 msgstr "Rozstup riadkov"
 
-#: dist/prefs.js:190
+#: dist/prefs.js:215
 msgid "Use this to override the default row spacing of the panels"
 msgstr ""
 "Toto nastavenie použite na prepísanie predvoleného rozstupu riadkov panelov"
 
-#: dist/prefs.js:193
+#: dist/prefs.js:218
 msgid "Column spacing"
 msgstr "Rozstup stĺpcov"
 
-#: dist/prefs.js:194
+#: dist/prefs.js:219
 msgid "Use this to override the default column spacing of the panels"
 msgstr ""
 "Toto nastavenie použite na prepísanie predvoleného rozstupu stĺpcov panelov"
 
-#: dist/prefs.js:279
+#: dist/prefs.js:304
 msgid "Filtering mode"
 msgstr "Režim filtrovania"
 
-#: dist/prefs.js:280
+#: dist/prefs.js:305
 msgid ""
 "On blocklist mode, matching elements are removed from the list. On allowlist "
 "mode, only matching elements will be shown"
@@ -300,11 +334,11 @@ msgstr ""
 "V režime vylúčených sa vyhovujúce prvky zo zoznamu odstránia. V režime "
 "povolených sa zobrazia len vyhovujúce prvky"
 
-#: dist/prefs.js:282
+#: dist/prefs.js:307
 msgid "Blocklist"
 msgstr "Vylúčené"
 
-#: dist/prefs.js:283
+#: dist/prefs.js:308
 msgid "Allowlist"
 msgstr "Povolené"
 

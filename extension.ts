@@ -53,7 +53,7 @@ export default class QSAP extends Extension {
         this.settings = this.getSettings();
         update_settings(this.settings);
 
-        this._extension_controller = new ExtensionController(this.settings, this.getLogger(), this.InputVolumeIndicator);
+        this._extension_controller = new ExtensionController(this.settings, this.getLogger(), this.InputVolumeIndicator, OutputVolumeSlider);
 
         this._scscd_callback = this.settings.connect(
             'changed::master-volume-sliders-show-current-device',
@@ -87,7 +87,8 @@ export default class QSAP extends Extension {
             if (
                 name !== "autohide-profile-switcher" &&
                 name !== "ignore-virtual-capture-streams" &&
-                name !== "always-show-input-volume-slider"
+                name !== "always-show-input-volume-slider" &&
+                name !== "remove-output-volume-slider"
             ) {
                 this._refresh_panel();
             }
@@ -120,8 +121,6 @@ export default class QSAP extends Extension {
         const panel_type = this.settings.get_string("panel-type");
         const merged_panel_position = this.settings.get_string("merged-panel-position");
 
-        const remove_output_volume_slider = this.settings.get_boolean("remove-output-volume-slider");
-
         const move_output_volume_slider = this.settings.get_boolean('move-output-volume-slider');
         const move_input_volume_slider = this.settings.get_boolean('move-input-volume-slider');
         const create_mpris_controllers = this.settings.get_boolean("create-mpris-controllers");
@@ -132,7 +131,7 @@ export default class QSAP extends Extension {
         const create_profile_switcher = this.settings.get_boolean('create-profile-switcher');
         const widgets_order = this.settings.get_strv('widgets-order');
 
-        if (move_output_volume_slider || move_input_volume_slider || create_mpris_controllers || create_applications_volume_sliders || create_perdevice_volume_sliders || remove_output_volume_slider || create_balance_slider || create_profile_switcher) {
+        if (move_output_volume_slider || move_input_volume_slider || create_mpris_controllers || create_applications_volume_sliders || create_perdevice_volume_sliders || create_balance_slider || create_profile_switcher) {
             if (panel_type === "independent-panel")
                 LibPanel.enable();
 
@@ -220,16 +219,10 @@ export default class QSAP extends Extension {
                     this._create_profile_switcher(index);
                 }
             }
-
-            if (remove_output_volume_slider) {
-                OutputVolumeSlider.visible = false;
-            }
         }
     }
 
     _cleanup_panel() {
-        OutputVolumeSlider.visible = true;
-
         if (!this._panel) return;
 
         if (this._profile_switcher) {
@@ -476,12 +469,13 @@ class ExtensionController {
 
     private pactl_path?: string;
 
+    private output_volume_slider: Volume.OutputStreamSlider;
     private input_volume_indicator: Volume.InputIndicator;
     private input_volume_slider: Volume.InputStreamSlider;
     private input_visibility: boolean;
     private input_is_recursing: boolean;
 
-    constructor(settings: Gio.Settings, logger: Console, input_volume_indicator: Volume.InputIndicator) {
+    constructor(settings: Gio.Settings, logger: Console, input_volume_indicator: Volume.InputIndicator, output_volume_slider: Volume.OutputStreamSlider) {
         this.settings = settings;
         this.logger = logger;
         this.injection_manager = new InjectionManager();
@@ -490,6 +484,7 @@ class ExtensionController {
 
         this.pactl_path = get_pactl_path(settings)[0] || undefined;
 
+        this.output_volume_slider = output_volume_slider;
         this.input_volume_indicator = input_volume_indicator;
         this.input_volume_slider = input_volume_indicator._input;
         this.input_visibility = false;
@@ -504,6 +499,9 @@ class ExtensionController {
         this.connect_setting("changed::ignore-virtual-capture-streams", () => {
             this.set_ignore_virtual_capture_streams(this.settings.get_boolean("ignore-virtual-capture-streams"));
         });
+        this.connect_setting("changed::remove-output-volume-slider", () => {
+            this.set_remove_output_volume_slider(this.settings.get_boolean("remove-output-volume-slider"));
+        })
     }
 
     private connect(object: GObject.Object, signal: string, callback: (...arg: any[]) => any) {
@@ -634,7 +632,22 @@ class ExtensionController {
         }
     }
 
-    destroy() {
+    private set_remove_output_volume_slider(enable: boolean) {
+        const was_active = !!this.active_patches.get("remove-output-volume-slider");
+        if (enable && !was_active) {
+            this.injection_manager.overrideMethod(this.output_volume_slider.constructor.prototype, "_sync", wrapped => function (this: Volume.OutputStreamSlider) {
+                wrapped.call(this);
+                this.visible = false;
+            });
+            this.active_patches.set("remove-output-volume-slider", true);
+        } else if (!enable && was_active) {
+            this.injection_manager.restoreMethod(this.output_volume_slider.constructor.prototype, "_sync");
+            this.active_patches.set("remove-output-volume-slider", false);
+        }
+        this.output_volume_slider._sync();
+    }
+
+    public destroy() {
         this.set_ignore_virtual_capture_streams(false);
         this.set_always_show_input_volume_slider(false);
 

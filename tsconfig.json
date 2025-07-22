@@ -5,6 +5,9 @@
     "outDir": "./dist",
     "sourceMap": false,
     "strict": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "erasableSyntaxOnly": true,
     "target": "ES2022",
     "lib": [
       "ES2022"

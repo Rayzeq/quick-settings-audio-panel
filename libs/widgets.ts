@@ -241,7 +241,7 @@ const SinkVolumeSlider = GObject.registerClass(class SinkVolumeSlider extends St
             : this.getIcon();
     }
 
-    destroy() {
+    override destroy() {
         if (this._setup_timeout) {
             clearTimeout(this._setup_timeout);
         }
@@ -365,7 +365,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
             _("Volume changed"), this._volumeCancellable);
     }
 
-    destroy() {
+    override destroy() {
         this._control.disconnect(this._default_sink_changed_signal);
     }
 });
@@ -459,7 +459,7 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
         }
     }
 
-    destroy() {
+    override destroy() {
         this._settings.disconnect_object(this.menu);
         this._mixer_control.disconnect(this._active_output_update_signal);
         this._settings.disconnect(this._autohide_changed_signal);
@@ -662,11 +662,11 @@ export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsM
         this._syncVisibility();
     }
 
-    vfunc_clicked() {
+    override vfunc_clicked() {
         this.menu.open(true);
     }
 
-    destroy() {
+    override destroy() {
         this._slider_manager.destroy();
         this.menu.disconnect(this._mosc_signal);
         Main.sessionMode.disconnect(this._sm_updated_signal);
@@ -779,7 +779,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         });
     }
 
-    _addDevice(id: number) {
+    override _addDevice(id: number) {
         if (this._deviceItems.has(id))
             return;
 

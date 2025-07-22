@@ -14,7 +14,7 @@ import { get_pactl_path } from "./libs/utils.js";
 type Constructor<T> = new (...args: any[]) => T;
 
 export default class QSAPPreferences extends ExtensionPreferences {
-    async fillPreferencesWindow(window: Adw.PreferencesWindow) {
+    override async fillPreferencesWindow(window: Adw.PreferencesWindow) {
         const settings = this.getSettings();
         update_settings(settings);
 

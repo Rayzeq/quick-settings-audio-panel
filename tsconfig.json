@@ -3,6 +3,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./dist",
+    "rootDir": "./src",
     "sourceMap": false,
     "strict": true,
     "noImplicitOverride": true,
@@ -14,10 +15,10 @@
     ],
   },
   "include": [
-    "ambient.d.ts",
+    "src/ambient.d.ts",
   ],
   "files": [
-    "extension.ts",
-    "prefs.ts"
+    "src/extension.ts",
+    "src/prefs.ts"
   ],
 }

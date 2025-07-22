@@ -2,8 +2,11 @@ NAME=quick-settings-audio-panel
 DOMAIN=rayzeq.github.io
 OUTPUT_DIR=dist
 
-TS_FILES=extension.ts prefs.ts libs/*.ts libs/libpanel/*.ts
-JS_FILES=$(TS_FILES:%.ts=$(OUTPUT_DIR)/%.js)
+TS_FILES=$(shell find src/ -type f -name '*.ts')
+COMPILABLE_TS_FILES=$(shell find src/ -type f -name '*.ts' -not -name '*.d.ts')
+JS_FILES=$(COMPILABLE_TS_FILES:src/%.ts=$(OUTPUT_DIR)/%.js)
+RESOURCES=$(shell find resources/ -type f)
+RESOURCES_TARGET=$(RESOURCES:resources/%=$(OUTPUT_DIR)/%)
 
 TARGET=$(OUTPUT_DIR)/$(NAME)@$(DOMAIN).shell-extension.zip
 
@@ -13,23 +16,25 @@ all: pack
 
 node_modules: package.json
 	npm install
-	# npm install doesn't seems to necessarily update the date on the folder
+	# npm install doesn't seem to update the date on the folder
 	touch node_modules
 
-po/example.pot: $(JS_FILES)
-	xgettext --from-code=UTF-8 --output=po/example.pot $(OUTPUT_DIR)/*.js
+resources/po/example.pot: $(JS_FILES)
+	xgettext --from-code=UTF-8 --output=$@ $(OUTPUT_DIR)/*.js
 
 $(JS_FILES): node_modules $(TS_FILES)
 	-npx tsc
 	touch $(OUTPUT_DIR)/libs
 
-$(OUTPUT_DIR)/libs/libpanel/gschemas.compiled: libs/libpanel/*.gschema.xml
+$(OUTPUT_DIR)/libs/libpanel/gschemas.compiled: src/libs/libpanel/*.gschema.xml
 	mkdir -p  $(OUTPUT_DIR)/libs/libpanel/
-	glib-compile-schemas libs/libpanel/ --targetdir=$(OUTPUT_DIR)/libs/libpanel/
+	glib-compile-schemas src/libs/libpanel/ --targetdir=$(OUTPUT_DIR)/libs/libpanel/
 
-pack: $(OUTPUT_DIR)/libs/libpanel/gschemas.compiled $(JS_FILES) po/example.pot
-	cp -r stylesheet.css metadata.json LICENSE po/ schemas/ $(OUTPUT_DIR)
-	cp libs/libpanel/LICENSE $(OUTPUT_DIR)/libs/libpanel/
+$(RESOURCES_TARGET): $(RESOURCES)
+	cp -r resources/* $(OUTPUT_DIR)
+
+pack: $(OUTPUT_DIR)/libs/libpanel/gschemas.compiled $(JS_FILES) $(RESOURCES_TARGET)
+	cp src/libs/libpanel/LICENSE $(OUTPUT_DIR)/libs/libpanel/
 	# for some reason this prevents `gnome-extensions pack` from putting some empty files in the archive
 	# (because of virtualbox ?)
 	sleep 1

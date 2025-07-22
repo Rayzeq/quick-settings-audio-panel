@@ -345,7 +345,7 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
 
         add_combobox(
             key: string,
-            properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][] }
+            properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][]; }
         ): Adw.ComboRow {
             const { fields, ...props } = properties;
 
@@ -367,7 +367,7 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
         add_switch_spin(
             switch_key: string,
             spin_key: string,
-            properties: { title: string, subtitle: string },
+            properties: { title: string, subtitle: string; },
             lower: number = 0,
             higher: number = 0
         ): Adw.SpinRow {
@@ -455,7 +455,7 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
     private _placeholder: string;
     private _rows: Adw.EntryRow[];
 
-    constructor(settings: Gio.Settings, key: string, mode_key: string, properties: Partial<Adw.PreferencesGroup.ConstructorProps> & { placeholder: string }) {
+    constructor(settings: Gio.Settings, key: string, mode_key: string, properties: Partial<Adw.PreferencesGroup.ConstructorProps> & { placeholder: string; }) {
         const { placeholder, ...props } = properties;
 
         const add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
@@ -572,7 +572,7 @@ const ReorderablePreferencesGroup = GObject.registerClass(class ReorderablePrefe
 });
 
 class DraggableRowClass extends Adw.PreferencesRow {
-    key: string
+    key: string;
     private _settings: Gio.Settings;
     private _expanded: boolean;
 

@@ -44,7 +44,7 @@ export function update_settings(settings: Gio.Settings) {
     const raw = new RawSettings(settings);
 
     if (settings.get_int("version") == 1) {
-        const widget_name_map: { [index: string]: string } = {
+        const widget_name_map: { [index: string]: string; } = {
             "profile-switcher": "profile-switcher",
             "volume-output": "output-volume-slider",
             "sink-mixer": "perdevice-volume-sliders",
@@ -52,14 +52,14 @@ export function update_settings(settings: Gio.Settings) {
             "volume-input": "input-volume-slider",
             "media": "mpris-controllers",
             "mixer": "applications-volume-sliders"
-        }
+        };
         let value: undefined | boolean | string | string[];
 
         if ((value = raw.pop_boolean("merge-panel")) === true) {
-            settings.set_string("panel-type", "merged-panel")
+            settings.set_string("panel-type", "merged-panel");
         }
         if ((value = raw.pop_boolean("separate-indicator")) === true) {
-            settings.set_string("panel-type", "separate-indicator")
+            settings.set_string("panel-type", "separate-indicator");
         }
 
         if ((value = raw.pop_string("panel-position")) != undefined) {

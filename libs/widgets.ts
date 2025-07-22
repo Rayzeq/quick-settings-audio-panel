@@ -25,7 +25,7 @@ export class SinkMixer {
 
     private _sliders: Map<number, SinkVolumeSlider>;
     private _sliders_ordered: Clutter.Actor[];
-    private _filter_mode: string
+    private _filter_mode: string;
     private _filters: RegExp[];
     private _change_button: boolean;
     private _change_menu: boolean;
@@ -279,7 +279,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         this._control = Volume.getMixerControl();
         this._update_sink(this._control.get_default_sink());
         this._default_sink_changed_signal = this._control.connect("default-sink-changed", (_, stream_id) => {
-            this._update_sink(this._control.lookup_stream_id(stream_id))
+            this._update_sink(this._control.lookup_stream_id(stream_id));
         });
 
         const box = this.child;
@@ -611,10 +611,10 @@ export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsM
 
     constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
         super({
-            visible: false, hasMenu: true,
+            visible: false, has_menu: true,
             // The background apps toggle looks like a flat menu, but doesn't
             // have a separate menu button. Fake it with an arrow icon.
-            iconName: "go-next-symbolic",
+            icon_name: "go-next-symbolic",
             title: "Applications emitting sound"
         });
 
@@ -691,7 +691,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         this._pactl_path = get_pactl_path(settings)[0];
 
         if (this._pactl_path) {
-            this._control.connectObject(
+            this._control.connect_object(
                 "output-added", (_control: Gvc.MixerControl, id: number) => this._addDevice(id),
                 "output-removed", (_control: Gvc.MixerControl, id: number) => this._removeDevice(id),
                 "active-output-update", (_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
@@ -846,7 +846,7 @@ export const MprisList = GObject.registerClass(class MprisList extends St.BoxLay
         this.messages = new Map();
         this.source = new MprisSource();
 
-        this.source.connectObject(
+        this.source.connect_object(
             "player-added", (_, player) => this._add_player(player),
             "player-removed", (_, player) => this._remove_player(player),
             this

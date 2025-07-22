@@ -305,7 +305,7 @@ export default class QSAP extends Extension {
     }
 
     _remove_base_media_controls() {
-        MessageView_DateMenu._mediaSource.disconnectObject(MessageView_DateMenu);
+        MessageView_DateMenu._mediaSource.disconnect_object(MessageView_DateMenu);
         for (const player of MessageView_DateMenu._mediaSource.players) {
             MessageView_DateMenu._removePlayer(player);
         }

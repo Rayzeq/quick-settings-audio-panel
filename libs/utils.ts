@@ -40,13 +40,13 @@ const idle_ids: number[] = [];
 export function wait_property<T extends { [x: string]: any; }, Name extends string>(object: T, name: Name): Promise<Exclude<T[Name], undefined>> {
 	return new Promise((resolve, _reject) => {
 		// very ugly hack
-		const id_pointer = {} as { id: number };
+		const id_pointer = {} as { id: number; };
 		const id = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, wait_property_loop.bind(null, resolve, id_pointer));
 		id_pointer.id = id;
 		idle_ids.push(id);
 	});
 
-	function wait_property_loop(resolve: (value: Exclude<T[Name], undefined>) => void, pointer: { id: number }) {
+	function wait_property_loop(resolve: (value: Exclude<T[Name], undefined>) => void, pointer: { id: number; }) {
 		if (object[name] !== undefined) {
 			const index = idle_ids.indexOf(pointer.id);
 			if (index !== -1) {

@@ -110,5 +110,9 @@
     <key name="applications-volume-sliders-filters" type="as">
       <default>[]</default>
     </key>
+
+    <key name="profiles-renames" type="a{sa{s(ss)}}">
+      <default>{}</default>
+    </key>
   </schema>
 </schemalist>

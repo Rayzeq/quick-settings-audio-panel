@@ -408,12 +408,20 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
     }
 
     _set_device(device: Gvc.MixerUIDevice) {
+        this._settings.disconnect_object(this.menu);
         this.menu.removeAll();
         this._profileItems.clear();
         this._device = device;
 
         for (const profile of device.get_profiles()) {
-            const item = new PopupMenuItem(profile.human_profile);
+            const item = new PopupMenuItem("");
+
+            this._settings.connect_object("changed::profiles-renames", () => {
+                const renames: Record<string, Record<string, [string, string]>> = this._settings.get_value("profiles-renames").recursiveUnpack();
+                item.label.text = renames[device.origin][profile.profile][1];
+                this._sync_active_profile();
+            }, this.menu);
+            this._settings.emit("changed::profiles-renames", "profiles-renames");
 
             const profile_name = profile.profile;
             item.connect("activate", () => {
@@ -452,6 +460,7 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
     }
 
     destroy() {
+        this._settings.disconnect_object(this.menu);
         this._mixer_control.disconnect(this._active_output_update_signal);
         this._settings.disconnect(this._autohide_changed_signal);
     }

@@ -697,7 +697,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
                 'active-output-update', (_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
                 this
             );
-            // unfortunatly we don't have any signal to know that the active device changed
+            // unfortunately we don't have any signal to know that the active device changed
             //stream.connect('', () => this._setActiveDevice());
         
             for (const sink of control.get_sinks()) {
@@ -709,10 +709,10 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
             }
         }
 
-        // This line need to be BEFORE this.stream assignement to prevent an error from appearing in the logs.
+        // This line need to be BEFORE this.stream assignment to prevent an error from appearing in the logs.
         this._icons = [stream.name ? stream.name.toLowerCase() : stream.icon_name];
         this.stream = stream;
-        // And this one need to be after this.stream assignement.
+        // And this one need to be after this.stream assignment.
         this._icon.fallback_icon_name = stream.icon_name;
 
         if (this._pactl_path) {

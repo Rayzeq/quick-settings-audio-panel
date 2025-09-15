@@ -21,8 +21,8 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@girs/gjs": "^4.0.0-beta.19",
-    "@girs/giounix-2.0": "^2.0.0-4.0.0-beta.19",
-    "@girs/gnome-shell": "https://github.com/Rayzeq/gnome-shell/releases/latest/download/package.tgz"
+    "@girs/gjs": "^4.0.0-beta.36",
+    "@girs/giounix-2.0": "^2.0.0-4.0.0-beta.36",
+    "@girs/gnome-shell": "^48.0.4"
   }
 }

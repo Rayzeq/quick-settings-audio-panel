@@ -1,4 +1,8 @@
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs ? import <nixos> { } }:
 pkgs.mkShell {
-  nativeBuildInputs = with pkgs.buildPackages; [ gnumake gettext glib gnome.gnome-shell zip ];
+  nativeBuildInputs = with pkgs.buildPackages; [
+    glib
+  ];
+  shellHook = ''
+  '';
 }

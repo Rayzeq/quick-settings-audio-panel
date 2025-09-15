@@ -1,7 +1,7 @@
 {
   "name": "quick-settings-audio-panel",
   "description": "Create a new panel containing volumes and media control in the quick settings",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
   "repository": {

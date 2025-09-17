@@ -23,6 +23,13 @@
   "dependencies": {
     "@girs/gjs": "^4.0.0-beta.36",
     "@girs/giounix-2.0": "^2.0.0-4.0.0-beta.36",
-    "@girs/gnome-shell": "^48.0.4"
+    "@girs/gnome-shell": "^48.0.4",
+    "libpanel": "file:../libpanel"
+  },
+  "scripts": {
+    "prebuild": "npm run copy-libpanel",
+    "copy-libpanel": "./copy-libpanel.sh",
+    "build": "tsc; npm run build:rewrite-imports",
+    "build:rewrite-imports": "./rewrite-imports.sh"
   }
 }

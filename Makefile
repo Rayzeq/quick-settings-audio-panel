@@ -2,7 +2,7 @@ NAME=quick-settings-audio-panel
 DOMAIN=rayzeq.github.io
 OUTPUT_DIR=dist
 
-TS_FILES=extension.ts prefs.ts libs/*.ts libs/libpanel/*.ts
+TS_FILES=extension.ts prefs.ts libs/*.ts
 JS_FILES=$(TS_FILES:%.ts=$(OUTPUT_DIR)/%.js)
 
 TARGET=$(OUTPUT_DIR)/$(NAME)@$(DOMAIN).shell-extension.zip
@@ -20,16 +20,11 @@ po/example.pot: $(JS_FILES)
 	xgettext --from-code=UTF-8 --output=po/example.pot $(OUTPUT_DIR)/*.js
 
 $(JS_FILES): node_modules $(TS_FILES)
-	-npx tsc
+	-npm run build
 	touch $(OUTPUT_DIR)/libs
 
-$(OUTPUT_DIR)/libs/libpanel/gschemas.compiled: libs/libpanel/*.gschema.xml
-	mkdir -p  $(OUTPUT_DIR)/libs/libpanel/
-	glib-compile-schemas libs/libpanel/ --targetdir=$(OUTPUT_DIR)/libs/libpanel/
-
-pack: $(OUTPUT_DIR)/libs/libpanel/gschemas.compiled $(JS_FILES) po/example.pot
+pack: $(JS_FILES) po/example.pot
 	cp -r stylesheet.css metadata.json LICENSE po/ schemas/ $(OUTPUT_DIR)
-	cp libs/libpanel/LICENSE $(OUTPUT_DIR)/libs/libpanel/
 	# for some reason this prevents `gnome-extensions pack` from putting some empty files in the archive
 	# (because of virtualbox ?)
 	sleep 1

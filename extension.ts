@@ -28,7 +28,7 @@ import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { QuickSettingsMenu } from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import * as Volume from 'resource:///org/gnome/shell/ui/status/volume.js';
 
-import { LibPanel, Panel } from './libs/libpanel/main.js';
+import { LibPanel, Panel } from '@libpanel/main.js';
 import { update_settings } from './libs/preferences.js';
 import { cleanup_idle_ids, get_pactl_path, spawn, wait_property } from './libs/utils.js';
 import { ApplicationsMixer, ApplicationsMixerToggle, AudioProfileSwitcher, BalanceSlider, MprisList, SinkMixer } from './libs/widgets.js';
@@ -160,7 +160,7 @@ export default class QSAP extends Extension {
                         }
                     }
                     this._indicator.hide();
-                }
+                };
                 this._panel._grid.connect("child-added", (_self, child) => {
                     child._qsap_vis_changed_callback = child.connect("notify::visible", () => {
                         update_visibility();
@@ -447,7 +447,7 @@ export default class QSAP extends Extension {
 
             if (this._applications_mixer) {
                 for (const slider of this._applications_mixer._slider_manager._sliders.values()) {
-                    slider._checkUsedSink()
+                    slider._checkUsedSink();
                 }
             }
         });
@@ -504,7 +504,7 @@ class ExtensionController {
         });
         this.connect_setting("changed::remove-output-volume-slider", () => {
             this.set_remove_output_volume_slider(this.settings.get_boolean("remove-output-volume-slider"));
-        })
+        });
     }
 
     private connect(object: GObject.Object, signal: string, callback: (...arg: any[]) => any) {

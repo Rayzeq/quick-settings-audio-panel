@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "baseUrl": ".",
     "outDir": "./dist",
     "sourceMap": false,
     "strict": true,
@@ -9,6 +10,11 @@
     "lib": [
       "ES2022"
     ],
+    "paths": {
+      "@libpanel/*": [
+        "./node_modules/libpanel/src/*"
+      ]
+    }
   },
   "include": [
     "ambient.d.ts",

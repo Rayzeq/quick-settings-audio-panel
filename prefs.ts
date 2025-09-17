@@ -5,9 +5,9 @@ import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
 
-import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import { gettext as _, ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { get_settings, get_stack, rsplit, split, type Constructor } from './libs/libpanel/utils.js';
+import { get_settings, get_stack, rsplit, split, type Constructor } from '@libpanel/utils.js';
 import { update_settings } from "./libs/preferences.js";
 import { get_pactl_path } from "./libs/utils.js";
 
@@ -356,7 +356,7 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
 
         add_combobox(
             key: string,
-            properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][] }
+            properties: Partial<Adw.ComboRow.ConstructorProps> & { fields: [string, string][]; }
         ): Adw.ComboRow {
             const { fields, ...props } = properties;
 
@@ -378,7 +378,7 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
         add_switch_spin(
             switch_key: string,
             spin_key: string,
-            properties: { title: string, subtitle: string },
+            properties: { title: string, subtitle: string; },
             lower: number = 0,
             higher: number = 0
         ): Adw.SpinRow {
@@ -466,7 +466,7 @@ const FilterPreferencesGroup = GObject.registerClass(class FilterPreferencesGrou
     private _placeholder: string;
     private _rows: Adw.EntryRow[];
 
-    constructor(settings: Gio.Settings, key: string, mode_key: string, properties: Partial<Adw.PreferencesGroup.ConstructorProps> & { placeholder: string }) {
+    constructor(settings: Gio.Settings, key: string, mode_key: string, properties: Partial<Adw.PreferencesGroup.ConstructorProps> & { placeholder: string; }) {
         const { placeholder, ...props } = properties;
 
         const add_filter_button = new Gtk.Button({ icon_name: "list-add", has_frame: false });
@@ -583,7 +583,7 @@ const ReorderablePreferencesGroup = GObject.registerClass(class ReorderablePrefe
 });
 
 class DraggableRowClass extends Adw.PreferencesRow {
-    key: string
+    key: string;
     private _settings: Gio.Settings;
     private _expanded: boolean;
 

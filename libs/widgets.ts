@@ -3,6 +3,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import Gvc from 'gi://Gvc';
+import Pango from 'gi://Pango';
 import St from 'gi://St';
 
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -25,7 +26,7 @@ export class SinkMixer {
 
     private _sliders: Map<number, SinkVolumeSlider>;
     private _sliders_ordered: Clutter.Actor[];
-    private _filter_mode: string
+    private _filter_mode: string;
     private _filters: RegExp[];
     private _change_button: boolean;
     private _change_menu: boolean;
@@ -279,7 +280,7 @@ export const BalanceSlider = GObject.registerClass(class BalanceSlider extends Q
         this._control = Volume.getMixerControl();
         this._update_sink(this._control.get_default_sink());
         this._default_sink_changed_signal = this._control.connect("default-sink-changed", (_, stream_id) => {
-            this._update_sink(this._control.lookup_stream_id(stream_id))
+            this._update_sink(this._control.lookup_stream_id(stream_id));
         });
 
         const box = this.child;
@@ -738,8 +739,29 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         // this prevent the tall panel bug when the button is shown
         this._menuButton.y_expand = false;
 
-        this._label = new St.Label({ natural_width: 0 });
+        this._label = new St.Label({ natural_width: 0, track_hover: true, reactive: true });
         this._label.style_class = "QSAP-application-volume-slider-label";
+        this._label.clutter_text.line_wrap = true;
+        this._label.connect("notify::hover", () => {
+            if (this._label.__qsap_hover_timeout_id) {
+                clearTimeout(this._label.__qsap_hover_timeout_id);
+            }
+            if (this._label.hover) {
+                this._label.__qsap_hover_timeout_id = setTimeout(() => {
+                    if (this._label.hover) {
+                        this._label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;                        
+                    }
+                }, 1000);
+            } else {
+                this._label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+            }
+        });
+        this._label.connect("destroy", () => {
+            if (this._label.__qsap_hover_timeout_id) {
+                clearTimeout(this._label.__qsap_hover_timeout_id);
+            }
+        });
+
         const n_desc_handler_id = stream.connect("notify::description", stream => this._update_label(stream));
         this.connect("destroy", () => stream.disconnect(n_desc_handler_id));
         this._update_label(stream);

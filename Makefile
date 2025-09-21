@@ -34,12 +34,14 @@ install: pack
 	gnome-extensions install $(TARGET) --force
 
 test: install
+	-pkill -f gnome-keyring-daemon
 	clear
-	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1280x720 dbus-run-session -- gnome-shell --nested --wayland
+	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1280x720 dbus-run-session -- gnome-shell --devkit
 
 test2: install
+	-pkill -f gnome-keyring-daemon
 	clear
-	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_NUM_DUMMY_MONITORS=2 MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --nested --wayland
+	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_NUM_DUMMY_MONITORS=2 MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --devkit
 
 prefs: install
 	clear

@@ -29,7 +29,8 @@
   "scripts": {
     "prebuild": "npm run copy-libpanel",
     "copy-libpanel": "./copy-libpanel.sh",
-    "build": "tsc; npm run build:rewrite-imports",
-    "build:rewrite-imports": "./rewrite-imports.sh"
+    "build": "tsc",
+    "postbuild": "npm run rewrite-imports",
+    "rewrite-imports": "./rewrite-imports.sh"
   }
 }

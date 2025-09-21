@@ -168,8 +168,10 @@ export default class QSAP extends Extension {
                     update_visibility();
                 });
                 this._panel._grid.connect("child-removed", (_self, child) => {
-                    child.disconnect(child._qsap_vis_changed_callback);
-                    delete child._qsap_vis_changed_callback;
+                    if (child._qsap_vis_changed_callback) {
+                        child.disconnect(child._qsap_vis_changed_callback);
+                        delete child._qsap_vis_changed_callback;
+                    }
 
                     update_visibility();
                 });

@@ -743,23 +743,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         this._label.style_class = "QSAP-application-volume-slider-label";
         this._label.clutter_text.line_wrap = true;
         this._label.connect("notify::hover", () => {
-            if (this._label.__qsap_hover_timeout_id) {
-                clearTimeout(this._label.__qsap_hover_timeout_id);
-            }
-            if (this._label.hover) {
-                this._label.__qsap_hover_timeout_id = setTimeout(() => {
-                    if (this._label.hover) {
-                        this._label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;                        
-                    }
-                }, 1000);
-            } else {
-                this._label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-            }
-        });
-        this._label.connect("destroy", () => {
-            if (this._label.__qsap_hover_timeout_id) {
-                clearTimeout(this._label.__qsap_hover_timeout_id);
-            }
+            this._label.clutter_text.ellipsize = this._label.hover ? Pango.EllipsizeMode.NONE : Pango.EllipsizeMode.END;                        
         });
 
         const n_desc_handler_id = stream.connect("notify::description", stream => this._update_label(stream));

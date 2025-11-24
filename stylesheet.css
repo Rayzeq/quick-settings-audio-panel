@@ -22,6 +22,14 @@
 	width: 100px;
 }
 
+/* SCSS (or gnome-shell's CSS, don't know) is dumb and generates useless rules that messes
+ * with my version of the MPRIS controls, fix that.
+ */
+.quick-settings .QSAP-media-section .message .message-header .message-expand-button {
+	/* This is the value of $base_padding */
+	padding: 6px;
+}
+
 .QSAP-media-section-optional {
 	/* Add margins because it's too close to sliders */
 	margin-bottom: 8px;

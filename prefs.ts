@@ -135,6 +135,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
                 subtitle: _('<span color="darkorange" weight="bold">This will disable the ability to change the output device per application</span>')
             }
         );
+        applications_volume_sliders_group.add_switch("applications-volume-sliders-allow-automatic-pactl",
+            {
+                title: _("Allow automatic execution of <tt>pactl</tt>"),
+                subtitle: _('This feature might cause some minor lag, but it\'s necessary to get the real name of Chromium applications and detect the application\'s current output device')
+            }
+        );
 
         // ================================= Widget ordering group ================================
         const widgets_order_group = new ReorderablePreferencesGroup(settings, "widgets-order", {

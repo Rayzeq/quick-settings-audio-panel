@@ -677,12 +677,14 @@ export const ApplicationsMixerToggle = GObject.registerClass(class ApplicationsM
 });
 
 const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSlider extends StreamSlider {
+    private _settings: Gio.Settings;
     private _pactl_path: string | null;
     private _pactl_path_changed_id: number;
     private _label: St.Label;
 
     constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
         super(control);
+        this._settings = settings;
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
         this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
@@ -716,7 +718,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         // And this one need to be after this.stream assignment.
         this._icon.fallback_icon_name = stream.icon_name;
 
-        if (this._pactl_path) {
+        if (this._pactl_path && this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")) {
             this._checkUsedSink();
         }
 
@@ -758,7 +760,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
         const { name, description } = stream;
         this._label.text = name === null ? description : `${name} - ${description}`;
 
-        if (name && name.startsWith("Chromium") && this._pactl_path) {
+        if (name && name.startsWith("Chromium") && this._pactl_path && this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")) {
             spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
                 const stdout = JSON.parse(stdout_str);
                 for (const sink_input of stdout) {

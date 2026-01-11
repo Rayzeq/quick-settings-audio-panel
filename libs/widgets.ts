@@ -743,8 +743,10 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
 
         this._label = new St.Label({ natural_width: 0, track_hover: true, reactive: true });
         this._label.style_class = "QSAP-application-volume-slider-label";
-        this._label.clutter_text.line_wrap = true;
+        this._label.clutter_text.line_wrap = false;
+        this._label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this._label.connect("notify::hover", () => {
+            this._label.clutter_text.line_wrap = this._label.hover ? true : false;
             this._label.clutter_text.ellipsize = this._label.hover ? Pango.EllipsizeMode.NONE : Pango.EllipsizeMode.END;                        
         });
 

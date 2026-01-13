@@ -794,7 +794,7 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
             return;
 
         const device = this._lookupDevice(id);
-        if (!device)
+        if (!device || !device.port_available)
             return;
 
         const item = new PopupImageMenuItem("", device.get_gicon());

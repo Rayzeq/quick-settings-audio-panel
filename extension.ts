@@ -639,7 +639,7 @@ class ExtensionController {
             this.injection_manager.restoreMethod(this.input_volume_slider.constructor.prototype, "_sync");
             this.active_patches.set("always-show-input-volume-slider", false);
 
-            this.input_volume_slider._maybeShowInput();
+            this.input_volume_slider._maybeShowInput?.();
             this.input_volume_slider.visible = this.input_volume_slider._shouldBeVisible();
         }
 
@@ -659,6 +659,7 @@ class ExtensionController {
                 this.input_volume_slider.visible = true;
             }
         }
+        this.output_volume_slider._updatePrivacyIndicator?.();
     }
 
     private set_remove_output_volume_slider(enable: boolean) {

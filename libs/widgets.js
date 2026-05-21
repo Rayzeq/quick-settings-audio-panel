@@ -554,17 +554,20 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     }
 
     _checkUsedSink() {
-        const [, , , stdout,] = GLib.spawn_async_with_pipes(null, [this._pactl_path, "-f", "json", "list", "sink-inputs"], null, GLib.SpawnFlags.SEARCH_PATH, null);
-        const stdout_reader = new Gio.DataInputStream({
-            base_stream: new GioUnix.InputStream({ fd: stdout })
-        });
+        const [, , stdin_fd, stdout_fd, stderr_fd] = GLib.spawn_async_with_pipes(null, [this._pactl_path, "-f", "json", "list", "sink-inputs"], null, GLib.SpawnFlags.SEARCH_PATH, null);
+
+        GLib.close(stdin_fd);
+        GLib.close(stderr_fd);
+
+        const stdout_stream = new GioUnix.InputStream({ fd: stdout_fd, close_fd: true });
+        const stdout_reader = new Gio.DataInputStream({ base_stream: stdout_stream });
 
         const readline_callback = (_, result) => {
-            // the command's result is one line, so we can stop here
-            let [stdout,] = stdout_reader.read_upto_finish(result);
+            let [data,] = stdout_reader.read_upto_finish(result);
+            stdout_reader.close(null);
 
-            stdout = JSON.parse(stdout);
-            for (const sink_input of stdout) {
+            data = JSON.parse(data);
+            for (const sink_input of data) {
                 if (sink_input.index === this.stream.index) {
                     const sink_id = this._control.lookup_device_from_stream(this._control.get_sinks().find(s => s.index === sink_input.sink))?.get_id();
                     if (sink_id) {

@@ -16,19 +16,23 @@ export function get_pactl_path(settings: Gio.Settings): [string | null, boolean]
 
 export function spawn(argv: string[]): Promise<string> {
 	return new Promise((resolve, _reject) => {
-		const [, , , stdout,] = GLib.spawn_async_with_pipes(null, argv, null, GLib.SpawnFlags.SEARCH_PATH, null);
-		const stdout_reader = new Gio.DataInputStream({
-			base_stream: new GioUnix.InputStream({ fd: stdout })
-		});
+		const [, , stdin_fd, stdout_fd, stderr_fd] = GLib.spawn_async_with_pipes(null, argv, null, GLib.SpawnFlags.SEARCH_PATH, null);
+
+		GLib.close(stdin_fd);
+		GLib.close(stderr_fd);
+
+		const stdout_stream = new GioUnix.InputStream({ fd: stdout_fd, close_fd: true });
+		const stdout_reader = new Gio.DataInputStream({ base_stream: stdout_stream });
 		const result_string: string[] = [];
 
 		const readline_callback = (_: Gio.DataInputStream | null, result: Gio.AsyncResult) => {
-			const [stdout, length] = stdout_reader.read_upto_finish(result);
+			const [data, length] = stdout_reader.read_upto_finish(result);
 
 			if (length > 0) {
-				result_string.push(stdout);
+				result_string.push(data);
 				stdout_reader.read_upto_async("", 0, 0, null, readline_callback);
 			} else {
+				stdout_reader.close(null);
 				resolve(result_string.join("\n"));
 			}
 		};

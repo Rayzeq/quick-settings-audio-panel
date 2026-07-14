@@ -36,12 +36,12 @@ install: pack
 test: install
 	-pkill -f gnome-keyring-daemon
 	clear
-	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1280x720 dbus-run-session -- gnome-shell --devkit
+	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_DUMMY_MODE_SPECS=1280x720 dbus-run-session -- gnome-shell --devkit --wayland
 
 test2: install
 	-pkill -f gnome-keyring-daemon
 	clear
-	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_NUM_DUMMY_MONITORS=2 MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --devkit
+	SHELL_DEBUG=backtrace-warnings env MUTTER_DEBUG_NUM_DUMMY_MONITORS=2 MUTTER_DEBUG_DUMMY_MODE_SPECS=1024x768 dbus-run-session -- gnome-shell --devkit --wayland
 
 prefs: install
 	clear

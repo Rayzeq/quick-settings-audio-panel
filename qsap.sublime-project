@@ -1,8 +1,10 @@
 {
-	"folders":
-	[
+	"folders": [
 		{
-			"path": "."
-		}
-	]
+			"path": ".",
+		},
+		{
+			"path": "../libpanel",
+		},
+	],
 }

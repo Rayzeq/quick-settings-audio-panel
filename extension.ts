@@ -663,14 +663,14 @@ class ExtensionController {
 			this.injection_manager.overrideMethod(
 				this.input_volume_slider.constructor.prototype,
 				"_shouldBeVisible",
-				(wrapped) =>
+				wrapped =>
 					function (this: Volume.InputStreamSlider): boolean {
 						// early return, so we check for virtual stream only if we would show
 						if (!wrapped.call(this)) return false;
 
 						if (self.pactl_path) {
 							spawn([self.pactl_path, "-f", "json", "list", "source-outputs"])
-								.then((result) => {
+								.then(result => {
 									const data = JSON.parse(result);
 									for (const source_output of data) {
 										if (source_output["properties"]["node.virtual"] !== "true") {
@@ -679,7 +679,7 @@ class ExtensionController {
 									}
 									return false;
 								})
-								.then((should_show) => {
+								.then(should_show => {
 									const old_value = this.visible;
 									this.visible = should_show;
 									if (should_show === old_value) {
@@ -690,7 +690,7 @@ class ExtensionController {
 										this.notify("visible");
 									}
 								})
-								.catch((reason) => self.logger.error(reason));
+								.catch(reason => self.logger.error(reason));
 
 							// dangerous ! if the virtual stream check crashes for some reason,
 							// the user as no way to know that the audio is being recorded.
@@ -728,7 +728,7 @@ class ExtensionController {
 			this.injection_manager.overrideMethod(
 				this.input_volume_slider.constructor.prototype,
 				"_sync",
-				(wrapped) =>
+				wrapped =>
 					function (this: Volume.InputStreamSlider) {
 						const was_visible = this.visible;
 						wrapped.call(this);
@@ -775,7 +775,7 @@ class ExtensionController {
 			this.injection_manager.overrideMethod(
 				this.output_volume_slider.constructor.prototype,
 				"_sync",
-				(wrapped) =>
+				wrapped =>
 					function (this: Volume.OutputStreamSlider) {
 						wrapped.call(this);
 						this.visible = false;

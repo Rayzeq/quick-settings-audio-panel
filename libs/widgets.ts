@@ -64,7 +64,7 @@ export class SinkMixer {
 		this._sliders = new Map();
 		this._sliders_ordered = [placeholder];
 		this._filter_mode = filter_mode;
-		this._filters = filters.map((f) => new RegExp(f));
+		this._filters = filters.map(f => new RegExp(f));
 		this._change_button = change_button;
 		this._change_menu = change_menu;
 
@@ -372,7 +372,7 @@ export const BalanceSlider = GObject.registerClass(
 			this.stream = stream;
 
 			// this command doesn't have a json output :(
-			spawn([this._pactl_path, "get-sink-volume", stream.name]).then((stdout) => {
+			spawn([this._pactl_path, "get-sink-volume", stream.name]).then(stdout => {
 				// let's hope this regex don't break
 				const balance_index = stdout.search(/balance (-?\d+.\d+)/);
 
@@ -560,7 +560,7 @@ class ApplicationsMixerManager {
 
 		this._sliders = new Map();
 		this._filter_mode = filter_mode;
-		this._filters = filters.map((f) => new RegExp(f));
+		this._filters = filters.map(f => new RegExp(f));
 
 		this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
 		this._sr_event_id = this._mixer_control.connect(
@@ -839,7 +839,7 @@ const ApplicationVolumeSlider = GObject.registerClass(
 					: Pango.EllipsizeMode.END;
 			});
 
-			const n_desc_handler_id = stream.connect("notify::description", (stream) =>
+			const n_desc_handler_id = stream.connect("notify::description", stream =>
 				this._update_label(stream),
 			);
 			this.connect("destroy", () => stream.disconnect(n_desc_handler_id));
@@ -859,7 +859,7 @@ const ApplicationVolumeSlider = GObject.registerClass(
 				this._pactl_path &&
 				this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")
 			) {
-				spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then((stdout_str) => {
+				spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
 					const stdout = JSON.parse(stdout_str);
 					for (const sink_input of stdout) {
 						const binary_name = sink_input.properties["application.process.binary"];
@@ -872,13 +872,13 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		}
 
 		_checkUsedSink() {
-			spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then((stdout_str) => {
+			spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
 				const stdout = JSON.parse(stdout_str);
 				for (const sink_input of stdout) {
 					if (sink_input.index === this.stream.index) {
 						const sink_id = this._control
 							.lookup_device_from_stream(
-								this._control.get_sinks().find((s) => s.index === sink_input.sink),
+								this._control.get_sinks().find(s => s.index === sink_input.sink),
 							)
 							?.get_id();
 						if (sink_id) {
@@ -973,7 +973,7 @@ export const MprisList = GObject.registerClass(
 				this,
 			);
 
-			this.source.players.forEach((player) => {
+			this.source.players.forEach(player => {
 				this._add_player(player);
 			});
 		}

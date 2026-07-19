@@ -411,10 +411,10 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
 			): Adw.ComboRow {
 				const { fields, ...props } = properties;
 
-				const model = Gtk.StringList.new(fields.map((x) => x[1]));
+				const model = Gtk.StringList.new(fields.map(x => x[1]));
 				const row = new Adw.ComboRow({
 					model: model,
-					selected: fields.map((x) => x[0]).indexOf(this.settings.get_string(key)),
+					selected: fields.map(x => x[0]).indexOf(this.settings.get_string(key)),
 					...props,
 				});
 
@@ -590,7 +590,7 @@ const FilterPreferencesGroup = GObject.registerClass(
 		private _save() {
 			this.settings.set_strv(
 				this._key,
-				this._rows.map((row) => row.text),
+				this._rows.map(row => row.text),
 			);
 		}
 	},

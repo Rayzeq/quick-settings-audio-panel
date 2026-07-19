@@ -5,8 +5,7 @@
   },
   "javascript": {
     "formatter": {
-      "semicolons": "always",
-      "quoteStyle": "double"
+      "arrowParentheses": "asNeeded"
     }
   }
 }

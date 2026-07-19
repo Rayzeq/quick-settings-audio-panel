@@ -86,7 +86,7 @@ export function update_settings(settings: Gio.Settings) {
 
 			settings.set_strv(
 				"widgets-order",
-				value.map((widget) => widget_name_map[widget]),
+				value.map(widget => widget_name_map[widget]),
 			);
 		}
 

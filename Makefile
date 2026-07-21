@@ -4,6 +4,8 @@ OUTPUT_DIR=dist
 
 TS_FILES=extension.ts prefs.ts libs/*.ts
 JS_FILES=$(TS_FILES:%.ts=$(OUTPUT_DIR)/%.js)
+LIBPANEL_FILES:=$(shell cd ../libpanel && git ls-files)
+LIBPANEL_FILES:=$(LIBPANEL_FILES:%=../libpanel/%)
 
 TARGET=$(OUTPUT_DIR)/$(NAME)@$(DOMAIN).shell-extension.zip
 
@@ -19,7 +21,8 @@ node_modules: package.json
 po/example.pot: $(JS_FILES)
 	xgettext --from-code=UTF-8 --output=po/example.pot $(OUTPUT_DIR)/*.js
 
-$(JS_FILES): node_modules $(TS_FILES)
+$(JS_FILES): node_modules $(TS_FILES) $(LIBPANEL_FILES)
+	npm update libpanel
 	-npm run build
 	touch $(OUTPUT_DIR)/libs
 

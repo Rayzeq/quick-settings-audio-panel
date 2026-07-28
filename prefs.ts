@@ -10,19 +10,25 @@ import {
 	ExtensionPreferences,
 } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
 
-import { type Constructor, get_settings, get_stack, rsplit, split } from "@libpanel/utils.js";
+import { get_settings, get_stack, rsplit, split } from "@libpanel/utils.js";
 import { update_settings } from "./libs/preferences.js";
 import { get_pactl_path } from "./libs/utils.js";
 
+// biome-ignore lint/suspicious/noExplicitAny: typescript itself uses any for those kind of types
+type Constructor<T> = new (...args: any[]) => T;
+
 export default class QSAPPreferences extends ExtensionPreferences {
-	async fillPreferencesWindow(window: Adw.PreferencesWindow) {
+	override async fillPreferencesWindow(window: Adw.PreferencesWindow) {
 		const settings = this.getSettings();
 		update_settings(settings);
 
 		window.add(this.makeExtensionSettingsPage(settings));
 
 		// we remove the 'file://' and the filename at the end
-		const parent_folder = "/" + split(rsplit(get_stack()[0].file, "/", 1)[0], "/", 3)[3];
+		const parent_folder = `/${
+			// biome-ignore lint/style/noNonNullAssertion: crashing if we don't have a stack seems reasonable
+			split(rsplit(get_stack()![0].file, "/", 1)[0], "/", 3)[3]
+		}`;
 		const libpanel_settings = get_settings(
 			`${parent_folder}/libs/libpanel/org.gnome.shell.extensions.libpanel.gschema.xml`,
 		);
@@ -202,11 +208,10 @@ export default class QSAPPreferences extends ExtensionPreferences {
 					"This slider allows you to change the balance of the current audio output",
 				);
 				if (found) {
-					balance_slider.switch!.sensitive = true;
+					balance_slider.switch.sensitive = true;
 				} else {
-					subtitle +=
-						"\n" + _('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>');
-					balance_slider.switch!.sensitive = false;
+					subtitle += `\n${_('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>')}`;
+					balance_slider.switch.sensitive = false;
 				}
 				balance_slider.subtitle = subtitle;
 			},
@@ -215,8 +220,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
 				if (found) {
 					ignore_virtual_capture_streams.sensitive = true;
 				} else {
-					subtitle +=
-						"\n" + _('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>');
+					subtitle += `\n${_('<span color="red" weight="bold">This feature needs <tt>pactl</tt></span>')}`;
 					ignore_virtual_capture_streams.sensitive = false;
 				}
 				ignore_virtual_capture_streams.subtitle = subtitle;
@@ -281,9 +285,10 @@ export default class QSAPPreferences extends ExtensionPreferences {
 		});
 
 		// Can't use Gvc in prefs, we have to rely on infos saved by the extension.
-		const renames: Record<string, Record<string, [string, string]>> = settings
-			.get_value("profiles-renames")
-			.recursiveUnpack();
+		const renames = settings.get_value("profiles-renames").recursiveUnpack() as Record<
+			string,
+			Record<string, [string, string]>
+		>;
 
 		for (const [card, profiles] of Object.entries(renames)) {
 			if (Object.keys(profiles).length === 0) continue;
@@ -296,10 +301,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
 					show_apply_button: true,
 				});
 				row.connect("apply", () => {
-					const renames: Record<string, Record<string, [string, string]>> = settings
-						.get_value("profiles-renames")
-						.recursiveUnpack();
+					const renames = settings.get_value("profiles-renames").recursiveUnpack() as Record<
+						string,
+						Record<string, [string, string]>
+					>;
 					renames[card][profile] = [original_name, row.text];
+					// @ts-expect-error: the TS package can't parse nested dictionaries
 					settings.set_value("profiles-renames", new GLib.Variant("a{sa{s(ss)}}", renames));
 				});
 
@@ -574,7 +581,7 @@ const FilterPreferencesGroup = GObject.registerClass(
 			new_row.connect("changed", () => {
 				try {
 					new RegExp(new_row.text);
-				} catch (e) {
+				} catch (_e) {
 					new_row.title =
 						'<span color="red" weight="bold">Invalid regex (filters were not saved)</span>';
 					return;
@@ -721,7 +728,7 @@ class DraggableRowClass extends Adw.PreferencesRow {
 			this._drag_widget.drag_highlight_row(row_copy);
 
 			Gtk.DragIcon.get_for_drag(drag).set_child(this._drag_widget);
-			// we know values are not undefined because `drag-begin` is sent after `prepare`
+			// biome-ignore lint/style/noNonNullAssertion: we know values are not undefined because `drag-begin` is sent after `prepare`
 			drag.set_hotspot(this._drag_x!, this._drag_y!);
 		});
 		this.add_controller(drag_source);
@@ -747,13 +754,13 @@ class DraggableRowClass extends Adw.PreferencesRow {
 		this._header.subtitle = value;
 	}
 
-	add_switch(key: string): DraggableRowClass {
+	add_switch(key: string): DraggableRowClass & { switch: Gtk.Switch } {
 		this.switch = new Gtk.Switch({ valign: Gtk.Align.CENTER });
 		this._settings.bind(key, this.switch, "active", Gio.SettingsBindFlags.DEFAULT);
 		this._header.add_suffix(this.switch);
 		this._header.activatable_widget = this.switch;
 
-		return this;
+		return this as DraggableRowClass & { switch: Gtk.Switch };
 	}
 
 	add_subgroup(group: ListBox): DraggableRowClass {

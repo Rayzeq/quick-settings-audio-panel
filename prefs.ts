@@ -342,19 +342,14 @@ export default class QSAPPreferences extends ExtensionPreferences {
 			),
 		});
 
-		group.add_switch("single-column", {
-			title: _("Single-column mode"),
-			subtitle: _(
-				"Only one column of panels will be allowed. Also prevents the panel from being put at the left/right of the screen by libpanel.",
-			),
-		});
-		group.add_combobox("alignment", {
-			title: _("Panel alignment"),
-			fields: [
-				["left", _("Left")],
-				["right", _("Right")],
-			],
-		});
+		group.add_switch(
+			"dnd-enabled",
+			{
+				title: _("Lock panels"),
+				subtitle: _("Prevent panels from being moved via drag and drop"),
+			},
+			Gio.SettingsBindFlags.DEFAULT & Gio.SettingsBindFlags.INVERT_BOOLEAN,
+		);
 		group.add_switch_spin(
 			"padding-enabled",
 			"padding",
@@ -402,9 +397,13 @@ function PreferencesRowList<T extends Constructor<BasePreferencesRowList & GObje
 	return GObject.registerClass(
 		{ GTypeName: `PreferencesRowList_${Base.name}` },
 		class extends Base {
-			add_switch(key: string, properties: Partial<Adw.SwitchRow.ConstructorProps>): Adw.SwitchRow {
+			add_switch(
+				key: string,
+				properties: Partial<Adw.SwitchRow.ConstructorProps>,
+				flags?: Gio.SettingsBindFlags,
+			): Adw.SwitchRow {
 				const row = new Adw.SwitchRow(properties);
-				this.settings.bind(key, row, "active", Gio.SettingsBindFlags.DEFAULT);
+				this.settings.bind(key, row, "active", flags || Gio.SettingsBindFlags.DEFAULT);
 
 				this.add(row);
 				return row;

@@ -20,10 +20,10 @@
     }
   },
   "include": [
-    "ambient.d.ts",
+    "src/ambient.d.ts",
   ],
   "files": [
-    "extension.ts",
-    "prefs.ts"
+    "src/extension.ts",
+    "src/prefs.ts"
   ],
 }

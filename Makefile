@@ -2,8 +2,8 @@ NAME=quick-settings-audio-panel
 DOMAIN=rayzeq.github.io
 OUTPUT_DIR=dist
 
-TS_FILES=extension.ts prefs.ts libs/*.ts
-JS_FILES=$(TS_FILES:%.ts=$(OUTPUT_DIR)/%.js)
+TS_FILES=src/extension.ts src/prefs.ts $(wildcard src/libs/*.ts)
+JS_FILES=$(TS_FILES:src/%.ts=$(OUTPUT_DIR)/%.js)
 LIBPANEL_FILES:=$(shell cd ../libpanel && git ls-files)
 LIBPANEL_FILES:=$(LIBPANEL_FILES:%=../libpanel/%)
 
@@ -18,16 +18,16 @@ node_modules: package.json
 	# npm install doesn't seems to necessarily update the date on the folder
 	touch node_modules
 
-po/example.pot: $(JS_FILES)
-	xgettext --from-code=UTF-8 --output=po/example.pot $(OUTPUT_DIR)/*.js
+resources/po/example.pot: $(JS_FILES)
+	xgettext --no-git --from-code=UTF-8 --output=resources/po/example.pot $(OUTPUT_DIR)/*.js
 
-$(JS_FILES): node_modules $(TS_FILES) $(LIBPANEL_FILES)
+$(JS_FILES) &: node_modules $(TS_FILES) $(LIBPANEL_FILES)
 	npm update libpanel
 	-npm run build
 	touch $(OUTPUT_DIR)/libs
 
-pack: $(JS_FILES) po/example.pot
-	cp -r stylesheet.css metadata.json LICENSE po/ schemas/ $(OUTPUT_DIR)
+pack: $(JS_FILES) resources/po/example.pot LICENSE resources/stylesheet.css resources/metadata.json $(wildcard resources/po/*) $(wildcard resources/schemas/*)
+	cp -r LICENSE resources/stylesheet.css resources/metadata.json resources/po/ resources/schemas/ $(OUTPUT_DIR)
 	# for some reason this prevents `gnome-extensions pack` from putting some empty files in the archive
 	# (because of virtualbox ?)
 	sleep 1

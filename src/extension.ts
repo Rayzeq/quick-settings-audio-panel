@@ -32,7 +32,12 @@ import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import { QuickSettingsMenu } from "resource:///org/gnome/shell/ui/quickSettings.js";
 import * as Volume from "resource:///org/gnome/shell/ui/status/volume.js";
 
+// Fix libpanel's module augmentation.
+// I should probably just generate declaration files from libpanel and use those,
+// but I don't want to, so this workaround allows things to work
+import type {} from "@libpanel/../ambient.js";
 import { LibPanel, Panel } from "@libpanel/main.js";
+
 import { update_settings } from "./libs/preferences.js";
 import { cleanup_idle_ids, get_pactl_path, spawn, wait_property } from "./libs/utils.js";
 import {

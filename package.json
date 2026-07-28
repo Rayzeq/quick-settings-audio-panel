@@ -21,16 +21,16 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@girs/giounix-2.0": "^2.0.0-4.0.0-beta.36",
-    "@girs/gjs": "^4.0.0-beta.36",
-    "@girs/gnome-shell": "^48.0.4",
+    "@girs/giounix-2.0": "^4.1.0",
+    "@girs/gjs": "^4.1.0",
+    "@girs/gnome-shell": "^50.0.4",
     "libpanel": "github:Rayzeq/libpanel"
   },
   "scripts": {
     "prebuild": "npm run copy-libpanel",
-    "copy-libpanel": "./copy-libpanel.sh",
+    "copy-libpanel": "./scripts/copy-libpanel.sh",
     "build": "tsc; exit 0",
     "postbuild": "npm run rewrite-imports",
-    "rewrite-imports": "./rewrite-imports.sh"
+    "rewrite-imports": "./scripts/rewrite-imports.sh"
   }
 }

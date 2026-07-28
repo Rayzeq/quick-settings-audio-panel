@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-# Exit on any error
 set -e
 
-pushd dist/
+pushd dist/ > /dev/null
 
 find . -type f -name "*.js" -print0 | while IFS= read -r -d '' file; do
     dir=$(dirname "$file")

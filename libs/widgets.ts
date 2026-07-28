@@ -684,10 +684,10 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 		constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
 			super({
 				visible: false,
-				hasMenu: true,
+				has_menu: true,
 				// The background apps toggle looks like a flat menu, but doesn't
 				// have a separate menu button. Fake it with an arrow icon.
-				iconName: "go-next-symbolic",
+				icon_name: "go-next-symbolic",
 				title: "Applications emitting sound",
 			});
 
@@ -768,7 +768,7 @@ const ApplicationVolumeSlider = GObject.registerClass(
 			this._pactl_path = get_pactl_path(settings)[0];
 
 			if (this._pactl_path) {
-				this._control.connectObject(
+				this._control.connect_object(
 					"output-added",
 					(_control: Gvc.MixerControl, id: number) => this._addDevice(id),
 					"output-removed",
@@ -965,7 +965,7 @@ export const MprisList = GObject.registerClass(
 			this.messages = new Map();
 			this.source = new MprisSource();
 
-			this.source.connectObject(
+			this.source.connect_object(
 				"player-added",
 				(_, player) => this._add_player(player),
 				"player-removed",

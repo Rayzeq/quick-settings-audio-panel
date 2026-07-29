@@ -109,7 +109,7 @@ export default class QSAP extends Extension {
 		);
 
 		this._master_volumes = [];
-		this._sc_callback = this.settings.connect("changed", (_, name) => {
+		this._sc_callback = this.settings.connect("changed", async (_, name) => {
 			if (
 				name !== "autohide-profile-switcher" &&
 				name !== "ignore-virtual-capture-streams" &&
@@ -117,10 +117,10 @@ export default class QSAP extends Extension {
 				name !== "remove-output-volume-slider" &&
 				name !== "profiles-renames"
 			) {
-				this._refresh_panel();
+				await this._refresh_panel();
 			}
 		});
-		this._refresh_panel();
+		await this._refresh_panel();
 	}
 
 	disable() {
@@ -142,7 +142,7 @@ export default class QSAP extends Extension {
 		this.settings = null;
 	}
 
-	_refresh_panel() {
+	async _refresh_panel() {
 		this._cleanup_panel();
 
 		const panel_type = this.settings.get_string("panel-type");
@@ -171,7 +171,7 @@ export default class QSAP extends Extension {
 			create_balance_slider ||
 			create_profile_switcher
 		) {
-			if (panel_type === "independent-panel") LibPanel.enable();
+			if (panel_type === "independent-panel") await LibPanel.enable();
 
 			this._panel = LibPanel.main_panel;
 			let index = -1;
@@ -234,7 +234,7 @@ export default class QSAP extends Extension {
 					}),
 				);
 
-				LibPanel.addPanel(this._panel);
+				LibPanel.add_panel(this._panel);
 			}
 			if (panel_type === "merged-panel" && merged_panel_position === "top") {
 				widgets_order.reverse();
@@ -327,7 +327,7 @@ export default class QSAP extends Extension {
 			this._indicator.destroy(); // also destroys `this._panel``
 			delete this._indicator;
 		} else if (this._panel !== LibPanel.main_panel) {
-			LibPanel.removePanel(this._panel); // prevent the panel's position being forgotten
+			LibPanel.remove_panel(this._panel); // prevent the panel's position being forgotten
 			this._panel.destroy();
 		}
 		this._panel = null;

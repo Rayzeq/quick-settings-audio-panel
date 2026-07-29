@@ -347,7 +347,7 @@ export default class QSAPPreferences extends ExtensionPreferences {
 				title: _("Lock panels"),
 				subtitle: _("Prevent panels from being moved via drag and drop"),
 			},
-			Gio.SettingsBindFlags.DEFAULT & Gio.SettingsBindFlags.INVERT_BOOLEAN,
+			Gio.SettingsBindFlags.DEFAULT | Gio.SettingsBindFlags.INVERT_BOOLEAN,
 		);
 		group.add_switch_spin(
 			"padding-enabled",

@@ -52,6 +52,7 @@ export function spawn(argv: string[]): Promise<string> {
 }
 
 const idle_ids: number[] = [];
+// biome-ignore lint/suspicious/noExplicitAny: works with any and not sure I can use something else
 export function wait_property<T extends { [x: string]: any }, Name extends string>(
 	object: T,
 	name: Name,

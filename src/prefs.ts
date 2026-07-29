@@ -306,7 +306,6 @@ export default class QSAPPreferences extends ExtensionPreferences {
 						Record<string, [string, string]>
 					>;
 					renames[card][profile] = [original_name, row.text];
-					// @ts-expect-error: the TS package can't parse nested dictionaries
 					settings.set_value("profiles-renames", new GLib.Variant("a{sa{s(ss)}}", renames));
 				});
 
@@ -745,7 +744,7 @@ class DraggableRowClass extends Adw.PreferencesRow {
 		this.add_controller(drop_target);
 	}
 
-	get subtitle(): string {
+	get subtitle(): string | null {
 		return this._header.subtitle;
 	}
 
@@ -789,8 +788,6 @@ class DraggableRowClass extends Adw.PreferencesRow {
 				css_classes: ["expander-row-arrow"],
 			}),
 		);
-		// @ts-expect-error: the typscript type likely is wrong, as the documentation says "The argument can be NULL."
-		// https://gnome.pages.gitlab.gnome.org/libadwaita/doc/1.3/method.ActionRow.set_activatable_widget.html
 		this._header.activatable_widget = null;
 		this._header.connect("activated", toggle_expand);
 
@@ -803,7 +800,6 @@ const DraggableRow = GObject.registerClass(
 		Signals: {
 			"move-row": {
 				flags: GObject.SignalFlags.RUN_LAST,
-				// @ts-expect-error: `GType` is a little goofy, so DraggableRowClass is not considered to be a GType
 				param_types: [DraggableRowClass],
 			},
 		},

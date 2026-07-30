@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**DOT NOT OPEN BUG REPORTS FOR GNOME 44 OR LOWER**, those versions aren't supported anymore
+**DOT NOT OPEN BUG REPORTS FOR GNOME 47 OR LOWER**, those versions aren't supported anymore
 
 **Describe the bug**
 A clear and concise description of what the bug is.

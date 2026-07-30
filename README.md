@@ -23,6 +23,9 @@ Notice
 
 The Bluetooth menu overflows the other quick settings below it. It's a known issue that is not related to this extension, and I can't fix it.
 
+**Missing app icons in the application mixer**:
+you may be able to get the icon by installing [MoreWaita](https://github.com/somepaulo/MoreWaita), thanks @Ffffnord for finding this out !
+
 Compatibility
 -------------
 
@@ -37,7 +40,7 @@ Known incompatibilities are:
 Older versions
 --------------
 
-Versions for Gnome 43 and 44 are still available, but no new features or bug fixes will be made for these versions.
+Versions for Gnome 43, 44, 45, 46, 47 are still available, but no new features or bug fixes will be made for these versions.
 
 Manual installation
 -------------------

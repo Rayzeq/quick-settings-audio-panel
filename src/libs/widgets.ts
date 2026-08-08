@@ -537,8 +537,10 @@ class ApplicationsMixerManager {
 	private _mixer_control: Gvc.MixerControl;
 
 	private _sliders: Map<number, ApplicationVolumeSlider>;
+	private _client_sliders: Map<string, ApplicationVolumeSlider>;
 	private _filter_mode: string;
 	private _filters: RegExp[];
+	private _combine_streams: boolean;
 
 	private _sa_event_id: number;
 	private _sr_event_id: number;
@@ -550,6 +552,7 @@ class ApplicationsMixerManager {
 		settings: Gio.Settings,
 		filter_mode: string,
 		filters: string[],
+		combine_streams: boolean,
 		on_slider_added: (slider: ApplicationVolumeSlider) => void,
 		on_slider_removed: (slider: ApplicationVolumeSlider) => void,
 	) {
@@ -559,8 +562,10 @@ class ApplicationsMixerManager {
 		this.on_slider_removed = on_slider_removed;
 
 		this._sliders = new Map();
+		this._client_sliders = new Map();
 		this._filter_mode = filter_mode;
 		this._filters = filters.map(f => new RegExp(f));
+		this._combine_streams = combine_streams;
 
 		this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
 		this._sr_event_id = this._mixer_control.connect(
@@ -590,8 +595,48 @@ class ApplicationsMixerManager {
 		}
 		if (!matched && this._filter_mode === "whitelist") return;
 
+		if (!this._combine_streams) {
+			this._add_stream(stream);
+			return;
+		}
+
+		const pactl_path = get_pactl_path(this._settings)[0];
+		if (!pactl_path) {
+			this._add_stream(stream);
+			return;
+		}
+
+		spawn([pactl_path, "-f", "json", "list", "sink-inputs"])
+			.then(stdout => {
+				const sink_inputs = JSON.parse(stdout) as {
+					index: number;
+					client: string | number | null;
+				}[];
+				const sink_input = sink_inputs.find(input => input.index === stream.index);
+				const client = sink_input?.client;
+				if (typeof client !== "string" && typeof client !== "number") {
+					this._add_stream(stream);
+					return;
+				}
+
+				const client_id = String(client);
+				const slider = this._client_sliders.get(client_id);
+				if (slider) {
+					slider.add_stream(stream);
+					this._sliders.set(id, slider);
+				} else {
+					this._add_stream(stream, client_id);
+				}
+			})
+			.catch(() => this._add_stream(stream));
+	}
+
+	private _add_stream(stream: Gvc.MixerStream, client?: string) {
+		if (this._sliders.has(stream.id)) return;
+
 		const slider = new ApplicationVolumeSlider(this._mixer_control, stream, this._settings);
-		this._sliders.set(id, slider);
+		this._sliders.set(stream.id, slider);
+		if (client !== undefined) this._client_sliders.set(client, slider);
 
 		this.on_slider_added(slider);
 	}
@@ -600,20 +645,34 @@ class ApplicationsMixerManager {
 		const slider = this._sliders.get(id);
 		if (slider === undefined) return;
 
-		this.on_slider_removed(slider);
 		this._sliders.delete(id);
+		const remaining_streams = slider.remove_stream(id);
+		if (remaining_streams === null) return;
+
+		for (const [client, grouped_slider] of this._client_sliders) {
+			if (grouped_slider === slider) this._client_sliders.delete(client);
+		}
+		this.on_slider_removed(slider);
 		slider.destroy();
+
+		// StreamSlider is bound to its first stream. Rebuild the group if that stream
+		// disappears, so that one of the remaining streams becomes the new primary.
+		for (const stream of remaining_streams) {
+			this._sliders.delete(stream.id);
+			this._stream_added(this._mixer_control, stream.id);
+		}
 	}
 
 	get sliders(): Iterable<ApplicationVolumeSlider> {
-		return this._sliders.values();
+		return new Set(this._sliders.values());
 	}
 
 	destroy() {
-		for (const slider of this._sliders.values()) {
+		for (const slider of new Set(this._sliders.values())) {
 			slider.destroy();
 		}
 		this._sliders.clear();
+		this._client_sliders.clear();
 
 		this._mixer_control.disconnect(this._sa_event_id);
 		this._mixer_control.disconnect(this._sr_event_id);
@@ -632,6 +691,7 @@ export class ApplicationsMixer {
 		filter_mode: string,
 		filters: string[],
 		settings: Gio.Settings,
+		combine_streams: boolean,
 	) {
 		this.panel = panel;
 
@@ -645,6 +705,7 @@ export class ApplicationsMixer {
 			settings,
 			filter_mode,
 			filters,
+			combine_streams,
 			this._slider_added.bind(this),
 			this._slider_removed.bind(this),
 		);
@@ -681,7 +742,12 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 		private _mosc_signal: number;
 		private _sm_updated_signal: number;
 
-		constructor(settings: Gio.Settings, filter_mode: string, filters: string[]) {
+		constructor(
+			settings: Gio.Settings,
+			filter_mode: string,
+			filters: string[],
+			combine_streams: boolean,
+		) {
 			super({
 				visible: false,
 				has_menu: true,
@@ -707,6 +773,7 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 				settings,
 				filter_mode,
 				filters,
+				combine_streams,
 				this._slider_added.bind(this),
 				this._slider_removed.bind(this),
 			);
@@ -755,10 +822,16 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		private _pactl_path: string | null;
 		private _pactl_path_changed_id: number;
 		private _label: St.Label;
+		private _streams: Map<number, Gvc.MixerStream>;
+		private _stream_signal_ids: Map<number, number[]>;
+		private _syncing_streams: boolean;
 
 		constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
 			super(control);
 			this._settings = settings;
+			this._streams = new Map([[stream.id, stream]]);
+			this._stream_signal_ids = new Map();
+			this._syncing_streams = false;
 			this.menu.setHeader("audio-headphones-symbolic", _("Output Device"));
 
 			this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
@@ -847,11 +920,69 @@ const ApplicationVolumeSlider = GObject.registerClass(
 
 			vbox.add_child(this._label);
 			vbox.add_child(hbox);
+			this._watch_stream(stream);
+		}
+
+		add_stream(stream: Gvc.MixerStream) {
+			if (this._streams.has(stream.id)) return;
+
+			this._streams.set(stream.id, stream);
+			this._watch_stream(stream);
+			this._update_label(this.stream);
+		}
+
+		// Returns null when the primary stream is still present. Otherwise, the
+		// manager recreates this slider around one of the remaining streams.
+		remove_stream(id: number): Gvc.MixerStream[] | null {
+			const stream = this._streams.get(id);
+			if (!stream) return null;
+
+			for (const signal_id of this._stream_signal_ids.get(id) || []) {
+				stream.disconnect(signal_id);
+			}
+			this._stream_signal_ids.delete(id);
+			this._streams.delete(id);
+
+			if (stream !== this.stream) {
+				this._update_label(this.stream);
+				return null;
+			}
+			return [...this._streams.values()];
+		}
+
+		private _watch_stream(stream: Gvc.MixerStream) {
+			const sync = () => this._sync_streams(stream);
+			this._stream_signal_ids.set(stream.id, [
+				stream.connect("notify::volume", sync),
+				stream.connect("notify::is-muted", sync),
+			]);
+			this.connect("destroy", () => {
+				for (const signal_id of this._stream_signal_ids.get(stream.id) || []) {
+					stream.disconnect(signal_id);
+				}
+			});
+		}
+
+		private _sync_streams(source: Gvc.MixerStream) {
+			if (this._syncing_streams || this._streams.size < 2) return;
+
+			this._syncing_streams = true;
+			for (const stream of this._streams.values()) {
+				if (stream === source) continue;
+				if (stream.volume !== source.volume) {
+					stream.volume = source.volume;
+					stream.push_volume();
+				}
+				if (stream.is_muted !== source.is_muted) stream.change_is_muted(source.is_muted);
+			}
+			this._syncing_streams = false;
 		}
 
 		_update_label(stream: Gvc.MixerStream) {
 			const { name, description } = stream;
-			this._label.text = name === null ? description : `${name} - ${description}`;
+			const label = name === null || name === description ? description : `${name} - ${description}`;
+			this._label.text =
+				this._streams.size > 1 ? `${label} (${this._streams.size})` : label;
 
 			if (
 				name &&

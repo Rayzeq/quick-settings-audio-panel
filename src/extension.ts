@@ -365,11 +365,13 @@ export default class QSAP extends Extension {
 	}
 
 	_create_app_mixer(index: number, group: boolean, filter_mode, filters) {
+		const combine = this.settings.get_boolean("combine-applications-volume-sliders");
 		if (group) {
 			this._applications_mixer_combined = new ApplicationsMixerToggle(
 				this.settings,
 				filter_mode,
 				filters,
+				combine,
 			);
 			this._panel.addItem(this._applications_mixer_combined, 2);
 			this._panel._grid.set_child_at_index(this._applications_mixer_combined, index);
@@ -380,6 +382,7 @@ export default class QSAP extends Extension {
 				filter_mode,
 				filters,
 				this.settings,
+				combine,
 			);
 		}
 	}

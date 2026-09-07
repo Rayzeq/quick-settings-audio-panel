@@ -24,7 +24,7 @@ import {
 } from "resource:///org/gnome/shell/ui/quickSettings.js";
 import * as Volume from "resource:///org/gnome/shell/ui/status/volume.js";
 
-import { get_pactl_path, spawn, wait_property } from "./utils.js";
+import { get_pactl_path, spawn, track_slider_dnd, wait_property } from "./utils.js";
 
 const { MixerSinkInput, MixerSink } = Gvc;
 // `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined
@@ -279,6 +279,8 @@ const SinkVolumeSlider = GObject.registerClass(
 
 			vbox.add_child(label);
 			vbox.add_child(sliderBin);
+
+			track_slider_dnd(this);
 		}
 
 		_updateIcon() {
@@ -365,6 +367,8 @@ export const BalanceSlider = GObject.registerClass(
 			vbox.add_child(hbox);
 
 			box.add_child(vbox);
+
+			track_slider_dnd(this);
 		}
 
 		_update_sink(stream: Gvc.MixerStream | null) {
@@ -847,6 +851,8 @@ const ApplicationVolumeSlider = GObject.registerClass(
 
 			vbox.add_child(this._label);
 			vbox.add_child(hbox);
+
+			track_slider_dnd(this);
 		}
 
 		_update_label(stream: Gvc.MixerStream) {

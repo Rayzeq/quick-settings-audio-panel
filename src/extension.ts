@@ -39,7 +39,7 @@ import type {} from "@libpanel/../ambient.js";
 import { LibPanel, Panel } from "@libpanel/main.js";
 
 import { update_settings } from "./libs/preferences.js";
-import { cleanup_idle_ids, get_pactl_path, spawn, wait_property } from "./libs/utils.js";
+import { cleanup_idle_ids, get_pactl_path, spawn, track_slider_dnd, wait_property } from "./libs/utils.js";
 import {
 	ApplicationsMixer,
 	ApplicationsMixerToggle,
@@ -65,6 +65,10 @@ export default class QSAP extends Extension {
 	async enable() {
 		this.InputVolumeIndicator = await wait_property(QuickSettings, "_volumeInput");
 		this.InputVolumeSlider = this.InputVolumeIndicator._input;
+
+		// Keep slider drags from moving the whole panel (see utils.ts).
+		track_slider_dnd(OutputVolumeSlider);
+		track_slider_dnd(this.InputVolumeSlider);
 
 		this.settings = this.getSettings();
 		update_settings(this.settings);

@@ -92,3 +92,60 @@ export function cleanup_idle_ids() {
 	}
 	idle_ids.length = 0;
 }
+
+// Since GNOME 50, dragging a slider can also drag its libpanel panel off-screen
+// (St.Slider now uses a PanGesture that no longer blocks the panel's DND gesture),
+// so panel drags are disabled while a slider drag is in progress. Uses only public
+// API: the slider's `drag-begin`/`drag-end` signals and the draggable's `startGesture`.
+const _saved_dnd_manual_mode = new Map<object, boolean>();
+
+// DND gestures of the libpanel panels (v1 and v2) containing `actor`, if any.
+// biome-ignore lint/suspicious/noExplicitAny: libpanel internals aren't typed
+function _containing_dnd_gestures(actor: any): any[] {
+	// biome-ignore lint/suspicious/noExplicitAny: libpanel internals aren't typed
+	const gestures: any[] = [];
+	// biome-ignore lint/suspicious/noExplicitAny: libpanel internals aren't typed
+	let parent: any = actor?.get_parent?.();
+	while (parent) {
+		const gesture = (parent.draggable ?? parent._drag_handle)?.startGesture;
+		if (gesture && !gestures.includes(gesture)) gestures.push(gesture);
+		parent = parent.get_parent?.();
+	}
+	return gestures;
+}
+
+// Call once per slider row: dragging it won't move the containing panel.
+// biome-ignore lint/suspicious/noExplicitAny: sliders are untyped GNOME objects
+export function track_slider_dnd(slider_item: any): void {
+	const slider = slider_item?.slider;
+	if (!slider?.connect || slider_item._qsap_dnd_tracked) return;
+	slider_item._qsap_dnd_tracked = true;
+
+	let dragging = false;
+	slider.connect("drag-begin", () => {
+		dragging = true;
+		for (const gesture of _containing_dnd_gestures(slider_item)) {
+			if (!_saved_dnd_manual_mode.has(gesture)) {
+				// biome-ignore lint/suspicious/noExplicitAny: libpanel internals aren't typed
+				_saved_dnd_manual_mode.set(gesture, (gesture as any).manual_mode);
+			}
+			// biome-ignore lint/suspicious/noExplicitAny: libpanel internals aren't typed
+			(gesture as any).manual_mode = true;
+		}
+	});
+	const end_drag = () => {
+		if (!dragging) return;
+		dragging = false;
+		for (const [gesture, manual_mode] of _saved_dnd_manual_mode) {
+			try {
+				// biome-ignore lint/suspicious/noExplicitAny: libpanel internals aren't typed
+				(gesture as any).manual_mode = manual_mode;
+			} catch {
+				// The panel was destroyed meanwhile, nothing to restore.
+			}
+		}
+		_saved_dnd_manual_mode.clear();
+	};
+	slider.connect("drag-end", end_drag);
+	if (slider_item.connect) slider_item.connect("destroy", end_drag);
+}

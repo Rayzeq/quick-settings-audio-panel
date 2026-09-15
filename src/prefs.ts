@@ -137,6 +137,12 @@ export default class QSAPPreferences extends ExtensionPreferences {
 				'<span color="darkorange" weight="bold">This will disable the ability to change the output device per application</span>',
 			),
 		});
+		applications_volume_sliders_group.add_switch("combine-applications-volume-sliders", {
+			title: _("Combine streams from the same application"),
+			subtitle: _(
+				"Show one slider for an application with multiple audio streams. Volume and mute changes apply to every stream.",
+			),
+		});
 		applications_volume_sliders_group.add_switch(
 			"applications-volume-sliders-allow-automatic-pactl",
 			{

@@ -115,7 +115,8 @@ export default class QSAP extends Extension {
 				name !== "ignore-virtual-capture-streams" &&
 				name !== "always-show-input-volume-slider" &&
 				name !== "remove-output-volume-slider" &&
-				name !== "profiles-renames"
+				name !== "profiles-renames" &&
+				name !== "applications-volume-sliders-display-name"
 			) {
 				await this._refresh_panel();
 			}

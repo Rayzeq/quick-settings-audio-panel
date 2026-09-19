@@ -131,6 +131,9 @@ export default class QSAPPreferences extends ExtensionPreferences {
 		});
 
 		const applications_volume_sliders_group = new ListBox(settings);
+		applications_volume_sliders_group.add_switch("applications-volume-sliders-display-name", {
+			title: _("Display the name of the application and the stream"),
+		});
 		applications_volume_sliders_group.add_switch("group-applications-volume-sliders", {
 			title: _("Put the sliders in submenu"),
 			subtitle: _(

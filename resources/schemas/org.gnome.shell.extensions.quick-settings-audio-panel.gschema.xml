@@ -97,6 +97,9 @@
     <key name="create-applications-volume-sliders" type="b">
       <default>true</default>
     </key>
+    <key name="applications-volume-sliders-display-name" type="b">
+      <default>true</default>
+    </key>
     <key name="group-applications-volume-sliders" type="b">
       <default>false</default>
     </key>

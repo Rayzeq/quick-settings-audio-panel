@@ -922,6 +922,12 @@ const ApplicationVolumeSlider = GObject.registerClass(
 				track_hover: true,
 				reactive: true,
 			});
+			settings.bind(
+				"applications-volume-sliders-display-name",
+				this._label,
+				"visible",
+				Gio.SettingsBindFlags.DEFAULT,
+			);
 			this._label.style_class = "QSAP-application-volume-slider-label";
 			this._label.clutter_text.line_wrap = false;
 			this._label.clutter_text.ellipsize = Pango.EllipsizeMode.END;

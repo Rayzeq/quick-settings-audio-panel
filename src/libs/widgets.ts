@@ -784,7 +784,7 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 			this._slidersSection = new PopupMenuSection();
 			this.menu.addMenuItem(this._slidersSection);
 
-			this.connect("popup-menu", () => this.menu.open(false));
+			this.connect("popup-menu", () => this.menu.open());
 
 			this._mosc_signal = this.menu.connect("open-state-changed", () => this._syncVisibility());
 			this._sm_updated_signal = Main.sessionMode.connect("updated", () => this._syncVisibility());
@@ -823,7 +823,7 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 		}
 
 		vfunc_clicked() {
-			this.menu.open(true);
+			this.menu.open();
 		}
 
 		destroy() {
@@ -1000,9 +1000,9 @@ const ApplicationVolumeSlider = GObject.registerClass(
 
 		_update_label(stream: Gvc.MixerStream) {
 			const { name, description } = stream;
-			const label = name === null || name === description ? description : `${name} - ${description}`;
-			this._label.text =
-				this._streams.size > 1 ? `${label} (${this._streams.size})` : label;
+			const label =
+				name === null || name === description ? description : `${name} - ${description}`;
+			this._label.text = this._streams.size > 1 ? `${label} (${this._streams.size})` : label;
 
 			if (
 				name &&

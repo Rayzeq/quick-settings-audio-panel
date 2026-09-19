@@ -32,5 +32,8 @@
     "build": "tsc; exit 0",
     "postbuild": "npm run rewrite-imports",
     "rewrite-imports": "./scripts/rewrite-imports.sh"
+  },
+  "allowScripts": {
+    "file:../../libpanel": true
   }
 }

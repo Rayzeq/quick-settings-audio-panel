@@ -467,11 +467,16 @@ export const AudioProfileSwitcher = GObject.registerClass(class AudioProfileSwit
     }
 });
 
+// How long a stream must exist before it gets a slider, in milliseconds
+const STREAM_ADD_DELAY = 400;
+
 class ApplicationsMixerManager {
     private _settings: Gio.Settings;
     private _mixer_control: Gvc.MixerControl;
 
     private _sliders: Map<number, ApplicationVolumeSlider>;
+    // Streams waiting for `STREAM_ADD_DELAY` to elapse, by stream ID.
+    private _delayed_streams: Map<number, number>;
     private _filter_mode: string;
     private _filters: RegExp[];
 
@@ -494,15 +499,31 @@ class ApplicationsMixerManager {
         this.on_slider_removed = on_slider_removed;
 
         this._sliders = new Map();
+        this._delayed_streams = new Map();
         this._filter_mode = filter_mode;
         this._filters = filters.map(f => new RegExp(f));
 
-        this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
+        this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added_delayed.bind(this));
         this._sr_event_id = this._mixer_control.connect("stream-removed", this._stream_removed.bind(this));
 
         for (const stream of this._mixer_control.get_streams()) {
             this._stream_added(this._mixer_control, stream.id);
         }
+    }
+
+    // Building a slider is expensive (widgets, relayout, pactl process), and streams like
+    // notification sounds only live for about a second. Wait a bit before doing anything,
+    // so that they never cost more than a timeout.
+    private _stream_added_delayed(control: Gvc.MixerControl, id: number) {
+        if (this._delayed_streams.has(id)) return;
+
+        const timeout_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, STREAM_ADD_DELAY, () => {
+            this._delayed_streams.delete(id);
+            // `stream-removed` should have cancelled us, but let's be safe
+            if (control.lookup_stream_id(id)) this._stream_added(control, id);
+            return GLib.SOURCE_REMOVE;
+        });
+        this._delayed_streams.set(id, timeout_id);
     }
 
     private _stream_added(control: Gvc.MixerControl, id: number) {
@@ -533,6 +554,13 @@ class ApplicationsMixerManager {
     }
 
     private _stream_removed(_control: Gvc.MixerControl, id: number) {
+        const timeout_id = this._delayed_streams.get(id);
+        if (timeout_id !== undefined) {
+            GLib.Source.remove(timeout_id);
+            this._delayed_streams.delete(id);
+            return;
+        }
+
         const slider = this._sliders.get(id);
         if (slider === undefined) return;
 
@@ -550,6 +578,10 @@ class ApplicationsMixerManager {
             slider.destroy();
         }
         this._sliders.clear();
+        for (const timeout_id of this._delayed_streams.values()) {
+            GLib.Source.remove(timeout_id);
+        }
+        this._delayed_streams.clear();
 
         this._mixer_control.disconnect(this._sa_event_id);
         this._mixer_control.disconnect(this._sr_event_id);
@@ -681,10 +713,15 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
     private _pactl_path: string | null;
     private _pactl_path_changed_id: number;
     private _label: St.Label;
+    private _label_key: string | null;
+    // undefined: not looked up yet, null: nothing better than the stream name
+    private _binary_name: string | null | undefined;
 
     constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
         super(control);
         this._settings = settings;
+        this._label_key = null;
+        this._binary_name = undefined;
         this.menu.setHeader('audio-headphones-symbolic', _('Output Device'));
 
         this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
@@ -760,15 +797,30 @@ const ApplicationVolumeSlider = GObject.registerClass(class ApplicationVolumeSli
 
     _update_label(stream: Gvc.MixerStream) {
         const { name, description } = stream;
-        this._label.text = name === null ? description : `${name} - ${description}`;
 
-        if (name && name.startsWith("Chromium") && this._pactl_path && this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")) {
+        // `notify::description` can fire without the label actually changing
+        const key = `${name}\n${description}\n${this._binary_name}`;
+        if (key === this._label_key) return;
+        this._label_key = key;
+
+        const display_name = this._binary_name || name;
+        this._label.text = display_name === null ? description : `${display_name} - ${description}`;
+
+        if (
+            this._binary_name === undefined
+            && name && name.startsWith("Chromium")
+            && this._pactl_path
+            && this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")
+        ) {
+            // the binary of a stream can't change, so only look it up once
+            this._binary_name = null;
             spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
                 const stdout = JSON.parse(stdout_str);
                 for (const sink_input of stdout) {
                     const binary_name = sink_input.properties["application.process.binary"];
                     if (sink_input.index === this.stream.index && binary_name !== "chromium-browser") {
-                        this._label.text = `${binary_name} - ${description}`;
+                        this._binary_name = binary_name;
+                        this._update_label(this.stream);
                     }
                 }
             });

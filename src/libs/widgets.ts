@@ -9,7 +9,7 @@ import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import type { MediaMessage } from "resource:///org/gnome/shell/ui/messageList.js";
-import { type MprisPlayer, MprisSource } from "resource:///org/gnome/shell/ui/mpris.js";
+import type { MprisPlayer, MprisSource } from "resource:///org/gnome/shell/ui/mpris.js";
 import {
 	Ornament,
 	PopupBaseMenuItem,
@@ -1160,7 +1160,7 @@ export const MprisList = GObject.registerClass(
 		private source: MprisSource;
 		private messages: Map<MprisPlayer, MediaMessage>;
 
-		constructor() {
+		constructor(source: MprisSource) {
 			super({
 				orientation: Clutter.Orientation.VERTICAL,
 				style: "spacing: 12px;",
@@ -1168,7 +1168,7 @@ export const MprisList = GObject.registerClass(
 			});
 
 			this.messages = new Map();
-			this.source = new MprisSource();
+			this.source = source;
 
 			this.source.connect_object(
 				"player-added",

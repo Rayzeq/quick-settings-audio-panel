@@ -348,7 +348,7 @@ export default class QSAP extends Extension {
 	}
 
 	_create_media_controls(index: number) {
-		this._media_section = new MprisList();
+		this._media_section = new MprisList(MessageView_DateMenu._mediaSource);
 		this._media_section.add_style_class_name("QSAP-media-section");
 		if (!this.settings.get_boolean("ignore-css")) {
 			this._media_section.add_style_class_name("QSAP-media-section-optional");

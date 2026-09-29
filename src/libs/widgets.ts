@@ -25,6 +25,7 @@ import {
 import * as Volume from "resource:///org/gnome/shell/ui/status/volume.js";
 
 import { get_pactl_path, spawn, wait_property } from "./utils.js";
+import { create_stream_watcher, type StreamWatcher } from "./wireplumber.js";
 
 const { MixerSinkInput, MixerSink } = Gvc;
 // `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined
@@ -550,6 +551,7 @@ class ApplicationsMixerManager {
 	private _filter_mode: string;
 	private _filters: RegExp[];
 	private _combine_streams: boolean;
+	private _stream_watcher: StreamWatcher | null;
 
 	private _sa_event_id: number;
 	private _sr_event_id: number;
@@ -576,6 +578,7 @@ class ApplicationsMixerManager {
 		this._filter_mode = filter_mode;
 		this._filters = filters.map(f => new RegExp(f));
 		this._combine_streams = combine_streams;
+		this._stream_watcher = create_stream_watcher();
 
 		this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
 		this._sr_event_id = this._mixer_control.connect(
@@ -656,7 +659,12 @@ class ApplicationsMixerManager {
 	private _add_stream(stream: Gvc.MixerStream, client?: string) {
 		if (this._sliders.has(stream.id)) return;
 
-		const slider = new ApplicationVolumeSlider(this._mixer_control, stream, this._settings);
+		const slider = new ApplicationVolumeSlider(
+			this._mixer_control,
+			stream,
+			this._settings,
+			this._stream_watcher,
+		);
 		this._sliders.set(stream.id, slider);
 		if (client !== undefined) this._client_sliders.set(client, slider);
 
@@ -698,6 +706,7 @@ class ApplicationsMixerManager {
 		this._sliders.clear();
 		this._client_sliders.clear();
 		this._pending_streams.clear();
+		this._stream_watcher?.destroy();
 
 		this._mixer_control.disconnect(this._sa_event_id);
 		this._mixer_control.disconnect(this._sr_event_id);
@@ -851,10 +860,17 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		private _streams: Map<number, Gvc.MixerStream>;
 		private _stream_signal_ids: Map<number, number[]>;
 		private _syncing_streams: boolean;
+		private _stream_watcher: StreamWatcher | null;
 
-		constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
+		constructor(
+			control: Gvc.MixerControl,
+			stream: Gvc.MixerStream,
+			settings: Gio.Settings,
+			stream_watcher: StreamWatcher | null,
+		) {
 			super(control);
 			this._settings = settings;
+			this._stream_watcher = stream_watcher;
 			this._streams = new Map([[stream.id, stream]]);
 			this._stream_signal_ids = new Map();
 			this._syncing_streams = false;
@@ -878,6 +894,11 @@ const ApplicationVolumeSlider = GObject.registerClass(
 					this,
 				);
 				this.menu.connect("open-state-changed", () => this._checkUsedSink());
+				this._stream_watcher?.object_manager.connect_object(
+					"objects-changed",
+					() => this._checkUsedSink(),
+					this,
+				);
 				// unfortunately we don't have any signal to know that the active device changed
 				//stream.connect('', () => this._setActiveDevice());
 
@@ -1030,27 +1051,32 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		}
 
 		_checkUsedSink() {
-			if (
-				!this.menu.isOpen ||
-				!this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")
-			)
+			if (!this.menu.isOpen) return;
+
+			if (this._stream_watcher?.available) {
+				const sink_index = this._stream_watcher.get_sink_index(this.stream.index);
+				if (sink_index !== null) this._setActiveSink(sink_index);
 				return;
+			}
+
+			if (!this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")) return;
 
 			spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
 				const stdout = JSON.parse(stdout_str);
 				for (const sink_input of stdout) {
 					if (sink_input.index === this.stream.index) {
-						const sink_id = this._control
-							.lookup_device_from_stream(
-								this._control.get_sinks().find(s => s.index === sink_input.sink),
-							)
-							?.get_id();
-						if (sink_id) {
-							this._setActiveDevice(sink_id);
-						}
+						this._setActiveSink(sink_input.sink);
 					}
 				}
 			});
+		}
+
+		_setActiveSink(sink_index: number) {
+			const sink = this._control.get_sinks().find(s => s.index === sink_index);
+			const sink_id = sink && this._control.lookup_device_from_stream(sink)?.get_id();
+			if (sink_id) {
+				this._setActiveDevice(sink_id);
+			}
 		}
 
 		_addDevice(id: number) {

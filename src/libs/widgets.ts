@@ -853,6 +853,7 @@ const ApplicationVolumeSlider = GObject.registerClass(
 			this._stream_signal_ids = new Map();
 			this._syncing_streams = false;
 			this.menu.setHeader("audio-headphones-symbolic", _("Output Device"));
+			this.connect("destroy", () => this.menu.destroy());
 
 			this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
 				this._pactl_path = get_pactl_path(settings)[0];

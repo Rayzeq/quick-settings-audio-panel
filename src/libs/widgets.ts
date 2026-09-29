@@ -9,7 +9,7 @@ import St from "gi://St";
 import { gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import type { MediaMessage } from "resource:///org/gnome/shell/ui/messageList.js";
-import { type MprisPlayer, MprisSource } from "resource:///org/gnome/shell/ui/mpris.js";
+import type { MprisPlayer, MprisSource } from "resource:///org/gnome/shell/ui/mpris.js";
 import {
 	Ornament,
 	PopupBaseMenuItem,
@@ -25,6 +25,7 @@ import {
 import * as Volume from "resource:///org/gnome/shell/ui/status/volume.js";
 
 import { get_pactl_path, spawn, wait_property } from "./utils.js";
+import { create_stream_watcher, type StreamWatcher } from "./wireplumber.js";
 
 const { MixerSinkInput, MixerSink } = Gvc;
 // `_volumeOutput` is set in an async function, so we need to ensure that it's currently defined
@@ -291,6 +292,7 @@ const SinkVolumeSlider = GObject.registerClass(
 			}
 			if (this._change_button_update_handler_id)
 				this._control.disconnect(this._change_button_update_handler_id);
+			this.menu.destroy();
 			super.destroy();
 		}
 	},
@@ -418,6 +420,8 @@ export const BalanceSlider = GObject.registerClass(
 
 		destroy() {
 			this._control.disconnect(this._default_sink_changed_signal);
+			this.menu.destroy();
+			super.destroy();
 		}
 	},
 );
@@ -528,6 +532,8 @@ export const AudioProfileSwitcher = GObject.registerClass(
 			this._settings.disconnect_object(this.menu);
 			this._mixer_control.disconnect(this._active_output_update_signal);
 			this._settings.disconnect(this._autohide_changed_signal);
+			this.menu.destroy();
+			super.destroy();
 		}
 	},
 );
@@ -545,6 +551,7 @@ class ApplicationsMixerManager {
 	private _filter_mode: string;
 	private _filters: RegExp[];
 	private _combine_streams: boolean;
+	private _stream_watcher: StreamWatcher | null;
 
 	private _sa_event_id: number;
 	private _sr_event_id: number;
@@ -571,6 +578,7 @@ class ApplicationsMixerManager {
 		this._filter_mode = filter_mode;
 		this._filters = filters.map(f => new RegExp(f));
 		this._combine_streams = combine_streams;
+		this._stream_watcher = create_stream_watcher();
 
 		this._sa_event_id = this._mixer_control.connect("stream-added", this._stream_added.bind(this));
 		this._sr_event_id = this._mixer_control.connect(
@@ -651,7 +659,12 @@ class ApplicationsMixerManager {
 	private _add_stream(stream: Gvc.MixerStream, client?: string) {
 		if (this._sliders.has(stream.id)) return;
 
-		const slider = new ApplicationVolumeSlider(this._mixer_control, stream, this._settings);
+		const slider = new ApplicationVolumeSlider(
+			this._mixer_control,
+			stream,
+			this._settings,
+			this._stream_watcher,
+		);
 		this._sliders.set(stream.id, slider);
 		if (client !== undefined) this._client_sliders.set(client, slider);
 
@@ -693,6 +706,7 @@ class ApplicationsMixerManager {
 		this._sliders.clear();
 		this._client_sliders.clear();
 		this._pending_streams.clear();
+		this._stream_watcher?.destroy();
 
 		this._mixer_control.disconnect(this._sa_event_id);
 		this._mixer_control.disconnect(this._sr_event_id);
@@ -830,6 +844,7 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 			this._slider_manager.destroy();
 			this.menu.disconnect(this._mosc_signal);
 			Main.sessionMode.disconnect(this._sm_updated_signal);
+			this.menu.destroy();
 
 			super.destroy();
 		}
@@ -845,14 +860,22 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		private _streams: Map<number, Gvc.MixerStream>;
 		private _stream_signal_ids: Map<number, number[]>;
 		private _syncing_streams: boolean;
+		private _stream_watcher: StreamWatcher | null;
 
-		constructor(control: Gvc.MixerControl, stream: Gvc.MixerStream, settings: Gio.Settings) {
+		constructor(
+			control: Gvc.MixerControl,
+			stream: Gvc.MixerStream,
+			settings: Gio.Settings,
+			stream_watcher: StreamWatcher | null,
+		) {
 			super(control);
 			this._settings = settings;
+			this._stream_watcher = stream_watcher;
 			this._streams = new Map([[stream.id, stream]]);
 			this._stream_signal_ids = new Map();
 			this._syncing_streams = false;
 			this.menu.setHeader("audio-headphones-symbolic", _("Output Device"));
+			this.connect("destroy", () => this.menu.destroy());
 
 			this._pactl_path_changed_id = settings.connect("changed::pactl-path", () => {
 				this._pactl_path = get_pactl_path(settings)[0];
@@ -868,6 +891,12 @@ const ApplicationVolumeSlider = GObject.registerClass(
 					(_control: Gvc.MixerControl, id: number) => this._removeDevice(id),
 					"active-output-update",
 					(_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
+					this,
+				);
+				this.menu.connect("open-state-changed", () => this._checkUsedSink());
+				this._stream_watcher?.object_manager.connect_object(
+					"objects-changed",
+					() => this._checkUsedSink(),
 					this,
 				);
 				// unfortunately we don't have any signal to know that the active device changed
@@ -887,13 +916,6 @@ const ApplicationVolumeSlider = GObject.registerClass(
 			this.stream = stream;
 			// And this one need to be after this.stream assignment.
 			this._icon.fallback_icon_name = stream.icon_name;
-
-			if (
-				this._pactl_path &&
-				this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")
-			) {
-				this._checkUsedSink();
-			}
 
 			this._iconButton.y_expand = false;
 			this._iconButton.y_align = Clutter.ActorAlign.CENTER;
@@ -943,6 +965,13 @@ const ApplicationVolumeSlider = GObject.registerClass(
 			);
 			this.connect("destroy", () => stream.disconnect(n_desc_handler_id));
 			this._update_label(stream);
+			if (stream.name?.startsWith("Chromium")) {
+				this._stream_watcher?.object_manager.connect_object(
+					"objects-changed",
+					() => this._update_label(this.stream),
+					this,
+				);
+			}
 
 			vbox.add_child(this._label);
 			vbox.add_child(hbox);
@@ -1010,7 +1039,15 @@ const ApplicationVolumeSlider = GObject.registerClass(
 				name === null || name === description ? description : `${name} - ${description}`;
 			this._label.text = this._streams.size > 1 ? `${label} (${this._streams.size})` : label;
 
-			if (
+			if (name && name.startsWith("Chromium") && this._stream_watcher?.available) {
+				const binary_name = this._stream_watcher.get_stream_property(
+					this.stream.index,
+					"application.process.binary",
+				);
+				if (binary_name && binary_name !== "chromium-browser") {
+					this._label.text = `${binary_name} - ${description}`;
+				}
+			} else if (
 				name &&
 				name.startsWith("Chromium") &&
 				this._pactl_path &&
@@ -1029,21 +1066,32 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		}
 
 		_checkUsedSink() {
+			if (!this.menu.isOpen) return;
+
+			if (this._stream_watcher?.available) {
+				const sink_index = this._stream_watcher.get_sink_index(this.stream.index);
+				if (sink_index !== null) this._setActiveSink(sink_index);
+				return;
+			}
+
+			if (!this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")) return;
+
 			spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
 				const stdout = JSON.parse(stdout_str);
 				for (const sink_input of stdout) {
 					if (sink_input.index === this.stream.index) {
-						const sink_id = this._control
-							.lookup_device_from_stream(
-								this._control.get_sinks().find(s => s.index === sink_input.sink),
-							)
-							?.get_id();
-						if (sink_id) {
-							this._setActiveDevice(sink_id);
-						}
+						this._setActiveSink(sink_input.sink);
 					}
 				}
 			});
+		}
+
+		_setActiveSink(sink_index: number) {
+			const sink = this._control.get_sinks().find(s => s.index === sink_index);
+			const sink_id = sink && this._control.lookup_device_from_stream(sink)?.get_id();
+			if (sink_id) {
+				this._setActiveDevice(sink_id);
+			}
 		}
 
 		_addDevice(id: number) {
@@ -1112,7 +1160,7 @@ export const MprisList = GObject.registerClass(
 		private source: MprisSource;
 		private messages: Map<MprisPlayer, MediaMessage>;
 
-		constructor() {
+		constructor(source: MprisSource) {
 			super({
 				orientation: Clutter.Orientation.VERTICAL,
 				style: "spacing: 12px;",
@@ -1120,7 +1168,7 @@ export const MprisList = GObject.registerClass(
 			});
 
 			this.messages = new Map();
-			this.source = new MprisSource();
+			this.source = source;
 
 			this.source.connect_object(
 				"player-added",
@@ -1148,7 +1196,7 @@ export const MprisList = GObject.registerClass(
 		_remove_player(player: MprisPlayer) {
 			const message = this.messages.get(player);
 			if (message) {
-				this.remove_child(message);
+				message.destroy();
 				this.messages.delete(player);
 
 				if (this.messages.size === 0) this.visible = false;

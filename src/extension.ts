@@ -309,6 +309,7 @@ export default class QSAP extends Extension {
 
 		if (this._media_section) {
 			this._panel.removeItem(this._media_section);
+			this._media_section.destroy();
 			this._media_section = null;
 		}
 		if (MessageView_DateMenu._qsap_media_removed) {
@@ -347,7 +348,7 @@ export default class QSAP extends Extension {
 	}
 
 	_create_media_controls(index: number) {
-		this._media_section = new MprisList();
+		this._media_section = new MprisList(MessageView_DateMenu._mediaSource);
 		this._media_section.add_style_class_name("QSAP-media-section");
 		if (!this.settings.get_boolean("ignore-css")) {
 			this._media_section.add_style_class_name("QSAP-media-section-optional");
@@ -471,15 +472,16 @@ export default class QSAP extends Extension {
 			slider == OutputVolumeSlider ? "active-output-update" : "active-input-update";
 		slider._qsap_callback = slider._control.connect(signal_name, () => {
 			const device_id = slider._control.lookup_device_from_stream(slider._stream).get_id();
+			slider._qsap_binding?.unbind();
 			// using the item's text allow for compatibility with extensions that changes it, let's hope this won't break
-			slider._deviceItems
+			slider._qsap_binding = slider._deviceItems
 				.get(device_id)
 				.label.bind_property("text", label, "text", GObject.BindingFlags.SYNC_CREATE);
 		});
 
 		if (slider._stream) {
 			const device_id = slider._control.lookup_device_from_stream(slider._stream).get_id();
-			slider._deviceItems
+			slider._qsap_binding = slider._deviceItems
 				.get(device_id)
 				.label.bind_property("text", label, "text", GObject.BindingFlags.SYNC_CREATE);
 		}
@@ -491,6 +493,7 @@ export default class QSAP extends Extension {
 	_unpatch_show_current_device(slider) {
 		if (!slider._qsap_callback) return;
 		slider._control.disconnect(slider._qsap_callback);
+		slider._qsap_binding?.unbind();
 
 		slider._iconButton.y_expand = slider._iconButton._qsap_y_expand;
 		slider._iconButton.y_align = slider._iconButton._qsap_y_align;
@@ -514,6 +517,7 @@ export default class QSAP extends Extension {
 		slider._menuButton.y_expand = slider._menuButton._qsap_y_expand;
 
 		delete slider._qsap_callback;
+		delete slider._qsap_binding;
 		delete slider._iconButton._qsap_y_expand;
 		delete slider._iconButton._qsap_y_align;
 		delete slider._menuButton._qsap_y_expand;
@@ -533,12 +537,6 @@ export default class QSAP extends Extension {
 					GLib.spawn_command_line_async(
 						`${get_pactl_path(this.settings)[0]} move-sink-input ${stream.index} @DEFAULT_SINK@`,
 					);
-				}
-
-				if (this._applications_mixer) {
-					for (const slider of this._applications_mixer._slider_manager._sliders.values()) {
-						slider._checkUsedSink();
-					}
 				}
 			},
 		);

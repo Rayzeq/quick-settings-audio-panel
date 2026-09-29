@@ -309,6 +309,7 @@ export default class QSAP extends Extension {
 
 		if (this._media_section) {
 			this._panel.removeItem(this._media_section);
+			this._media_section.destroy();
 			this._media_section = null;
 		}
 		if (MessageView_DateMenu._qsap_media_removed) {

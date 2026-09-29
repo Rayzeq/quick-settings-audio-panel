@@ -1149,7 +1149,7 @@ export const MprisList = GObject.registerClass(
 		_remove_player(player: MprisPlayer) {
 			const message = this.messages.get(player);
 			if (message) {
-				this.remove_child(message);
+				message.destroy();
 				this.messages.delete(player);
 
 				if (this.messages.size === 0) this.visible = false;

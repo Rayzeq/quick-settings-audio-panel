@@ -965,6 +965,13 @@ const ApplicationVolumeSlider = GObject.registerClass(
 			);
 			this.connect("destroy", () => stream.disconnect(n_desc_handler_id));
 			this._update_label(stream);
+			if (stream.name?.startsWith("Chromium")) {
+				this._stream_watcher?.object_manager.connect_object(
+					"objects-changed",
+					() => this._update_label(this.stream),
+					this,
+				);
+			}
 
 			vbox.add_child(this._label);
 			vbox.add_child(hbox);
@@ -1032,7 +1039,15 @@ const ApplicationVolumeSlider = GObject.registerClass(
 				name === null || name === description ? description : `${name} - ${description}`;
 			this._label.text = this._streams.size > 1 ? `${label} (${this._streams.size})` : label;
 
-			if (
+			if (name && name.startsWith("Chromium") && this._stream_watcher?.available) {
+				const binary_name = this._stream_watcher.get_stream_property(
+					this.stream.index,
+					"application.process.binary",
+				);
+				if (binary_name && binary_name !== "chromium-browser") {
+					this._label.text = `${binary_name} - ${description}`;
+				}
+			} else if (
 				name &&
 				name.startsWith("Chromium") &&
 				this._pactl_path &&

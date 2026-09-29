@@ -291,6 +291,7 @@ const SinkVolumeSlider = GObject.registerClass(
 			}
 			if (this._change_button_update_handler_id)
 				this._control.disconnect(this._change_button_update_handler_id);
+			this.menu.destroy();
 			super.destroy();
 		}
 	},
@@ -418,6 +419,8 @@ export const BalanceSlider = GObject.registerClass(
 
 		destroy() {
 			this._control.disconnect(this._default_sink_changed_signal);
+			this.menu.destroy();
+			super.destroy();
 		}
 	},
 );
@@ -528,6 +531,8 @@ export const AudioProfileSwitcher = GObject.registerClass(
 			this._settings.disconnect_object(this.menu);
 			this._mixer_control.disconnect(this._active_output_update_signal);
 			this._settings.disconnect(this._autohide_changed_signal);
+			this.menu.destroy();
+			super.destroy();
 		}
 	},
 );
@@ -830,6 +835,7 @@ export const ApplicationsMixerToggle = GObject.registerClass(
 			this._slider_manager.destroy();
 			this.menu.disconnect(this._mosc_signal);
 			Main.sessionMode.disconnect(this._sm_updated_signal);
+			this.menu.destroy();
 
 			super.destroy();
 		}

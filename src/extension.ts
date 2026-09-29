@@ -538,12 +538,6 @@ export default class QSAP extends Extension {
 						`${get_pactl_path(this.settings)[0]} move-sink-input ${stream.index} @DEFAULT_SINK@`,
 					);
 				}
-
-				if (this._applications_mixer) {
-					for (const slider of this._applications_mixer._slider_manager._sliders.values()) {
-						slider._checkUsedSink();
-					}
-				}
 			},
 		);
 	}

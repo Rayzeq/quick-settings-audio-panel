@@ -877,6 +877,7 @@ const ApplicationVolumeSlider = GObject.registerClass(
 					(_control: Gvc.MixerControl, _id: number) => this._checkUsedSink(),
 					this,
 				);
+				this.menu.connect("open-state-changed", () => this._checkUsedSink());
 				// unfortunately we don't have any signal to know that the active device changed
 				//stream.connect('', () => this._setActiveDevice());
 
@@ -894,13 +895,6 @@ const ApplicationVolumeSlider = GObject.registerClass(
 			this.stream = stream;
 			// And this one need to be after this.stream assignment.
 			this._icon.fallback_icon_name = stream.icon_name;
-
-			if (
-				this._pactl_path &&
-				this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")
-			) {
-				this._checkUsedSink();
-			}
 
 			this._iconButton.y_expand = false;
 			this._iconButton.y_align = Clutter.ActorAlign.CENTER;
@@ -1036,6 +1030,12 @@ const ApplicationVolumeSlider = GObject.registerClass(
 		}
 
 		_checkUsedSink() {
+			if (
+				!this.menu.isOpen ||
+				!this._settings.get_boolean("applications-volume-sliders-allow-automatic-pactl")
+			)
+				return;
+
 			spawn([this._pactl_path, "-f", "json", "list", "sink-inputs"]).then(stdout_str => {
 				const stdout = JSON.parse(stdout_str);
 				for (const sink_input of stdout) {
